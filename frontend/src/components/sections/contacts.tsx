@@ -100,22 +100,28 @@ export function ContactsSection() {
                 { id: "name", label: "Ваше имя", placeholder: "Иван", type: "text", error: errors.name?.message },
                 { id: "phone", label: "Телефон", placeholder: "+7 (999) 000-00-00", type: "tel", error: errors.phone?.message },
                 { id: "email", label: "Email (необязательно)", placeholder: "ivan@mail.ru", type: "email", error: errors.email?.message },
-              ].map((field) => (
-                <div key={field.id} className="w-full">
-                  <label htmlFor={field.id} className="block text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--text-subtle)" }}>{field.label}</label>
-                  <input
-                    id={field.id}
-                    type={field.type}
-                    placeholder={field.placeholder}
-                    className="w-full px-0 py-3.5 bg-transparent border-b text-sm focus:outline-none transition-colors"
-                    style={{ borderColor: field.error ? "#ef4444" : "var(--border)", color: "var(--text)" }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = field.error ? "#ef4444" : "var(--border)"; }}
-                    {...register(field.id as keyof LeadFormData)}
-                  />
-                  {field.error && <p className="mt-1.5 text-xs text-red-400">{field.error}</p>}
-                </div>
-              ))}
+              ].map((field) => {
+                const registered = register(field.id as keyof LeadFormData);
+                return (
+                  <div key={field.id} className="w-full">
+                    <label htmlFor={field.id} className="block text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--text-subtle)" }}>{field.label}</label>
+                    <input
+                      id={field.id}
+                      type={field.type}
+                      placeholder={field.placeholder}
+                      className="w-full px-0 py-3.5 bg-transparent border-b text-sm focus:outline-none transition-colors"
+                      style={{ borderColor: field.error ? "#ef4444" : "var(--border)", color: "var(--text)" }}
+                      {...registered}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; }}
+                      onBlur={(e) => {
+                        registered.onBlur(e);
+                        e.currentTarget.style.borderColor = field.error ? "#ef4444" : "var(--border)";
+                      }}
+                    />
+                    {field.error && <p className="mt-1.5 text-xs text-red-400">{field.error}</p>}
+                  </div>
+                );
+              })}
 
               <div className="absolute opacity-0 h-0 overflow-hidden" aria-hidden="true">
                 <input tabIndex={-1} autoComplete="off" {...register("honeypot")} />
