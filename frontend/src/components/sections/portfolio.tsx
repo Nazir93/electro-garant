@@ -1,0 +1,162 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { PORTFOLIO_CASES } from "@/lib/portfolio-data";
+
+function FillLink({ href, label }: { href: string; label: string }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <Link
+      href={href}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="w-full flex items-center justify-between mt-8 px-8 py-6 md:py-7 rounded-2xl font-heading text-xl md:text-2xl relative overflow-hidden transition-all duration-500"
+      style={{ border: "1px solid var(--border)" }}
+    >
+      <div
+        className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] rounded-2xl"
+        style={{
+          backgroundColor: "var(--text)",
+          transform: hovered ? "scaleX(1)" : "scaleX(0)",
+        }}
+      />
+      <span
+        className="relative z-10 transition-colors duration-700"
+        style={{ color: hovered ? "var(--bg)" : "var(--text)" }}
+      >
+        {label}
+      </span>
+      <ArrowRight
+        size={22}
+        className="relative z-10 transition-colors duration-700"
+        style={{ color: hovered ? "var(--bg)" : "var(--text)" }}
+      />
+    </Link>
+  );
+}
+
+function PortfolioRow({ project, index }: { project: (typeof PORTFOLIO_CASES)[0]; index: number }) {
+  const [isOpen, setIsOpen] = useState(index === 0);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setHeight(isOpen ? contentRef.current.scrollHeight : 0);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (rowRef.current) observer.observe(rowRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={rowRef}
+      className="border-b transition-all duration-700 ease-out"
+      style={{
+        borderColor: "var(--border)",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateX(0)" : "translateX(100px)",
+        transitionDelay: `${index * 80}ms`,
+      }}
+    >
+      {/* Row */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full grid grid-cols-[1fr_auto] md:grid-cols-[2fr_3fr_auto] items-center py-3 md:py-4 px-0 text-left group cursor-pointer"
+      >
+        <span
+          className="font-heading text-sm md:text-base tracking-[0.05em] transition-colors duration-200 group-hover:text-[var(--accent)]"
+          style={{ color: "var(--text)" }}
+        >
+          {project.title.toUpperCase()}
+        </span>
+        <span
+          className="hidden md:block text-sm tracking-[0.08em]"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {project.type}
+        </span>
+        <span className="text-sm text-right tabular-nums" style={{ color: "var(--text-muted)" }}>
+          ({project.year})
+        </span>
+      </button>
+
+      {/* Expandable content */}
+      <div
+        className="overflow-hidden transition-[height] duration-500 ease-in-out"
+        style={{ height: `${height}px` }}
+      >
+        <div ref={contentRef} className="pb-8 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr] gap-8">
+            {/* Left: description */}
+            <div className="max-w-sm">
+              <p className="text-sm leading-relaxed mb-5" style={{ color: "var(--text-muted)" }}>
+                {project.shortDescription}
+              </p>
+              <Link
+                href={`/portfolio/${project.slug}`}
+                className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] transition-colors duration-200 hover:text-[var(--accent)]"
+                style={{ color: "var(--text)" }}
+              >
+                <span className="underline underline-offset-4">подробнее</span>
+                <ArrowUpRight size={14} />
+              </Link>
+            </div>
+
+            {/* Right: image placeholder */}
+            <div
+              className="aspect-[4/3] md:aspect-[16/10] flex items-center justify-center rounded-lg overflow-hidden"
+              style={{ backgroundColor: "var(--bg-secondary)" }}
+            >
+              <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
+                Фото / Видео проекта
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function PortfolioSection() {
+  return (
+    <section
+      id="portfolio"
+      className="py-20 md:py-28"
+      style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}
+    >
+      <div className="container mx-auto">
+        <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl mb-12" style={{ color: "var(--text)" }}>
+          Портфолио
+        </h2>
+
+        <div className="border-t" style={{ borderColor: "var(--border)" }}>
+          {PORTFOLIO_CASES.map((project, i) => (
+            <PortfolioRow key={project.id} project={project} index={i} />
+          ))}
+        </div>
+
+        {/* "Смотреть все" */}
+        <FillLink href="/portfolio" label="Смотреть все проекты" />
+      </div>
+    </section>
+  );
+}

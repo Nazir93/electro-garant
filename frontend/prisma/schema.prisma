@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Category {
+  RESTAURANT
+  OFFICE
+  APARTMENT
+  SHOP
+  OTHER
+}
+
+enum ServiceType {
+  ELECTRICAL
+  ACOUSTICS
+  STRUCTURED_CABLING
+  SMART_HOME
+  SECURITY
+}
+
+enum LeadStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+model Project {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  title       String
+  category    Category
+  service     ServiceType
+  area        Int?
+  description String      @db.Text
+  coverImage  String
+  videoUrl    String?
+  published   Boolean     @default(false)
+  order       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  images      ProjectImage[]
+  hotspots    Hotspot[]
+
+  @@index([published, service])
+  @@index([published, category])
+}
+
+model ProjectImage {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String  @default("")
+  order     Int     @default(0)
+
+  @@index([projectId])
+}
+
+model Hotspot {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  xPercent  Float
+  yPercent  Float
+  label     String
+  description String @db.Text
+
+  @@index([projectId])
+}
+
+model Lead {
+  id        String     @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  service   String?
+  pageUrl   String?
+  source    String?
+  utmSource String?
+  utmMedium String?
+  utmCampaign String?
+  utmTerm   String?
+  calcData  Json?
+  status    LeadStatus @default(NEW)
+  notes     String?    @db.Text
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([service])
+}
+
+model Partner {
+  id      String  @id @default(cuid())
+  name    String
+  logoUrl String
+  website String?
+  visible Boolean @default(true)
+  order   Int     @default(0)
+}
+
+model TeamMember {
+  id          String  @id @default(cuid())
+  name        String
+  position    String
+  photoUrl    String?
+  description String? @db.Text
+  visible     Boolean @default(true)
+  order       Int     @default(0)
+}
+
+model Review {
+  id         String      @id @default(cuid())
+  authorName String
+  authorPhoto String?
+  objectName String?
+  service    ServiceType?
+  rating     Int         @default(5)
+  text       String      @db.Text
+  videoUrl   String?
+  visible    Boolean     @default(true)
+  order      Int         @default(0)
+  createdAt  DateTime    @default(now())
+}
+
+model Faq {
+  id       String      @id @default(cuid())
+  question String
+  answer   String      @db.Text
+  service  ServiceType?
+  visible  Boolean     @default(true)
+  order    Int         @default(0)
+}
+
+model SiteSettings {
+  key   String @id
+  value String @db.Text
+}
+
+model ThankYouToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  leadName  String?
+  source    String?
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([expiresAt])
+}
