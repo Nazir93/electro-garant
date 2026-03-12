@@ -1,13 +1,13 @@
 "use client";
 
-const PARTNERS = [
-  "Legrand", "ABB", "Schneider Electric", "Hikvision",
-  "DKC", "IEK", "TDM Electric", "EKF",
+const CLIENTS = [
+  "FAMILY", "LAVICON", "MR. FOOD", "RADISSON",
+  "КАШЕЛОТ", "МАНДАРИН", "ПАПА ДЖОНС", "РОЗА ХУТОР",
 ];
 
 export function PartnersSection() {
-  const titleDoubled = ["ПАРТНЁРЫ", "ПАРТНЁРЫ", "ПАРТНЁРЫ"];
-  const logosDoubled = [...PARTNERS, ...PARTNERS];
+  const titleDoubled = ["НАМ ДОВЕРЯЮТ", "НАМ ДОВЕРЯЮТ", "НАМ ДОВЕРЯЮТ"];
+  const clientsDoubled = [...CLIENTS, ...CLIENTS];
 
   return (
     <section
@@ -15,9 +15,9 @@ export function PartnersSection() {
       className="overflow-hidden"
       style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}
     >
-      {/* Row 1: giant "ПАРТНЁРЫ" scrolls left to right */}
+      {/* Row 1: giant "НАМ ДОВЕРЯЮТ" scrolls right */}
       <div className="overflow-hidden whitespace-nowrap">
-        <div className="animate-marquee-right" style={{ animationDuration: "25s" }}>
+        <div className="animate-marquee-right" style={{ animationDuration: "20s" }}>
           {titleDoubled.map((item, i) => (
             <span
               key={i}
@@ -30,16 +30,16 @@ export function PartnersSection() {
         </div>
       </div>
 
-      {/* Row 2: logos scroll right to left */}
-      <div className="overflow-hidden whitespace-nowrap py-5 md:py-6">
-        <div className="animate-marquee-left" style={{ animationDuration: "30s" }}>
-          {logosDoubled.map((partner, i) => (
+      {/* Row 2: client names scroll left */}
+      <div className="overflow-hidden whitespace-nowrap py-3 sm:py-5 md:py-6">
+        <div className="animate-marquee-left" style={{ animationDuration: "25s" }}>
+          {clientsDoubled.map((client, i) => (
             <span
-              key={`${partner}-${i}`}
-              className="inline-block mx-8 md:mx-14 text-sm md:text-base uppercase tracking-[0.15em] transition-colors duration-300 cursor-default hover:text-[var(--text)]"
+              key={`${client}-${i}`}
+              className="inline-block mx-5 sm:mx-8 md:mx-14 text-xs sm:text-sm md:text-base uppercase tracking-[0.12em] sm:tracking-[0.15em] transition-colors duration-300 cursor-default hover:text-[var(--text)]"
               style={{ color: "var(--text-muted)" }}
             >
-              {partner}
+              {client}
             </span>
           ))}
         </div>

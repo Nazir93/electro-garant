@@ -12,7 +12,7 @@ function FillLink({ href, label }: { href: string; label: string }) {
       href={href}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="w-full flex items-center justify-between mt-8 px-8 py-6 md:py-7 rounded-2xl font-heading text-xl md:text-2xl relative overflow-hidden transition-all duration-500"
+      className="w-full flex items-center justify-between mt-6 sm:mt-8 px-5 sm:px-8 py-5 sm:py-6 md:py-7 rounded-2xl font-heading text-lg sm:text-xl md:text-2xl relative overflow-hidden transition-all duration-500"
       style={{ border: "1px solid var(--border)" }}
     >
       <div
@@ -111,7 +111,7 @@ function BlogCard({
       }}
     >
       <div
-        className="relative overflow-hidden flex flex-col justify-between h-[340px] p-6 md:p-8 transition-transform duration-500 group-hover:scale-[0.98]"
+        className="relative overflow-hidden flex flex-col justify-between h-[260px] sm:h-[300px] md:h-[340px] p-4 sm:p-6 md:p-8 transition-transform duration-500 group-hover:scale-[0.98]"
         style={{
           backgroundColor: "var(--bg-secondary)",
           border: "1px solid var(--border)",
@@ -149,20 +149,20 @@ export function BlogSection() {
   return (
     <section
       id="blog"
-      className="py-20 md:py-28"
+      className="py-16 sm:py-20 md:py-28"
       style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}
     >
       <div className="container mx-auto">
         {/* Title */}
         <h2
-          className="font-heading text-[18vw] md:text-[12vw] lg:text-[10vw] leading-[0.85] tracking-tighter mb-14 md:mb-20"
+          className="font-heading text-[15vw] sm:text-[18vw] md:text-[12vw] lg:text-[10vw] leading-[0.85] tracking-tighter mb-10 sm:mb-14 md:mb-20"
           style={{ color: "var(--text)" }}
         >
           БЛОГ
         </h2>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
           {BLOG_POSTS.map((post, i) => (
             <BlogCard key={post.id} post={post} index={i} />
           ))}

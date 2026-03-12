@@ -2,32 +2,202 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { Menu, X, Sun, Moon } from "lucide-react";
-import { PHONE, PHONE_RAW, EMAIL, SERVICES } from "@/lib/constants";
+import { usePathname } from "next/navigation";
+import { X, Sun, Moon } from "lucide-react";
+import { PHONE, PHONE_RAW, EMAIL, SERVICES, SITE_NAME } from "@/lib/constants";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
-import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-  { href: "/#about", label: "О нас" },
-  { href: "/portfolio", label: "Портфолио" },
-  { href: "/services", label: "Услуги", hasDropdown: true },
-  { href: "/blog", label: "Блог" },
+function buildGridPath(
+  cols: number, rows: number, cellW: number, cellH: number,
+  startCol: number, startRow: number, seed: number
+): string {
+  let c = startCol;
+  let r = startRow;
+  const pts: [number, number][] = [[c * cellW, r * cellH]];
+  let rng = seed;
+  const next = () => { rng = (rng * 16807 + 11) % 2147483647; return (rng & 0xffff) / 0xffff; };
+
+  const steps = 14 + Math.floor(next() * 8);
+  let dir: "h" | "v" = next() > 0.5 ? "h" : "v";
+  for (let s = 0; s < steps; s++) {
+    if (dir === "h") {
+      const move = next() > 0.5 ? 1 : -1;
+      const dist = 1 + Math.floor(next() * 3);
+      for (let d = 0; d < dist; d++) {
+        c += move;
+        if (c < 0) c = 0;
+        if (c > cols) c = cols;
+        pts.push([c * cellW, r * cellH]);
+      }
+      dir = "v";
+    } else {
+      const move = next() > 0.5 ? 1 : -1;
+      const dist = 1 + Math.floor(next() * 2);
+      for (let d = 0; d < dist; d++) {
+        r += move;
+        if (r < 0) r = 0;
+        if (r > rows) r = rows;
+        pts.push([c * cellW, r * cellH]);
+      }
+      dir = "h";
+    }
+  }
+  return pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
+}
+
+const GRID_W = 600;
+const GRID_H = 400;
+const CELL = 40;
+const COLS = GRID_W / CELL;
+const ROWS = GRID_H / CELL;
+
+const SPARK_PATHS = [
+  buildGridPath(COLS, ROWS, CELL, CELL, 0, 2, 42),
+  buildGridPath(COLS, ROWS, CELL, CELL, 2, 0, 137),
+  buildGridPath(COLS, ROWS, CELL, CELL, COLS, 5, 271),
+  buildGridPath(COLS, ROWS, CELL, CELL, 8, ROWS, 999),
+  buildGridPath(COLS, ROWS, CELL, CELL, 5, 3, 555),
+];
+
+function CircuitGrid() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      <svg
+        className="absolute inset-0 w-full h-full"
+        viewBox={`0 0 ${GRID_W} ${GRID_H}`}
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <defs>
+          <filter id="spark-glow">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" />
+          </filter>
+        </defs>
+
+        {/* Grid lines — horizontal */}
+        {Array.from({ length: ROWS + 1 }, (_, i) => (
+          <line
+            key={`h-${i}`}
+            x1={0} y1={i * CELL} x2={GRID_W} y2={i * CELL}
+            stroke="rgba(255,255,255,0.03)"
+            strokeWidth="0.5"
+          />
+        ))}
+        {/* Grid lines — vertical */}
+        {Array.from({ length: COLS + 1 }, (_, i) => (
+          <line
+            key={`v-${i}`}
+            x1={i * CELL} y1={0} x2={i * CELL} y2={GRID_H}
+            stroke="rgba(255,255,255,0.03)"
+            strokeWidth="0.5"
+          />
+        ))}
+
+        {/* Spark paths */}
+        {SPARK_PATHS.map((d, i) => (
+          <g key={i}>
+            {/* Glow */}
+            <path
+              d={d}
+              fill="none"
+              stroke="rgba(201,168,76,0.15)"
+              strokeWidth="3"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              filter="url(#spark-glow)"
+              strokeDasharray="80 1200"
+              className="electric-snake"
+              style={{
+                animationDelay: `${i * 300}ms`,
+                animationDuration: `${10 + i * 1.5}s`,
+                ["--path-len" as string]: 1280,
+              }}
+            />
+            {/* Core */}
+            <path
+              d={d}
+              fill="none"
+              stroke="rgba(232,212,139,0.25)"
+              strokeWidth="0.8"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              strokeDasharray="80 1200"
+              className="electric-snake"
+              style={{
+                animationDelay: `${i * 300}ms`,
+                animationDuration: `${10 + i * 1.5}s`,
+                ["--path-len" as string]: 1280,
+              }}
+            />
+          </g>
+        ))}
+
+        {/* Small dots at some intersections */}
+        {[
+          [3, 2], [7, 4], [11, 6], [5, 8], [9, 1],
+          [1, 5], [13, 3], [6, 7], [10, 9], [4, 4],
+        ].map(([cx, cy], i) => (
+          <circle
+            key={`dot-${i}`}
+            cx={cx * CELL}
+            cy={cy * CELL}
+            r="1.5"
+            fill="rgba(201,168,76,0.08)"
+          />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+const NAV_SECTIONS = [
+  {
+    label: "О нас",
+    items: [
+      { href: "/#contacts", label: "Контакты" },
+      { href: "/portfolio", label: "Портфолио" },
+      { href: "/app", label: "Приложение" },
+    ],
+  },
+  {
+    label: "Заказчикам",
+    items: [
+      { href: "/services", label: "Услуги" },
+      { href: "/price", label: "Прайс-листы" },
+      { href: "/docs", label: "Документация" },
+      { href: "#calc", label: "Рассчитать стоимость", action: "openModal" as const },
+    ],
+  },
+  {
+    label: "Партнёрам",
+    items: [
+      { href: "/vacancies", label: "Вакансии" },
+      { href: "/partners", label: "Стать партнёром" },
+      { href: "/cooperation", label: "Предложение о сотрудничестве" },
+    ],
+  },
+  {
+    label: "Информация",
+    items: [
+      { href: "/blog", label: "Блог" },
+      { href: "/forum", label: "Форум" },
+      { href: "/support", label: "Тех. поддержка" },
+    ],
+  },
 ];
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [hideFloating, setHideFloating] = useState(false);
   const { toggleTheme, isDark } = useTheme();
   const { openModal } = useModal();
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    const handleOpenMenu = () => setIsOpen(true);
+    window.addEventListener("open-mobile-menu", handleOpenMenu);
+    return () => window.removeEventListener("open-mobile-menu", handleOpenMenu);
   }, []);
 
   useEffect(() => {
@@ -39,173 +209,105 @@ export function Header() {
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  const handleDropdownEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setServicesOpen(true);
-  };
+  useEffect(() => {
+    if (!isHome) {
+      setHideFloating(true);
+      return;
+    }
+    const handleScroll = () => {
+      const navEl = document.querySelector("[data-navbar]");
+      if (navEl) {
+        const navRect = navEl.getBoundingClientRect();
+        setHideFloating(navRect.top <= window.innerHeight);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHome]);
 
-  const handleDropdownLeave = () => {
-    timeoutRef.current = setTimeout(() => setServicesOpen(false), 200);
-  };
+  const headerColor = isHome ? "#FFFFFF" : "var(--text)";
+  const headerBorderColor = isHome ? "rgba(255,255,255,0.2)" : "var(--border)";
+  const headerMutedColor = isHome ? "rgba(255,255,255,0.6)" : "var(--text-muted)";
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
-        scrolled ? "py-3 backdrop-blur-md" : "py-4 md:py-5",
-        scrolled && "border-b",
-      )}
-      style={{
-        backgroundColor: scrolled
-          ? isDark ? "rgba(10,10,10,0.9)" : "rgba(255,255,255,0.9)"
-          : "transparent",
-        borderColor: scrolled ? "var(--border)" : "transparent",
-      }}
-    >
-      <div className="container mx-auto flex items-center justify-between">
-        {/* Left: Logo + contacts */}
-        <div className="flex items-center gap-6">
-          <Link href="/" className="block shrink-0" aria-label="Гарант Монтаж">
-            <div className="relative flex items-center select-none" style={{ height: "36px", width: "68px" }}>
-              <span
-                className="absolute left-0 leading-none"
-                style={{
-                  fontFamily: "var(--font-main), sans-serif",
-                  fontSize: "40px",
-                  fontWeight: 700,
-                  color: "var(--text)",
-                  top: "-3px",
-                }}
-              >
-                Г
-              </span>
-              <span
-                className="absolute right-0 leading-none"
-                style={{
-                  fontFamily: "var(--font-main), sans-serif",
-                  fontSize: "40px",
-                  fontWeight: 700,
-                  color: "var(--text)",
-                  top: "-3px",
-                }}
-              >
-                М
-              </span>
-              <div
-                className="absolute left-0 right-0 flex items-center justify-center z-10"
-                style={{
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  backgroundColor: scrolled
-                    ? isDark ? "rgba(10,10,10,0.9)" : "rgba(255,255,255,0.9)"
-                    : "var(--bg)",
-                  padding: "2px 0",
-                  transition: "background-color 0.5s",
-                }}
-              >
-                <span
-                  className="text-[5px] uppercase tracking-[0.2em] font-bold whitespace-nowrap"
-                  style={{ color: "var(--text)" }}
-                >
-                  Гарант Монтаж
-                </span>
-              </div>
-            </div>
+    <>
+      {/* Minimal floating header — logo + theme + hamburger */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-500"
+        style={{
+          opacity: hideFloating ? 0 : 1,
+          visibility: hideFloating ? "hidden" : "visible",
+        }}
+      >
+        <div className="container mx-auto flex items-center justify-between py-3 sm:py-4 md:py-5">
+          {/* Logo */}
+          <Link href="/" className="block shrink-0 pointer-events-auto min-h-[44px] flex items-center" aria-label="Гарант Монтаж">
+            <span
+              className="select-none flex flex-col leading-[1.05]"
+              style={{
+                color: headerColor,
+                transition: "color 0.3s",
+                fontFamily: "var(--font-main), sans-serif",
+                fontSize: "12px",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+              }}
+            >
+              <span>ГАРАНТ</span>
+              <span>МОНТАЖ</span>
+            </span>
           </Link>
 
-          <div className="hidden xl:flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
-            <a href={`tel:${PHONE_RAW}`} className="hover:opacity-100 transition-opacity">
-              {PHONE}
-            </a>
-            <span style={{ color: "var(--text-subtle)" }}>/</span>
-            <a href={`mailto:${EMAIL}`} className="hover:opacity-100 transition-opacity">
-              {EMAIL}
-            </a>
+          {/* Right: theme toggle + hamburger */}
+          <div className="flex items-center gap-1.5 sm:gap-3 pointer-events-auto">
+            <button
+              onClick={toggleTheme}
+              className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border"
+              style={{ borderColor: headerBorderColor, transition: "border-color 0.3s" }}
+              aria-label="Переключить тему"
+            >
+              {isDark ? (
+                <Sun size={15} style={{ color: headerMutedColor }} />
+              ) : (
+                <Moon size={15} style={{ color: headerMutedColor }} />
+              )}
+            </button>
+
+            <button
+              onClick={() => setIsOpen(true)}
+              className="w-11 h-11 sm:w-12 sm:h-12 flex flex-col items-center justify-center gap-[5px] sm:gap-[6px]"
+              aria-label="Открыть меню"
+            >
+              <span className="block w-6 sm:w-7 h-[2px] transition-colors duration-300" style={{ backgroundColor: headerColor }} />
+              <span className="block w-6 sm:w-7 h-[2px] transition-colors duration-300" style={{ backgroundColor: headerColor }} />
+              <span className="block w-4 sm:w-5 h-[2px] self-start ml-[7px] sm:ml-[10px] transition-colors duration-300" style={{ backgroundColor: headerColor }} />
+            </button>
           </div>
         </div>
+      </header>
 
-        {/* Center: Navigation (desktop) */}
-        <nav className="hidden lg:flex items-center gap-8">
-          {NAV_LINKS.map((link) => (
-            <div
-              key={link.href}
-              className="relative"
-              onMouseEnter={link.hasDropdown ? handleDropdownEnter : undefined}
-              onMouseLeave={link.hasDropdown ? handleDropdownLeave : undefined}
-            >
-              <Link
-                href={link.href}
-                className="text-xs uppercase tracking-[0.15em] transition-colors hover:opacity-100"
-                style={{ color: "var(--text-muted)" }}
-                onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}
-                onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
-              >
-                {link.label}
-              </Link>
-
-              {link.hasDropdown && servicesOpen && (
-                <div
-                  ref={dropdownRef}
-                  className="absolute top-full left-1/2 -translate-x-1/2 pt-4"
-                >
-                  <div
-                    className="min-w-[280px] py-3 backdrop-blur-xl"
-                    style={{
-                      backgroundColor: isDark ? "rgba(20,20,20,0.95)" : "rgba(255,255,255,0.95)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "12px",
-                    }}
-                  >
-                    {SERVICES.map((service) => (
-                      <Link
-                        key={service.id}
-                        href={service.slug}
-                        className="flex items-center gap-3 px-5 py-3 transition-colors duration-200"
-                        style={{ color: "var(--text-muted)" }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = "var(--text)";
-                          e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = "var(--text-muted)";
-                          e.currentTarget.style.backgroundColor = "transparent";
-                        }}
-                      >
-                        <span className="text-xs uppercase tracking-[0.1em]">
-                          {service.title}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </nav>
-
-        {/* Right: CTA + Theme toggle + mobile menu */}
-        <div className="flex items-center gap-3 md:gap-4">
+      {/* Fullscreen menu overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-[60] overflow-y-auto"
+          style={{ backgroundColor: "var(--bg)" }}
+        >
+          <CircuitGrid />
+          {/* Close button */}
           <button
-            onClick={openModal}
-            className="hidden lg:block text-xs uppercase tracking-[0.15em] px-5 py-2.5 transition-all duration-300"
-            style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--text)";
-              e.currentTarget.style.color = "var(--bg)";
-              e.currentTarget.style.borderColor = "var(--text)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-              e.currentTarget.style.color = "var(--text-muted)";
-              e.currentTarget.style.borderColor = "var(--border)";
-            }}
+            onClick={() => setIsOpen(false)}
+            className="fixed top-4 right-4 sm:top-5 sm:right-6 z-[70] w-12 h-12 flex items-center justify-center"
+            aria-label="Закрыть меню"
           >
-            Обсудить проект
+            <X size={28} style={{ color: "var(--text)" }} />
           </button>
 
+          {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border"
+            className="fixed top-4 right-[72px] sm:top-5 sm:right-[80px] z-[70] w-12 h-12 flex items-center justify-center rounded-full border"
             style={{ borderColor: "var(--border)" }}
             aria-label="Переключить тему"
           >
@@ -216,105 +318,228 @@ export function Header() {
             )}
           </button>
 
+          <nav className="container mx-auto pt-16 sm:pt-20 pb-4 sm:pb-6 flex flex-col min-h-full safe-bottom">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:gap-x-10 sm:gap-y-7">
+              {NAV_SECTIONS.map((section) => (
+                <div key={section.label}>
+                  <h3
+                    className="font-heading text-sm sm:text-base md:text-lg mb-2 sm:mb-3 pb-1.5 sm:pb-2 border-b"
+                    style={{ color: "var(--text)", borderColor: "rgba(255,255,255,0.06)" }}
+                  >
+                    {section.label}
+                  </h3>
+                  <div className="flex flex-col gap-0.5 sm:gap-1">
+                    {section.items.map((item) =>
+                      item.action === "openModal" ? (
+                        <button
+                          key={item.label}
+                          onClick={() => { setIsOpen(false); openModal(); }}
+                          className="text-left text-xs sm:text-sm transition-colors py-1 min-h-[36px] flex items-center"
+                          style={{ color: "var(--text-muted)" }}
+                        >
+                          {item.label}
+                        </button>
+                      ) : (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className="text-xs sm:text-sm transition-colors py-1 min-h-[36px] flex items-center"
+                          style={{ color: "var(--text-muted)" }}
+                        >
+                          {item.label}
+                        </Link>
+                      )
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex-1 min-h-4" />
+
+            {/* CTA + contacts */}
+            <div className="pt-4 sm:pt-6 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              <button
+                onClick={() => { setIsOpen(false); openModal(); }}
+                className="w-full mt-2 sm:mt-4 py-3 sm:py-4 text-sm sm:text-base font-heading text-center rounded-full mb-4 sm:mb-6 min-h-[44px]"
+                style={{ backgroundColor: "var(--accent)", color: "#0A0A0A" }}
+              >
+                Рассчитать стоимость
+              </button>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+                <a href={`tel:${PHONE_RAW}`} className="text-sm sm:text-base min-h-[36px] flex items-center" style={{ color: "var(--text-muted)" }}>
+                  {PHONE}
+                </a>
+                <a href={`mailto:${EMAIL}`} className="text-sm sm:text-base min-h-[36px] flex items-center" style={{ color: "var(--text-muted)" }}>
+                  {EMAIL}
+                </a>
+              </div>
+            </div>
+          </nav>
+        </div>
+      )}
+    </>
+  );
+}
+
+export function NavBar() {
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { isDark, toggleTheme } = useTheme();
+  const { openModal } = useModal();
+
+  const handleEnter = (label: string) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setOpenSection(label);
+  };
+
+  const handleLeave = () => {
+    timeoutRef.current = setTimeout(() => setOpenSection(null), 200);
+  };
+
+  return (
+    <div
+      data-navbar
+      className="sticky top-0 z-40 border-b backdrop-blur-md"
+      style={{
+        backgroundColor: isDark ? "rgba(10,10,10,0.9)" : "rgba(255,255,255,0.9)",
+        borderColor: "var(--border)",
+      }}
+    >
+      <div className="container mx-auto flex items-center justify-between py-2.5 sm:py-3 md:py-4">
+        {/* Left: logo + contacts */}
+        <div className="flex items-center gap-4 sm:gap-6">
+          <Link href="/" className="block shrink-0 min-h-[44px] flex items-center" aria-label="Гарант Монтаж">
+            <span
+              className="font-heading select-none leading-[1.05]"
+              style={{
+                color: "var(--text)",
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+              }}
+            >
+              {SITE_NAME.toUpperCase()}
+            </span>
+          </Link>
+          <div className="hidden md:flex items-center gap-3 text-[11px]" style={{ color: "var(--text-muted)" }}>
+            <a href={`tel:${PHONE_RAW}`} className="hover:opacity-100 transition-opacity">{PHONE}</a>
+            <span style={{ color: "var(--text-subtle)" }}>/</span>
+            <a href={`mailto:${EMAIL}`} className="hover:opacity-100 transition-opacity">{EMAIL}</a>
+          </div>
+        </div>
+
+        {/* Right: Navigation with dropdowns + switch */}
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+          {NAV_SECTIONS.map((section) => (
+            <div
+              key={section.label}
+              className="relative"
+              onMouseEnter={() => handleEnter(section.label)}
+              onMouseLeave={handleLeave}
+            >
+              <button
+                className="text-[11px] xl:text-xs uppercase tracking-[0.12em] xl:tracking-[0.15em] transition-colors py-2"
+                style={{ color: openSection === section.label ? "var(--text)" : "var(--text-muted)" }}
+              >
+                {section.label}
+              </button>
+
+              {openSection === section.label && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3">
+                  <div
+                    className="min-w-[240px] py-2 backdrop-blur-xl"
+                    style={{
+                      backgroundColor: isDark ? "rgba(20,20,20,0.95)" : "rgba(255,255,255,0.95)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    {section.items.map((item) =>
+                      item.action === "openModal" ? (
+                        <button
+                          key={item.label}
+                          onClick={() => { setOpenSection(null); openModal(); }}
+                          className="w-full text-left px-5 py-2.5 transition-colors duration-200 text-xs uppercase tracking-[0.08em]"
+                          style={{ color: "var(--text-muted)" }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = "var(--accent)";
+                            e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = "var(--text-muted)";
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      ) : (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="block px-5 py-2.5 transition-colors duration-200 text-xs uppercase tracking-[0.08em]"
+                          style={{ color: "var(--text-muted)" }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = "var(--text)";
+                            e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = "var(--text-muted)";
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }}
+                        >
+                          {item.label}
+                        </Link>
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Theme toggle */}
           <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden w-10 h-10 flex items-center justify-center"
-            aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
+            onClick={toggleTheme}
+            className="ml-2 w-9 h-9 rounded-full flex items-center justify-center border transition-colors"
+            style={{ borderColor: "var(--border)" }}
+            aria-label="Переключить тему"
           >
-            {isOpen ? (
-              <X size={22} style={{ color: "var(--text)" }} />
+            {isDark ? (
+              <Sun size={14} style={{ color: "var(--text-muted)" }} />
             ) : (
-              <Menu size={22} style={{ color: "var(--text)" }} />
+              <Moon size={14} style={{ color: "var(--text-muted)" }} />
             )}
+          </button>
+        </nav>
+
+        {/* Mobile: theme toggle + hamburger */}
+        <div className="lg:hidden flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="w-10 h-10 rounded-full flex items-center justify-center border"
+            style={{ borderColor: "var(--border)" }}
+            aria-label="Переключить тему"
+          >
+            {isDark ? (
+              <Sun size={14} style={{ color: "var(--text-muted)" }} />
+            ) : (
+              <Moon size={14} style={{ color: "var(--text-muted)" }} />
+            )}
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new Event("open-mobile-menu"))}
+            className="w-10 h-10 flex flex-col items-center justify-center gap-[4px]"
+            aria-label="Открыть меню"
+          >
+            <span className="block w-5 h-[1.5px]" style={{ backgroundColor: "var(--text)" }} />
+            <span className="block w-5 h-[1.5px]" style={{ backgroundColor: "var(--text)" }} />
+            <span className="block w-3.5 h-[1.5px] self-start ml-[5px]" style={{ backgroundColor: "var(--text)" }} />
           </button>
         </div>
       </div>
-
-      {/* Mobile menu — fullscreen overlay */}
-      <div
-        className="lg:hidden fixed inset-0 top-0 z-40 transition-all duration-500"
-        style={{
-          backgroundColor: "var(--bg)",
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? "auto" : "none",
-          transform: isOpen ? "translateY(0)" : "translateY(-10px)",
-        }}
-      >
-        <nav className="container mx-auto pt-24 pb-8 flex flex-col gap-1 h-full overflow-y-auto safe-bottom">
-          {/* Main links */}
-          <Link
-            href="/#about"
-            onClick={() => setIsOpen(false)}
-            className="py-4 text-2xl sm:text-3xl font-heading border-b"
-            style={{ color: "var(--text)", borderColor: "var(--border)" }}
-          >
-            О нас
-          </Link>
-          <Link
-            href="/portfolio"
-            onClick={() => setIsOpen(false)}
-            className="py-4 text-2xl sm:text-3xl font-heading border-b"
-            style={{ color: "var(--text)", borderColor: "var(--border)" }}
-          >
-            Портфолио
-          </Link>
-          <Link
-            href="/blog"
-            onClick={() => setIsOpen(false)}
-            className="py-4 text-2xl sm:text-3xl font-heading border-b"
-            style={{ color: "var(--text)", borderColor: "var(--border)" }}
-          >
-            Блог
-          </Link>
-
-          {/* Services list */}
-          <div className="py-4 border-b" style={{ borderColor: "var(--border)" }}>
-            <Link
-              href="/services"
-              onClick={() => setIsOpen(false)}
-              className="text-2xl sm:text-3xl font-heading block mb-4"
-              style={{ color: "var(--text)" }}
-            >
-              Услуги
-            </Link>
-            <div className="flex flex-col gap-3 pl-4" style={{ borderLeft: "2px solid var(--accent)" }}>
-              {SERVICES.map((service) => (
-                <Link
-                  key={service.id}
-                  href={service.slug}
-                  onClick={() => setIsOpen(false)}
-                  className="text-sm py-1 transition-colors"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {service.title}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Spacer */}
-          <div className="flex-1 min-h-8" />
-
-          {/* CTA + contacts */}
-          <div className="pt-4">
-            <button
-              onClick={() => { setIsOpen(false); openModal(); }}
-              className="w-full py-4 text-lg font-heading text-center rounded-full mb-6"
-              style={{ backgroundColor: "var(--accent)", color: "#0A0A0A" }}
-            >
-              Обсудить проект
-            </button>
-            <div className="flex flex-col gap-3">
-              <a href={`tel:${PHONE_RAW}`} className="text-base" style={{ color: "var(--text-muted)" }}>
-                {PHONE}
-              </a>
-              <a href={`mailto:${EMAIL}`} className="text-base" style={{ color: "var(--text-muted)" }}>
-                {EMAIL}
-              </a>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </header>
+    </div>
   );
 }

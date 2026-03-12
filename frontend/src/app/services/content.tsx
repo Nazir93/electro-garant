@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { SERVICES } from "@/lib/constants";
+import { useModal } from "@/lib/modal-context";
 
 function ServiceCard({
   service,
@@ -99,20 +100,62 @@ function ServiceCard({
   );
 }
 
+function CostBanner() {
+  const { openModal } = useModal();
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      className="mb-14 md:mb-20 p-6 sm:p-8 md:p-10 rounded-2xl relative overflow-hidden"
+      style={{ backgroundColor: "var(--bg-secondary)", border: "1px solid var(--border)" }}
+    >
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div>
+          <h3 className="font-heading text-xl sm:text-2xl md:text-3xl mb-2">
+            Рассчитать стоимость проектных работ
+          </h3>
+          <p className="text-sm max-w-lg" style={{ color: "var(--text-muted)" }}>
+            Подберём оптимальное решение под ваш бюджет и задачи. Бесплатная консультация инженера.
+          </p>
+        </div>
+        <button
+          onClick={openModal}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          className="shrink-0 flex items-center gap-3 px-6 sm:px-8 py-4 sm:py-5 font-heading text-base sm:text-lg relative overflow-hidden transition-all duration-500"
+          style={{ border: "1px solid var(--border)", borderRadius: "60px" }}
+        >
+          <div
+            className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
+            style={{ backgroundColor: "var(--accent)", transform: hovered ? "scaleX(1)" : "scaleX(0)" }}
+          />
+          <span className="relative z-10 transition-colors duration-700" style={{ color: hovered ? "#0A0A0A" : "var(--text)" }}>
+            Рассчитать
+          </span>
+          <ArrowRight size={18} className="relative z-10 transition-colors duration-700" style={{ color: hovered ? "#0A0A0A" : "var(--text)" }} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ServicesPageContent() {
   return (
     <section className="pt-32 pb-20 md:pt-40 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto">
         {/* Title */}
         <h1
-          className="font-heading text-[20vw] md:text-[14vw] lg:text-[12vw] leading-[0.85] tracking-tighter mb-6"
+          className="font-heading text-[clamp(40px,14vw,180px)] leading-[0.85] tracking-tighter mb-6"
           style={{ color: "var(--text)" }}
         >
           УСЛУГИ
         </h1>
-        <p className="text-base md:text-lg mb-14 md:mb-20 max-w-xl" style={{ color: "var(--text-muted)" }}>
+        <p className="text-base md:text-lg mb-10 md:mb-14 max-w-xl" style={{ color: "var(--text-muted)" }}>
           Полный спектр электромонтажных работ — от проектирования и поставки оборудования до монтажа и пусконаладки
         </p>
+
+        {/* Cost banner */}
+        <CostBanner />
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">

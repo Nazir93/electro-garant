@@ -84,7 +84,7 @@ export function ContactsSection() {
           </div>
         </div>
 
-        <div className="p-8 md:p-10" style={{ border: "1px solid var(--border)" }}>
+        <div className="p-5 sm:p-8 md:p-10" style={{ border: "1px solid var(--border)" }}>
           {submitted ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-8">
               <CheckCircle size={40} style={{ color: "var(--accent)" }} className="mb-4" />

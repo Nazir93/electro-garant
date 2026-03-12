@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Header } from "@/components/layout/header";
+import { ConditionalNavBar } from "@/components/layout/conditional-navbar";
 import { Footer } from "@/components/layout/footer";
 import { ThemeProvider } from "@/lib/theme-context";
 import { ModalProvider } from "@/lib/modal-context";
@@ -78,6 +79,7 @@ export default function RootLayout({
             <CustomCursor />
             <ContactModal />
             <Header />
+            <ConditionalNavBar />
             <main className="min-h-screen">{children}</main>
             <Footer />
           </ModalProvider>

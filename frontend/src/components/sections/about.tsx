@@ -3,24 +3,30 @@
 import { useEffect, useRef, useState } from "react";
 import { STATS } from "@/lib/constants";
 
-const SECTIONS = [
+const SLIDES = [
   {
+    number: "01",
     heading: "Полный цикл электромонтажных работ",
+    highlight: "280+ выполненных объектов",
     description:
       "От проектирования и закупки оборудования до монтажа и пусконаладки. Мы берём на себя все этапы — вам не нужно координировать субподрядчиков.",
-    highlight: "Собственный штат инженеров — без субподряда",
+    imageLabel: "Фото объекта — электрощит",
   },
   {
-    heading: "Премиальные компоненты и оборудование",
+    number: "02",
+    heading: "Собственная технология монтажа",
+    highlight: "12 лет опыта и собственный штат инженеров",
     description:
-      "Работаем только с проверенными брендами: ABB, Legrand, Schneider Electric, Hikvision. Прямые поставки от производителей без наценок посредников.",
-    highlight: "Допуск СРО на все виды работ",
+      "Авторская методика монтажа, сертифицированные специалисты и допуск СРО на все виды работ. Без субподряда — полный контроль качества.",
+    imageLabel: "Фото объекта — процесс монтажа",
   },
   {
-    heading: "Проектная документация по ГОСТ",
+    number: "03",
+    heading: "Гарантия и поддержка",
+    highlight: "2 года гарантия + техническая поддержка 24/7",
     description:
-      "Однолинейные схемы, расчёт нагрузок, кабельный журнал, спецификации — передаём полный комплект документации. Вы всегда знаете, что у вас внутри стен.",
-    highlight: "Гарантия 5 лет на работы и материалы",
+      "Полная ответственность за каждый выполненный объект. Проектная документация по ГОСТ, сопровождение после сдачи — мы всегда на связи.",
+    imageLabel: "Фото объекта — готовый результат",
   },
 ];
 
@@ -70,9 +76,78 @@ function AnimatedCounter({
   );
 }
 
+function ConvexImagePanel({
+  activeIndex,
+  scrollProgress,
+}: {
+  activeIndex: number;
+  scrollProgress: number;
+}) {
+  const bulgeCenter = 0.12 + scrollProgress * 0.76;
+  const bulgeDepth = 0.08;
+  const bulgeHalf = 0.18;
+  const top = Math.max(0, bulgeCenter - bulgeHalf);
+  const bot = Math.min(1, bulgeCenter + bulgeHalf);
+
+  const d = [
+    `M 0 0`,
+    `L 0 ${top.toFixed(4)}`,
+    `Q ${bulgeDepth} ${bulgeCenter.toFixed(4)}, 0 ${bot.toFixed(4)}`,
+    `L 0 1`,
+    `L 1 1`,
+    `L 1 0`,
+    `Z`,
+  ].join(" ");
+
+  return (
+    <div className="h-full relative">
+      <svg className="absolute" style={{ width: 0, height: 0 }} aria-hidden="true">
+        <defs>
+          <clipPath id="convex-clip" clipPathUnits="objectBoundingBox">
+            <path d={d} />
+          </clipPath>
+        </defs>
+      </svg>
+
+      <div
+        className="relative w-full h-full overflow-hidden"
+        style={{ clipPath: "url(#convex-clip)" }}
+      >
+        {SLIDES.map((slide, i) => (
+          <div
+            key={i}
+            className="absolute inset-0 flex items-center justify-center transition-opacity duration-700"
+            style={{
+              opacity: i === activeIndex ? 1 : 0,
+              backgroundColor: "#0A0A0A",
+            }}
+          >
+            <span
+              className="text-[10px] uppercase tracking-[0.2em]"
+              style={{ color: "rgba(255,255,255,0.25)" }}
+            >
+              {slide.imageLabel}
+            </span>
+          </div>
+        ))}
+
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function AboutSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -84,9 +159,10 @@ export function AboutSection() {
       const scrollRange = sectionHeight - viewportH;
       if (scrollRange <= 0) return;
       const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
+      setScrollProgress(progress);
       const idx = Math.min(
-        Math.floor(progress * SECTIONS.length),
-        SECTIONS.length - 1
+        Math.floor(progress * SLIDES.length),
+        SLIDES.length - 1
       );
       setActiveIndex(idx);
     };
@@ -96,150 +172,112 @@ export function AboutSection() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const progressPercent = ((activeIndex + 1) / SECTIONS.length) * 100;
-
   return (
     <section
       ref={sectionRef}
       id="about"
       className="relative"
       style={{
-        height: `${SECTIONS.length * 100}vh`,
-        minHeight: `${SECTIONS.length * 100}vh`,
+        height: `${SLIDES.length * 100}vh`,
         backgroundColor: "var(--bg)",
         borderTop: "1px solid var(--border)",
       }}
     >
-      <div className="sticky top-0 h-screen overflow-hidden">
-        <div className="h-full flex">
-          {/* Left side — text + progress line */}
-          <div className="w-full md:w-[45%] h-full flex relative">
-            {/* Vertical progress line */}
-            <div
-              className="hidden md:flex flex-col items-center gap-0 ml-6 lg:ml-10 pt-32 pb-20"
-              style={{ width: "40px" }}
-            >
-              <div
-                className="relative flex-1"
-                style={{ width: "1px", backgroundColor: "var(--border)" }}
-              >
-                {/* Progress fill */}
-                <div
-                  className="absolute top-0 left-0 w-full transition-all duration-700 ease-out"
-                  style={{
-                    height: `${progressPercent}%`,
-                    backgroundColor: "var(--text)",
-                  }}
-                />
-                {/* Step numbers */}
-                {SECTIONS.map((_, i) => (
+      <div className="sticky top-0 h-[100dvh] overflow-hidden">
+        <div className="h-full flex flex-col md:flex-row">
+
+          {/* ── Left: text ── */}
+          <div className="flex-1 md:w-[42%] md:flex-none h-full flex flex-col relative z-10">
+            {/* Mobile: progress dots */}
+            <div className="md:hidden flex items-center gap-2 px-5 sm:px-6 pt-6">
+              {SLIDES.map((s, i) => (
+                <div key={i} className="flex items-center gap-1.5">
                   <div
-                    key={i}
-                    className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center transition-all duration-500"
+                    className="h-[2px] transition-all duration-500"
                     style={{
-                      top: `${((i + 0.5) / SECTIONS.length) * 100}%`,
-                      transform: "translate(-50%, -50%)",
+                      width: i === activeIndex ? "20px" : "10px",
+                      backgroundColor: i <= activeIndex ? "var(--accent)" : "var(--text-subtle)",
                     }}
-                  >
-                    <span
-                      className="text-[11px] font-heading transition-colors duration-500"
-                      style={{
-                        color:
-                          i <= activeIndex
-                            ? "var(--text)"
-                            : "var(--text-subtle)",
-                      }}
-                    >
-                      {String(i + 1).padStart(2, "0")}
+                  />
+                  {i === activeIndex && (
+                    <span className="text-[9px] tabular-nums" style={{ color: "var(--text-muted)" }}>
+                      {s.number}
                     </span>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* Text content */}
-            <div className="flex-1 flex flex-col justify-center px-6 md:px-10 lg:px-16">
-              {SECTIONS.map((section, i) => (
+            {/* Text slides */}
+            <div className="flex-1 flex items-center relative">
+              {SLIDES.map((slide, i) => (
                 <div
                   key={i}
-                  className="absolute transition-all duration-700 ease-out px-6 md:px-10 lg:px-16"
+                  className="absolute inset-x-0 px-5 sm:px-8 md:px-10 lg:px-16 transition-all duration-700 ease-out"
                   style={{
-                    top: "50%",
+                    opacity: i === activeIndex ? 1 : 0,
                     transform:
                       i === activeIndex
-                        ? "translateY(-50%)"
+                        ? "translateY(0)"
                         : i < activeIndex
-                        ? "translateY(-120%)"
-                        : "translateY(80%)",
-                    opacity: i === activeIndex ? 1 : 0,
-                    maxWidth: "500px",
+                        ? "translateY(-80px)"
+                        : "translateY(80px)",
+                    pointerEvents: i === activeIndex ? "auto" : "none",
                   }}
                 >
-                  <h3
-                    className="font-heading text-2xl md:text-3xl lg:text-4xl leading-[1.1] mb-6"
-                    style={{ color: "var(--text)" }}
-                  >
-                    {section.heading}
-                  </h3>
-
-                  <p className="text-xs leading-relaxed tracking-wide mb-8" style={{ color: "var(--text-muted)" }}>
-                    {/* Step indicator for mobile */}
-                    <span className="md:hidden font-heading mr-2" style={{ color: "var(--text-subtle)" }}>
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                  </p>
-
-                  <p
-                    className="text-sm md:text-base leading-relaxed mb-8"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {section.highlight}
-                  </p>
-
-                  <p
-                    className="text-xs leading-relaxed"
+                  {/* Number — desktop */}
+                  <span
+                    className="hidden md:block font-heading text-[10px] tracking-[0.2em] mb-6"
                     style={{ color: "var(--text-subtle)" }}
                   >
-                    {section.description}
+                    {slide.number}
+                  </span>
+
+                  <h3
+                    className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-[1.05] mb-5 md:mb-8 max-w-md"
+                    style={{ color: "var(--text)" }}
+                  >
+                    {slide.heading}
+                  </h3>
+
+                  <p
+                    className="text-sm sm:text-base font-medium mb-4 md:mb-6 max-w-sm"
+                    style={{ color: "var(--accent)" }}
+                  >
+                    {slide.highlight}
+                  </p>
+
+                  <p
+                    className="text-xs sm:text-sm leading-relaxed max-w-sm"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {slide.description}
                   </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right side — image placeholder with rounded corners */}
-          <div className="hidden md:block w-[55%] h-full p-4 pl-0">
-            <div
-              className="w-full h-full flex items-center justify-center overflow-hidden"
-              style={{
-                backgroundColor: "var(--bg-secondary)",
-                borderRadius: "24px",
-              }}
-            >
-              <span
-                className="text-xs uppercase tracking-wider"
-                style={{ color: "var(--text-subtle)" }}
-              >
-                Фото / Видео объекта
-              </span>
-            </div>
+          {/* ── Right: image with convex bulge edge ── */}
+          <div className="hidden md:block md:w-[58%] h-full relative">
+            <ConvexImagePanel activeIndex={activeIndex} scrollProgress={scrollProgress} />
           </div>
         </div>
 
-        {/* Stats bar at bottom */}
+        {/* ── Stats bar ── */}
         <div
-          className="absolute bottom-0 left-0 right-0 border-t"
-          style={{ borderColor: "var(--border)" }}
+          className="absolute bottom-0 left-0 right-0 border-t z-20"
+          style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}
         >
           <div className="container mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 py-4 md:py-6 gap-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 py-3 sm:py-4 md:py-6 gap-y-3 sm:gap-y-4">
               {STATS.map((stat) => (
-                <div key={stat.label} className="px-3 md:px-4">
-                  <div className="font-heading text-2xl sm:text-3xl md:text-4xl mb-1">
+                <div key={stat.label} className="px-2 sm:px-3 md:px-4">
+                  <div className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-0.5 sm:mb-1">
                     <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                   </div>
                   <p
-                    className="text-[9px] sm:text-[10px] uppercase tracking-[0.12em] sm:tracking-[0.15em]"
+                    className="text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.15em]"
                     style={{ color: "var(--text-muted)" }}
                   >
                     {stat.label}

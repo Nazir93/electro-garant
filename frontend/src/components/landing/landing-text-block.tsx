@@ -29,7 +29,7 @@ export function LandingTextBlock({ leftText, rightText, accent }: LandingTextBlo
   return (
     <section
       ref={ref}
-      className="py-24 md:py-32"
+      className="py-16 sm:py-24 md:py-32"
       style={{
         backgroundColor: accent ? "var(--bg-secondary)" : "var(--bg)",
         borderTop: accent ? "1px solid var(--border)" : undefined,
@@ -37,7 +37,7 @@ export function LandingTextBlock({ leftText, rightText, accent }: LandingTextBlo
       }}
     >
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 md:gap-20">
           <div
             className="transition-all duration-700 ease-out"
             style={{

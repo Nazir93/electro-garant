@@ -59,10 +59,10 @@ function FaqRow({ item, index, isOpen, onToggle }: {
     >
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-7 text-left group"
+        className="w-full flex items-center justify-between py-5 sm:py-7 text-left group"
         aria-expanded={isOpen}
       >
-        <span className="flex items-start gap-6 pr-8">
+        <span className="flex items-start gap-3 sm:gap-6 pr-4 sm:pr-8">
           <span
             className="font-heading text-lg md:text-xl shrink-0 transition-colors duration-300"
             style={{ color: isOpen ? "var(--accent)" : "var(--text-muted)" }}
@@ -131,7 +131,7 @@ export function LandingFaq({ items, service }: LandingFaqProps) {
   return (
     <section
       ref={ref}
-      className="py-24 md:py-32"
+      className="py-16 sm:py-24 md:py-32"
       style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}
     >
       <div className="container mx-auto">
@@ -140,11 +140,11 @@ export function LandingFaq({ items, service }: LandingFaqProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 md:gap-16">
           {/* Left: heading */}
           <div className="md:col-span-4">
             <h2
-              className="font-heading text-3xl md:text-4xl lg:text-5xl mb-4 transition-all duration-700"
+              className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 transition-all duration-700"
               style={{
                 color: "var(--text)",
                 opacity: visible ? 1 : 0,

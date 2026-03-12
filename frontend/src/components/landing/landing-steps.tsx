@@ -33,7 +33,7 @@ function StepRow({ step, index, total }: { step: Step; index: number; total: num
   return (
     <div
       ref={ref}
-      className="grid grid-cols-12 py-8 md:py-10 border-b transition-all duration-700 ease-out"
+      className="grid grid-cols-12 py-6 sm:py-8 md:py-10 border-b transition-all duration-700 ease-out"
       style={{
         borderColor: "var(--border)",
         opacity: visible ? 1 : 0,
@@ -93,13 +93,13 @@ export function LandingSteps({ title, steps }: LandingStepsProps) {
   return (
     <section
       ref={ref}
-      className="py-24 md:py-32"
+      className="py-16 sm:py-24 md:py-32"
       style={{ backgroundColor: "var(--bg-secondary)", borderTop: "1px solid var(--border)" }}
     >
       <div className="container mx-auto">
         <div className="flex items-end justify-between mb-12">
           <h2
-            className="font-heading text-3xl md:text-4xl lg:text-5xl transition-all duration-700"
+            className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl transition-all duration-700"
             style={{
               color: "var(--text)",
               opacity: visible ? 1 : 0,

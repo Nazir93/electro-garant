@@ -61,5 +61,5 @@ export const STATS = [
   { value: 12, label: "лет на рынке Сочи", suffix: "" },
   { value: 280, label: "объектов сдано", suffix: "+" },
   { value: 15000, label: "м² обслуживаемая площадь", suffix: "+" },
-  { value: 5, label: "лет гарантия на работы", suffix: "" },
+  { value: 2, label: "года гарантия на работы", suffix: "" },
 ] as const;

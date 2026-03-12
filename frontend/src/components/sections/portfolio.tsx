@@ -13,7 +13,7 @@ function FillLink({ href, label }: { href: string; label: string }) {
       href={href}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="w-full flex items-center justify-between mt-8 px-8 py-6 md:py-7 rounded-2xl font-heading text-xl md:text-2xl relative overflow-hidden transition-all duration-500"
+      className="w-full flex items-center justify-between mt-6 sm:mt-8 px-5 sm:px-8 py-5 sm:py-6 md:py-7 rounded-2xl font-heading text-lg sm:text-xl md:text-2xl relative overflow-hidden transition-all duration-500"
       style={{ border: "1px solid var(--border)" }}
     >
       <div
@@ -72,17 +72,17 @@ function PortfolioRow({ project, index }: { project: (typeof PORTFOLIO_CASES)[0]
       style={{
         borderColor: "var(--border)",
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateX(0)" : "translateX(100px)",
+        transform: visible ? "translateX(0)" : "translateX(40px)",
         transitionDelay: `${index * 80}ms`,
       }}
     >
       {/* Row */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full grid grid-cols-[1fr_auto] md:grid-cols-[2fr_3fr_auto] items-center py-3 md:py-4 px-0 text-left group cursor-pointer"
+        className="w-full grid grid-cols-[1fr_auto] md:grid-cols-[2fr_3fr_auto] items-center py-3.5 sm:py-4 px-0 text-left group cursor-pointer min-h-[48px]"
       >
         <span
-          className="font-heading text-sm md:text-base tracking-[0.05em] transition-colors duration-200 group-hover:text-[var(--accent)]"
+          className="font-heading text-xs sm:text-sm md:text-base tracking-[0.05em] transition-colors duration-200 group-hover:text-[var(--accent)] pr-3"
           style={{ color: "var(--text)" }}
         >
           {project.title.toUpperCase()}
@@ -93,7 +93,7 @@ function PortfolioRow({ project, index }: { project: (typeof PORTFOLIO_CASES)[0]
         >
           {project.type}
         </span>
-        <span className="text-sm text-right tabular-nums" style={{ color: "var(--text-muted)" }}>
+        <span className="text-xs sm:text-sm text-right tabular-nums" style={{ color: "var(--text-muted)" }}>
           ({project.year})
         </span>
       </button>
@@ -140,11 +140,11 @@ export function PortfolioSection() {
   return (
     <section
       id="portfolio"
-      className="py-20 md:py-28"
+      className="py-16 sm:py-20 md:py-28 overflow-hidden"
       style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}
     >
       <div className="container mx-auto">
-        <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl mb-12" style={{ color: "var(--text)" }}>
+        <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-8 sm:mb-12" style={{ color: "var(--text)" }}>
           Портфолио
         </h2>
 

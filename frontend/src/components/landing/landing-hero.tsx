@@ -20,7 +20,7 @@ export function LandingHero({ title, subtitle, tag, features, goals }: LandingHe
   }, []);
 
   return (
-    <section ref={ref} className="pt-32 pb-16 md:pt-40 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
+    <section ref={ref} className="pt-20 pb-10 sm:pt-28 sm:pb-14 md:pt-40 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto">
         {/* Tag */}
         <div
@@ -31,7 +31,7 @@ export function LandingHero({ title, subtitle, tag, features, goals }: LandingHe
           }}
         >
           <span
-            className="inline-block text-[10px] uppercase tracking-[0.2em] px-4 py-2 rounded-full mb-8"
+            className="inline-block text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-5 sm:mb-8"
             style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
           >
             {tag}
@@ -40,7 +40,7 @@ export function LandingHero({ title, subtitle, tag, features, goals }: LandingHe
 
         {/* Title */}
         <h1
-          className="font-heading text-[12vw] sm:text-[8vw] md:text-[6vw] lg:text-[5vw] leading-[0.9] tracking-tight mb-12 max-w-4xl transition-all duration-1000 ease-out"
+          className="font-heading text-[clamp(24px,8vw,80px)] leading-[0.92] tracking-tight mb-6 sm:mb-10 md:mb-12 max-w-4xl transition-all duration-1000 ease-out"
           style={{
             color: "var(--text)",
             opacity: visible ? 1 : 0,
@@ -52,7 +52,7 @@ export function LandingHero({ title, subtitle, tag, features, goals }: LandingHe
         </h1>
 
         {/* Two columns: subtitle + features */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 md:gap-20">
           {/* Left: main description */}
           <div
             className="transition-all duration-1000 ease-out"
@@ -62,7 +62,7 @@ export function LandingHero({ title, subtitle, tag, features, goals }: LandingHe
               transitionDelay: "200ms",
             }}
           >
-            <p className="text-base md:text-lg leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            <p className="text-sm sm:text-base md:text-lg leading-relaxed" style={{ color: "var(--text-muted)" }}>
               {subtitle}
             </p>
           </div>

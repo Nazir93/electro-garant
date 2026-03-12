@@ -31,9 +31,7 @@ export function LandingShowcase({ label = "Фото / Видео объекта"
       className="relative overflow-hidden"
       style={{
         backgroundColor: dark ? "#0a0a0a" : "var(--bg-secondary)",
-        height: "70vh",
-        minHeight: "400px",
-        maxHeight: "700px",
+        height: "clamp(220px, 50vh, 700px)",
       }}
     >
       <div

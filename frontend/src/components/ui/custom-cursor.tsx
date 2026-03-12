@@ -52,8 +52,8 @@ export function CustomCursor() {
 
     let animationId: number;
     const animate = () => {
-      pos.current.x += (target.current.x - pos.current.x) * 0.15;
-      pos.current.y += (target.current.y - pos.current.y) * 0.15;
+      pos.current.x += (target.current.x - pos.current.x) * 0.35;
+      pos.current.y += (target.current.y - pos.current.y) * 0.35;
 
       const vx = velocity.current.x;
       const vy = velocity.current.y;

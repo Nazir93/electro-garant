@@ -55,7 +55,7 @@ function AdvantageCard({ item, index }: { item: AdvantageItem; index: number }) 
   return (
     <div
       ref={ref}
-      className="relative p-8 md:p-10 rounded-2xl transition-all duration-500 cursor-default"
+      className="relative p-6 sm:p-8 md:p-10 rounded-2xl transition-all duration-500 cursor-default"
       style={{
         border: "1px solid var(--border)",
         backgroundColor: hovered ? "var(--text)" : "transparent",
@@ -116,10 +116,10 @@ export function LandingAdvantages({ title, items }: LandingAdvantagesProps) {
   }, []);
 
   return (
-    <section ref={ref} className="py-24 md:py-32" style={{ backgroundColor: "var(--bg)" }}>
+    <section ref={ref} className="py-16 sm:py-24 md:py-32" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto">
         <h2
-          className="font-heading text-3xl md:text-4xl lg:text-5xl mb-16 transition-all duration-700"
+          className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-10 sm:mb-16 transition-all duration-700"
           style={{
             color: "var(--text)",
             opacity: visible ? 1 : 0,

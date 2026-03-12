@@ -110,6 +110,15 @@
     font-weight: 700;
   }
 
+  .logo-text {
+    font-family: var(--font-main), sans-serif;
+    text-transform: uppercase;
+    transform: scaleX(0.65);
+    transform-origin: left center;
+    display: inline-block;
+    line-height: 1;
+  }
+
   .container {
     padding-left: 16px;
     padding-right: 16px;
@@ -173,6 +182,50 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Contact modal: restore left border on stacked fields (mobile) */
+  @media (max-width: 639px) {
+    .border-phone-field {
+      border-left: 1px solid var(--border) !important;
+    }
+  }
+
+  /* Prevent text overflow on narrow screens */
+  @media (max-width: 380px) {
+    .container {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+  }
+}
+
+/* Electric circuit grid animation */
+@keyframes electric-snake-flow {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: calc(var(--path-len) * -1px);
+    opacity: 0;
+  }
+}
+
+.electric-snake {
+  animation: electric-snake-flow 3.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .electric-snake {
+    animation: none;
+  }
 }
 
 @keyframes marquee-left {
@@ -190,5 +243,41 @@
   }
   100% {
     transform: translateX(0);
+  }
+}
+
+/* Price banner pulse */
+.price-pulse-border {
+  animation: price-border-shift 6s ease-in-out infinite;
+}
+
+.price-pulse-glow {
+  animation: price-glow 4s ease-in-out infinite;
+}
+
+.price-pulse-dot {
+  animation: price-dot 2.5s ease-in-out infinite;
+}
+
+@keyframes price-border-shift {
+  0%, 100% { background-position: 0% 50%; opacity: 0.5; }
+  50% { background-position: 100% 50%; opacity: 1; }
+}
+
+@keyframes price-glow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes price-dot {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .price-pulse-border,
+  .price-pulse-glow,
+  .price-pulse-dot {
+    animation: none;
   }
 }

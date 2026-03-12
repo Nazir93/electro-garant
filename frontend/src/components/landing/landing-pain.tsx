@@ -27,13 +27,13 @@ export function LandingPain({ title, points, conclusion }: LandingPainProps) {
   }, []);
 
   return (
-    <section ref={ref} className="py-24 md:py-32" style={{ backgroundColor: "var(--bg)" }}>
+    <section ref={ref} className="py-16 sm:py-24 md:py-32" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-20">
           {/* Left: sticky title */}
           <div className="md:sticky md:top-32 md:self-start">
             <h2
-              className="font-heading text-3xl md:text-4xl lg:text-5xl leading-[1] transition-all duration-700"
+              className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1] transition-all duration-700"
               style={{
                 color: "var(--text)",
                 opacity: visible ? 1 : 0,
@@ -43,7 +43,7 @@ export function LandingPain({ title, points, conclusion }: LandingPainProps) {
               {title}
             </h2>
             <p
-              className="text-lg font-medium mt-8 max-w-sm transition-all duration-700"
+              className="text-base sm:text-lg font-medium mt-6 sm:mt-8 max-w-sm transition-all duration-700"
               style={{
                 color: "var(--text)",
                 opacity: visible ? 1 : 0,
