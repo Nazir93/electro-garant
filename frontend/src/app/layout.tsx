@@ -70,7 +70,6 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
         <meta name="format-detection" content="telephone=no" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        {/* @ts-expect-error Async Server Component */}
         <JsonLd />
       </head>
       <body className="font-body antialiased theme-bg theme-text transition-colors duration-500">
