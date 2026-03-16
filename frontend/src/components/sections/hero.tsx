@@ -15,17 +15,21 @@ function ServiceCard({
   opacity,
   scale,
   borderRadius,
+  coverImage,
+  videoUrl,
 }: {
   title: string;
   slug: string;
   opacity: number;
   scale: number;
   borderRadius: number;
+  coverImage?: string | null;
+  videoUrl?: string | null;
 }) {
   return (
     <Link
       href={slug}
-      className="w-full h-full flex items-center justify-center overflow-hidden transition-colors duration-300 group"
+      className="w-full h-full flex items-center justify-center overflow-hidden transition-colors duration-300 group relative"
       style={{
         opacity,
         transform: `scale(${scale})`,
@@ -33,8 +37,24 @@ function ServiceCard({
         backgroundColor: "var(--bg-secondary)",
       }}
     >
+      {videoUrl ? (
+        <video
+          src={videoUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+        />
+      ) : coverImage ? (
+        <img
+          src={coverImage}
+          alt={title}
+          className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+        />
+      ) : null}
       <span
-        className="text-xs md:text-sm uppercase tracking-[0.1em] text-center px-3 transition-colors duration-300 group-hover:text-[var(--accent)]"
+        className="relative z-10 text-xs md:text-sm uppercase tracking-[0.1em] text-center px-3 transition-colors duration-300 group-hover:text-[var(--accent)]"
         style={{ color: "var(--text-muted)", opacity }}
       >
         {title}
@@ -130,12 +150,15 @@ export function HeroSection() {
                   opacity={sideOpacity}
                   scale={sideScale}
                   borderRadius={borderRadius}
+                  coverImage={SERVICES[0].coverImage}
+                  videoUrl={SERVICES[0].videoUrl}
                 />
               </div>
 
               {/* Center — main hero */}
-              <div
-                className="relative flex-1 overflow-hidden flex items-center justify-center"
+              <Link
+                href="/services"
+                className="relative flex-1 overflow-hidden flex items-center justify-center cursor-pointer"
                 style={{
                   borderRadius: `${borderRadius}px`,
                   transform: `scale(${scale})`,
@@ -187,16 +210,26 @@ export function HeroSection() {
 
                 {/* Contacts */}
                 <div
-                  className="absolute bottom-12 right-0 container mx-auto z-10 flex justify-end"
+                  className="absolute bottom-12 right-0 container mx-auto z-10 flex justify-end items-center gap-6"
                   style={{ transform: `scale(${textScale})`, transformOrigin: "bottom right" }}
                 >
                   <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
-                    <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
+                    <span>{EMAIL}</span>
                     <span style={{ color: "var(--text-subtle)" }}>/</span>
-                    <a href={`tel:${PHONE_RAW}`}>{PHONE}</a>
+                    <span>{PHONE}</span>
                   </div>
+                  <span
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.1em] transition-all duration-300 hover:scale-105"
+                    style={{
+                      border: "1px solid var(--accent)",
+                      color: "var(--accent)",
+                    }}
+                  >
+                    Выбрать услугу
+                    <ArrowRight size={14} />
+                  </span>
                 </div>
-              </div>
+              </Link>
 
               <div style={{ flex: `0 0 ${progress * 22}%` }}>
                 <ServiceCard
@@ -205,6 +238,8 @@ export function HeroSection() {
                   opacity={sideOpacity}
                   scale={sideScale}
                   borderRadius={borderRadius}
+                  coverImage={SERVICES[1].coverImage}
+                  videoUrl={SERVICES[1].videoUrl}
                 />
               </div>
             </div>
@@ -226,6 +261,8 @@ export function HeroSection() {
                     opacity={sideOpacity}
                     scale={sideScale}
                     borderRadius={borderRadius}
+                    coverImage={s.coverImage}
+                    videoUrl={s.videoUrl}
                   />
                 </div>
               ))}
@@ -252,17 +289,30 @@ export function HeroSection() {
           </div>
 
           <div className="relative z-10">
-            <h1 className="font-heading text-[clamp(28px,9vw,60px)] leading-[0.92] tracking-tight mb-6">
-              <span style={{ color: "var(--text)" }}>ЭЛЕКТРОМОНТАЖ</span>
-              <br />
-              <span style={{ color: "var(--accent)" }}>ПРЕМИУМ-КЛАССА</span>
-            </h1>
+            <Link href="/services">
+              <h1 className="font-heading text-[clamp(28px,9vw,60px)] leading-[0.92] tracking-tight mb-6">
+                <span style={{ color: "var(--text)" }}>ЭЛЕКТРОМОНТАЖ</span>
+                <br />
+                <span style={{ color: "var(--accent)" }}>ПРЕМИУМ-КЛАССА</span>
+              </h1>
+            </Link>
             <p
-              className="text-[11px] uppercase tracking-[0.2em] max-w-xs leading-relaxed"
+              className="text-[11px] uppercase tracking-[0.2em] max-w-xs leading-relaxed mb-6"
               style={{ color: "var(--text-muted)" }}
             >
               Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в {CITY}
             </p>
+            <Link
+              href="/services"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.1em] transition-all duration-300 active:scale-95"
+              style={{
+                border: "1px solid var(--accent)",
+                color: "var(--accent)",
+              }}
+            >
+              Выбрать услугу
+              <ArrowRight size={14} />
+            </Link>
           </div>
         </div>
 

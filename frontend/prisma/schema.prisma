@@ -140,6 +140,85 @@ model Faq {
   order    Int         @default(0)
 }
 
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String   @default("Администратор")
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  title      String
+  excerpt    String   @db.Text
+  content    String   @db.Text
+  category   String
+  coverImage String?
+  published  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([published, createdAt])
+}
+
+model Service {
+  id               String      @id @default(cuid())
+  slug             String      @unique
+  title            String
+  shortDescription String      @db.Text
+  serviceType      ServiceType
+  icon             String      @default("zap")
+  coverImage       String?
+  videoUrl         String?
+  published        Boolean     @default(true)
+  order            Int         @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([published, order])
+}
+
+model Redirect {
+  id        String   @id @default(cuid())
+  fromPath  String   @unique
+  toPath    String
+  permanent Boolean  @default(true)
+  hits      Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([fromPath])
+}
+
+model ErrorLog {
+  id        String   @id @default(cuid())
+  path      String
+  referer   String   @default("")
+  userAgent String?
+  count     Int      @default(1)
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@unique([path, referer])
+  @@index([lastSeen])
+}
+
+model PageMeta {
+  id          String  @id @default(cuid())
+  path        String  @unique
+  title       String?
+  description String? @db.Text
+  keywords    String?
+  ogTitle     String?
+  ogDescription String? @db.Text
+  ogImage     String?
+  h1          String?
+  noindex     Boolean @default(false)
+
+  @@index([path])
+}
+
 model SiteSettings {
   key   String @id
   value String @db.Text

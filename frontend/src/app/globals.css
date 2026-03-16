@@ -274,6 +274,11 @@
   50% { opacity: 1; transform: scale(1.5); }
 }
 
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .price-pulse-border,
   .price-pulse-glow,

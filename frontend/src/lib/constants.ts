@@ -2,15 +2,29 @@ export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Гарант Мо
 export const CITY = process.env.NEXT_PUBLIC_CITY || "Сочи";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-export const PHONE = "+7 (495) 000-00-00";
-export const PHONE_RAW = "+74950000000";
-export const EMAIL = "info@garantmontazh.ru";
-export const ADDRESS = "Сочи, ул. Примерная, д. 1, офис 100";
+export const PHONE = "8 (928) 455-455-9";
+export const PHONE_RAW = "89284554559";
+export const EMAIL = "garantmontaj@gmail.com";
+export const ADDRESS = "Краснодарский край, г. Сочи, ул. Пасечная 61/2, кв. 48";
 export const WORKING_HOURS = "Пн–Пт 09:00–18:00, Сб по записи";
+
+export const COMPANY = {
+  fullName: "Индивидуальный предприниматель Чернышева Елена Михайловна",
+  shortName: "ИП Чернышева Е. М.",
+  inn: "232013211085",
+  ogrnip: "314236632900029",
+  postalAddress: "354068, Краснодарский край, г. Сочи, ул. Пасечная 61/2, кв. 48",
+  bank: {
+    name: 'АО "Тинькофф Банк"',
+    account: "40802810700003133044",
+    corrAccount: "30101810145250000974",
+    bic: "044525974",
+  },
+};
 
 export const SOCIAL_LINKS = {
   telegram: "https://t.me/garantmontazh",
-  whatsapp: "https://wa.me/74950000000",
+  whatsapp: "https://wa.me/89284554559",
   vk: "https://vk.com/garantmontazh",
 };
 
@@ -22,6 +36,8 @@ export const SERVICES = [
     shortDescription:
       "Проектирование и монтаж звуковых систем для ресторанов, магазинов и офисов. Чистый звук в каждой зоне.",
     icon: "speaker" as const,
+    coverImage: null as string | null,
+    videoUrl: null as string | null,
   },
   {
     id: "electrical",
@@ -30,6 +46,8 @@ export const SERVICES = [
     shortDescription:
       "Силовые сети, щитовое оборудование, освещение. Полный цикл от проекта до пусконаладки.",
     icon: "zap" as const,
+    coverImage: null as string | null,
+    videoUrl: null as string | null,
   },
   {
     id: "structured-cabling",
@@ -38,6 +56,8 @@ export const SERVICES = [
     shortDescription:
       "Структурированные кабельные сети, интернет, телефония. Надёжная IT-инфраструктура для бизнеса.",
     icon: "network" as const,
+    coverImage: null as string | null,
+    videoUrl: null as string | null,
   },
   {
     id: "smart-home",
@@ -46,6 +66,8 @@ export const SERVICES = [
     shortDescription:
       "Автоматизация освещения, климата и мультимедиа. Управление всем домом с одного экрана.",
     icon: "home" as const,
+    coverImage: null as string | null,
+    videoUrl: null as string | null,
   },
   {
     id: "security",
@@ -54,8 +76,10 @@ export const SERVICES = [
     shortDescription:
       "IP-камеры, контроль доступа, охранные системы. Круглосуточный контроль объекта с телефона.",
     icon: "shield" as const,
+    coverImage: null as string | null,
+    videoUrl: null as string | null,
   },
-] as const;
+];
 
 export const STATS = [
   { value: 12, label: "лет на рынке Сочи", suffix: "" },

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { leadFormSchema } from "@/lib/schemas";
+import { prisma } from "@/lib/db";
 import { v4 as uuidv4 } from "uuid";
+import { sendTelegramNotification, formatLeadMessage } from "@/lib/telegram";
 
 const RATE_LIMIT_MAP = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_MAX = 3;
-const RATE_LIMIT_WINDOW = 10 * 60 * 1000; // 10 minutes
+const RATE_LIMIT_WINDOW = 10 * 60 * 1000;
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -52,23 +54,56 @@ export async function POST(request: NextRequest) {
     const token = uuidv4();
     const source = body.source || "unknown";
 
-    // TODO: Save to DB when PostgreSQL is connected
-    // const lead = await prisma.lead.create({ ... });
-    // await prisma.thankYouToken.create({ token, leadName: parsed.data.name, source, expiresAt: new Date(Date.now() + 5 * 60 * 1000) });
+    let lead;
+    try {
+      lead = await prisma.lead.create({
+        data: {
+          name: parsed.data.name,
+          phone: parsed.data.phone,
+          email: parsed.data.email || null,
+          service: parsed.data.service || null,
+          pageUrl: body.pageUrl || null,
+          source,
+          utmSource: body.utmSource || null,
+          utmMedium: body.utmMedium || null,
+          utmCampaign: body.utmCampaign || null,
+          utmTerm: body.utmTerm || null,
+          calcData: body.calcData || null,
+        },
+      });
 
-    // TODO: Send email notification
-    // TODO: Send Telegram notification
+      await prisma.thankYouToken.create({
+        data: {
+          token,
+          leadName: parsed.data.name,
+          source,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+        },
+      });
+    } catch (dbError) {
+      console.error("[LEAD DB ERROR]", dbError);
+    }
+
+    sendTelegramNotification(
+      formatLeadMessage({
+        name: parsed.data.name,
+        phone: parsed.data.phone,
+        email: parsed.data.email,
+        service: parsed.data.service,
+        source,
+        pageUrl: body.pageUrl,
+      })
+    );
 
     console.log("[LEAD]", {
+      id: lead?.id,
       name: parsed.data.name,
       phone: parsed.data.phone,
       source,
-      token,
       timestamp: new Date().toISOString(),
     });
 
     const redirectUrl = `/spasibo?token=${token}&from=${encodeURIComponent(source)}`;
-
     return NextResponse.json({ success: true, redirectUrl });
   } catch (error) {
     console.error("[LEAD ERROR]", error);

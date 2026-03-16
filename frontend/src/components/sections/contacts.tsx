@@ -1,144 +1,183 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Section, SectionTitle } from "@/components/ui/section";
-import { Button } from "@/components/ui/button";
-import { leadFormSchema, type LeadFormData } from "@/lib/schemas";
-import { Phone, Mail, MapPin, Clock, Send, MessageCircle, CheckCircle, Loader2 } from "lucide-react";
-import { PHONE, PHONE_RAW, EMAIL, ADDRESS, WORKING_HOURS, SOCIAL_LINKS } from "@/lib/constants";
+import {
+  Phone, Mail, MapPin, Clock, Send, MessageCircle,
+  Building2, CreditCard, ChevronDown,
+} from "lucide-react";
+import { PHONE, PHONE_RAW, EMAIL, ADDRESS, WORKING_HOURS, SOCIAL_LINKS, COMPANY } from "@/lib/constants";
 
-export function ContactsSection() {
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<LeadFormData>({
-    resolver: zodResolver(leadFormSchema),
-  });
-
-  const onSubmit = async (data: LeadFormData) => {
-    if (data.honeypot) return;
-    setLoading(true);
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const response = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data, source: "contacts", pageUrl: window.location.href,
-          utmSource: params.get("utm_source"), utmMedium: params.get("utm_medium"), utmCampaign: params.get("utm_campaign"),
-        }),
-      });
-      if (response.ok) {
-        const result = await response.json();
-        if (result.redirectUrl) { window.location.href = result.redirectUrl; }
-        else { setSubmitted(true); reset(); }
-      }
-    } catch { alert("Произошла ошибка. Позвоните нам по телефону."); }
-    finally { setLoading(false); }
-  };
+function RequisitesBlock() {
+  const [open, setOpen] = useState(false);
 
   return (
-    <Section id="contacts" dark>
-      <SectionTitle subtitle="Оставьте заявку — инженер свяжется с вами в течение 30 минут">
-        Контакты
-      </SectionTitle>
+    <div
+      className="mt-8 rounded-2xl overflow-hidden transition-colors"
+      style={{ border: "1px solid var(--border)" }}
+    >
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 text-left group"
+      >
+        <div className="flex items-center gap-3">
+          <CreditCard size={18} style={{ color: "var(--accent)" }} />
+          <span className="font-heading text-sm sm:text-base" style={{ color: "var(--text)" }}>
+            Реквизиты компании
+          </span>
+        </div>
+        <ChevronDown
+          size={16}
+          className="transition-transform duration-300"
+          style={{
+            color: "var(--text-muted)",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-5xl">
-        <div>
-          <div className="space-y-8 mb-10">
+      <div
+        className="overflow-hidden transition-all duration-500 ease-in-out"
+        style={{ maxHeight: open ? "600px" : "0", opacity: open ? 1 : 0 }}
+      >
+        <div
+          className="px-5 sm:px-6 pb-5 sm:pb-6 border-t"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 pt-4">
             {[
-              { icon: Phone, label: "Телефон", value: PHONE, href: `tel:${PHONE_RAW}` },
-              { icon: Mail, label: "Email", value: EMAIL, href: `mailto:${EMAIL}` },
-              { icon: MapPin, label: "Адрес", value: ADDRESS },
-              { icon: Clock, label: "Режим работы", value: WORKING_HOURS },
-            ].map(({ icon: Icon, label, value, href }) => {
-              const Wrapper = href ? "a" : "div";
-              return (
-                <Wrapper key={label} {...(href ? { href } : {})} className="flex items-center gap-4 group">
-                  <Icon size={18} style={{ color: "var(--accent)" }} />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-[0.2em] mb-1" style={{ color: "var(--text-subtle)" }}>{label}</p>
-                    <p className="text-base" style={{ color: "var(--text-muted)" }}>{value}</p>
-                  </div>
-                </Wrapper>
-              );
-            })}
-          </div>
-
-          <div className="flex gap-3">
-            {[
-              { href: SOCIAL_LINKS.telegram, icon: Send, label: "Telegram" },
-              { href: SOCIAL_LINKS.whatsapp, icon: MessageCircle, label: "WhatsApp" },
-            ].map(({ href, icon: Icon, label }) => (
-              <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-5 py-3 text-[10px] uppercase tracking-[0.15em] transition-all duration-300"
-                style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--text)"; e.currentTarget.style.color = "var(--bg)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}
-              >
-                <Icon size={14} />{label}
-              </a>
+              { label: "Полное наименование", value: COMPANY.fullName },
+              { label: "Сокращённое", value: COMPANY.shortName },
+              { label: "ИНН", value: COMPANY.inn },
+              { label: "ОГРНИП", value: COMPANY.ogrnip },
+              { label: "Юридический адрес", value: COMPANY.postalAddress },
+              { label: "Банк", value: COMPANY.bank.name },
+              { label: "Расчётный счёт", value: COMPANY.bank.account },
+              { label: "Корр. счёт", value: COMPANY.bank.corrAccount },
+              { label: "БИК", value: COMPANY.bank.bic },
+            ].map(({ label, value }) => (
+              <div key={label} className="py-1">
+                <p
+                  className="text-[10px] uppercase tracking-[0.15em] mb-1"
+                  style={{ color: "var(--text-subtle)" }}
+                >
+                  {label}
+                </p>
+                <p
+                  className="text-xs sm:text-sm font-mono tabular-nums break-all"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  {value}
+                </p>
+              </div>
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
 
-        <div className="p-5 sm:p-8 md:p-10" style={{ border: "1px solid var(--border)" }}>
-          {submitted ? (
-            <div className="flex flex-col items-center justify-center h-full text-center py-8">
-              <CheckCircle size={40} style={{ color: "var(--accent)" }} className="mb-4" />
-              <h3 className="font-heading text-2xl mb-2">Заявка отправлена</h3>
-              <p className="text-sm" style={{ color: "var(--text-muted)" }}>Мы свяжемся с вами в ближайшее время</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <h3 className="font-heading text-2xl mb-1">Оставить заявку</h3>
-              <p className="text-sm mb-8" style={{ color: "var(--text-muted)" }}>Заполните форму и мы перезвоним в течение 30 минут</p>
+export function ContactsSection() {
+  return (
+    <Section id="contacts" dark className="!pt-8 md:!pt-12">
+      <SectionTitle subtitle="Свяжитесь с нами любым удобным способом" className="!mb-8 md:!mb-12">
+        Контакты
+      </SectionTitle>
 
-              {[
-                { id: "name", label: "Ваше имя", placeholder: "Иван", type: "text", error: errors.name?.message },
-                { id: "phone", label: "Телефон", placeholder: "+7 (999) 000-00-00", type: "tel", error: errors.phone?.message },
-                { id: "email", label: "Email (необязательно)", placeholder: "ivan@mail.ru", type: "email", error: errors.email?.message },
-              ].map((field) => {
-                const registered = register(field.id as keyof LeadFormData);
-                return (
-                  <div key={field.id} className="w-full">
-                    <label htmlFor={field.id} className="block text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--text-subtle)" }}>{field.label}</label>
-                    <input
-                      id={field.id}
-                      type={field.type}
-                      placeholder={field.placeholder}
-                      className="w-full px-0 py-3.5 bg-transparent border-b text-sm focus:outline-none transition-colors"
-                      style={{ borderColor: field.error ? "#ef4444" : "var(--border)", color: "var(--text)" }}
-                      {...registered}
-                      onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; }}
-                      onBlur={(e) => {
-                        registered.onBlur(e);
-                        e.currentTarget.style.borderColor = field.error ? "#ef4444" : "var(--border)";
-                      }}
-                    />
-                    {field.error && <p className="mt-1.5 text-xs text-red-400">{field.error}</p>}
-                  </div>
-                );
-              })}
-
-              <div className="absolute opacity-0 h-0 overflow-hidden" aria-hidden="true">
-                <input tabIndex={-1} autoComplete="off" {...register("honeypot")} />
-              </div>
-
-              <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                {loading ? <Loader2 size={18} className="animate-spin mr-2" /> : null}
-                {loading ? "Отправка..." : "Получить консультацию"}
-              </Button>
-
-              <p className="text-[10px] text-center uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
-                Нажимая на кнопку, вы соглашаетесь с{" "}
-                <a href="/privacy" className="underline" style={{ color: "var(--text-muted)" }}>политикой конфиденциальности</a>
-              </p>
-            </form>
-          )}
+      <div className="max-w-3xl">
+        {/* Company badge */}
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
+          style={{
+            backgroundColor: "rgba(201,168,76,0.08)",
+            border: "1px solid rgba(201,168,76,0.2)",
+          }}
+        >
+          <Building2 size={14} style={{ color: "var(--accent)" }} />
+          <span className="text-xs font-heading" style={{ color: "var(--accent)" }}>
+            {COMPANY.shortName}
+          </span>
         </div>
+
+        {/* Contact info */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
+          {[
+            { icon: Phone, label: "Телефон", value: PHONE, href: `tel:${PHONE_RAW}` },
+            { icon: Mail, label: "Email", value: EMAIL, href: `mailto:${EMAIL}` },
+            { icon: MapPin, label: "Адрес", value: ADDRESS },
+            { icon: Clock, label: "Режим работы", value: WORKING_HOURS },
+          ].map(({ icon: Icon, label, value, href }) => {
+            const Wrapper = href ? "a" : "div";
+            return (
+              <Wrapper
+                key={label}
+                {...(href ? { href } : {})}
+                className="flex items-start gap-4 group"
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{
+                    backgroundColor: "rgba(201,168,76,0.08)",
+                    border: "1px solid rgba(201,168,76,0.15)",
+                  }}
+                >
+                  <Icon size={16} style={{ color: "var(--accent)" }} />
+                </div>
+                <div>
+                  <p
+                    className="text-[10px] uppercase tracking-[0.2em] mb-1"
+                    style={{ color: "var(--text-subtle)" }}
+                  >
+                    {label}
+                  </p>
+                  <p
+                    className="text-sm sm:text-base transition-colors group-hover:text-[var(--accent)]"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {value}
+                  </p>
+                </div>
+              </Wrapper>
+            );
+          })}
+        </div>
+
+        {/* Messengers */}
+        <div className="flex gap-3">
+          {[
+            { href: SOCIAL_LINKS.telegram, icon: Send, label: "Telegram" },
+            { href: SOCIAL_LINKS.whatsapp, icon: MessageCircle, label: "WhatsApp" },
+          ].map(({ href, icon: Icon, label }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] uppercase tracking-[0.15em] transition-all duration-300 hover:scale-[1.02]"
+              style={{
+                border: "1px solid var(--border)",
+                color: "var(--text-muted)",
+                backgroundColor: "var(--bg-secondary)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--accent)";
+                e.currentTarget.style.color = "#000";
+                e.currentTarget.style.borderColor = "var(--accent)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                e.currentTarget.style.color = "var(--text-muted)";
+                e.currentTarget.style.borderColor = "var(--border)";
+              }}
+            >
+              <Icon size={14} />{label}
+            </a>
+          ))}
+        </div>
+
+        {/* Requisites accordion */}
+        <RequisitesBlock />
       </div>
     </Section>
   );

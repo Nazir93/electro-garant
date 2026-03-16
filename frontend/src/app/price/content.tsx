@@ -1,110 +1,174 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, Download, ChevronDown } from "lucide-react";
+import { useState, useMemo, useCallback, useRef } from "react";
+import { Download, ChevronDown, Search, X, Trash2, Send } from "lucide-react";
 import { SITE_NAME, PHONE, PHONE_RAW } from "@/lib/constants";
 import { useModal } from "@/lib/modal-context";
+import { PRICE_SECTIONS, type PriceSection, type PriceItem } from "./price-data";
 
-interface PriceItem {
-  name: string;
-  unit: string;
-  price: string;
+type Quantities = Record<number, number>;
+
+const VAT_RATE = 0.2;
+
+function formatPrice(n: number): string {
+  return n.toLocaleString("ru-RU");
 }
 
-interface PriceCategory {
-  id: string;
-  title: string;
-  items: PriceItem[];
+/* ─── Quantity control ─── */
+function QuantityControl({
+  qty,
+  onSet,
+}: {
+  qty: number;
+  onSet: (v: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-0.5">
+      <button
+        onClick={() => onSet(Math.max(0, qty - 1))}
+        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-200 hover:scale-110 active:scale-95 select-none"
+        style={{
+          backgroundColor: qty > 0 ? "rgba(201,168,76,0.15)" : "var(--bg-secondary)",
+          color: qty > 0 ? "var(--accent)" : "var(--text-muted)",
+          border: "1px solid var(--border)",
+        }}
+      >
+        −
+      </button>
+      <input
+        type="number"
+        min={0}
+        value={qty || ""}
+        placeholder="0"
+        onChange={(e) => onSet(Math.max(0, parseInt(e.target.value) || 0))}
+        className="w-10 sm:w-12 h-7 sm:h-8 text-center text-xs sm:text-sm font-heading rounded-lg bg-transparent outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        style={{ color: "var(--text)", border: "1px solid var(--border)" }}
+      />
+      <button
+        onClick={() => onSet(qty + 1)}
+        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-200 hover:scale-110 active:scale-95 select-none"
+        style={{
+          backgroundColor: "rgba(201,168,76,0.15)",
+          color: "var(--accent)",
+          border: "1px solid rgba(201,168,76,0.3)",
+        }}
+      >
+        +
+      </button>
+    </div>
+  );
 }
 
-const PRICE_DATA: PriceCategory[] = [
-  {
-    id: "electrical",
-    title: "Электромонтажные работы",
-    items: [
-      { name: "Монтаж электрощита (до 24 модулей)", unit: "шт", price: "от 8 000" },
-      { name: "Монтаж электрощита (до 54 модулей)", unit: "шт", price: "от 15 000" },
-      { name: "Прокладка кабеля в штробе", unit: "м.п.", price: "от 150" },
-      { name: "Прокладка кабеля в гофре / кабель-канале", unit: "м.п.", price: "от 100" },
-      { name: "Установка розетки / выключателя", unit: "шт", price: "от 350" },
-      { name: "Установка светильника (точечный)", unit: "шт", price: "от 450" },
-      { name: "Установка люстры", unit: "шт", price: "от 1 200" },
-      { name: "Штробление стен (бетон)", unit: "м.п.", price: "от 500" },
-      { name: "Штробление стен (кирпич / гипс)", unit: "м.п.", price: "от 300" },
-      { name: "Сборка и подключение щита", unit: "шт", price: "от 12 000" },
-      { name: "Монтаж контура заземления", unit: "шт", price: "от 18 000" },
-    ],
-  },
-  {
-    id: "cabling",
-    title: "Слаботочные системы (СКС)",
-    items: [
-      { name: "Прокладка UTP-кабеля (Cat 5e / 6)", unit: "м.п.", price: "от 80" },
-      { name: "Монтаж сетевой розетки RJ-45", unit: "шт", price: "от 400" },
-      { name: "Монтаж патч-панели (24 порта)", unit: "шт", price: "от 3 500" },
-      { name: "Установка и настройка коммутатора", unit: "шт", price: "от 2 000" },
-      { name: "Монтаж серверного шкафа", unit: "шт", price: "от 5 000" },
-      { name: "Прокладка оптического кабеля", unit: "м.п.", price: "от 200" },
-      { name: "Сварка оптоволокна (одно соединение)", unit: "шт", price: "от 600" },
-    ],
-  },
-  {
-    id: "security",
-    title: "Видеонаблюдение и безопасность",
-    items: [
-      { name: "Установка IP-камеры (внутренняя)", unit: "шт", price: "от 2 500" },
-      { name: "Установка IP-камеры (уличная)", unit: "шт", price: "от 3 500" },
-      { name: "Монтаж видеорегистратора / NVR", unit: "шт", price: "от 3 000" },
-      { name: "Настройка удалённого доступа", unit: "шт", price: "от 2 000" },
-      { name: "Монтаж системы контроля доступа (СКУД)", unit: "точка", price: "от 8 000" },
-      { name: "Установка домофона / видеодомофона", unit: "шт", price: "от 4 000" },
-      { name: "Монтаж охранной сигнализации", unit: "зона", price: "от 2 500" },
-    ],
-  },
-  {
-    id: "smart",
-    title: "Умный дом",
-    items: [
-      { name: "Проектирование системы автоматизации", unit: "проект", price: "от 25 000" },
-      { name: "Монтаж контроллера умного дома", unit: "шт", price: "от 5 000" },
-      { name: "Автоматизация освещения (1 группа)", unit: "шт", price: "от 3 500" },
-      { name: "Автоматизация штор / жалюзи", unit: "шт", price: "от 6 000" },
-      { name: "Интеграция мультирум (1 зона)", unit: "зона", price: "от 15 000" },
-      { name: "Установка сенсорной панели управления", unit: "шт", price: "от 8 000" },
-      { name: "Настройка сценариев и автоматизаций", unit: "час", price: "от 3 000" },
-    ],
-  },
-  {
-    id: "acoustics",
-    title: "Коммерческая акустика",
-    items: [
-      { name: "Проектирование звуковой системы", unit: "проект", price: "от 15 000" },
-      { name: "Установка потолочного динамика", unit: "шт", price: "от 2 000" },
-      { name: "Установка настенного динамика", unit: "шт", price: "от 2 500" },
-      { name: "Монтаж усилителя / микшера", unit: "шт", price: "от 3 000" },
-      { name: "Прокладка акустического кабеля", unit: "м.п.", price: "от 80" },
-      { name: "Настройка и калибровка системы", unit: "зона", price: "от 5 000" },
-    ],
-  },
-  {
-    id: "project",
-    title: "Проектирование",
-    items: [
-      { name: "Проект электроснабжения (квартира до 100 м²)", unit: "проект", price: "от 25 000" },
-      { name: "Проект электроснабжения (квартира 100–200 м²)", unit: "проект", price: "от 40 000" },
-      { name: "Проект электроснабжения (коммерция)", unit: "проект", price: "от 60 000" },
-      { name: "Проект слаботочных систем", unit: "проект", price: "от 20 000" },
-      { name: "Проект видеонаблюдения", unit: "проект", price: "от 15 000" },
-      { name: "Авторский надзор", unit: "выезд", price: "от 5 000" },
-    ],
-  },
-];
+/* ─── Item row ─── */
+function ItemRow({
+  item,
+  qty,
+  onSetQty,
+  withVat,
+}: {
+  item: PriceItem;
+  qty: number;
+  onSetQty: (v: number) => void;
+  withVat: boolean;
+}) {
+  const displayPrice = item.price
+    ? withVat
+      ? Math.round(item.price * (1 + VAT_RATE))
+      : item.price
+    : null;
+  const lineTotal = displayPrice && qty > 0 ? displayPrice * qty : 0;
 
-function CategoryTable({ category, isOpen, onToggle }: {
-  category: PriceCategory;
+  return (
+    <div
+      className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_70px_110px_140px_110px] gap-2 sm:gap-3 py-3 sm:py-3.5 border-b last:border-b-0 items-center transition-colors duration-200"
+      style={{
+        borderColor: "var(--border)",
+        backgroundColor: qty > 0 ? "rgba(201,168,76,0.04)" : "transparent",
+      }}
+    >
+      {/* Name */}
+      <div className="min-w-0">
+        <span
+          className="text-xs sm:text-sm leading-tight block"
+          style={{ color: qty > 0 ? "var(--text)" : "var(--text-muted)" }}
+        >
+          {item.name}
+        </span>
+        <span
+          className="sm:hidden text-[10px] mt-0.5 block"
+          style={{ color: "var(--text-subtle)" }}
+        >
+          {item.unit}
+          {displayPrice ? ` · ${formatPrice(displayPrice)} ₽` : " · по договорённости"}
+        </span>
+      </div>
+
+      {/* Unit (desktop) */}
+      <span
+        className="hidden sm:block text-[11px] text-center"
+        style={{ color: "var(--text-subtle)" }}
+      >
+        {item.unit}
+      </span>
+
+      {/* Price (desktop) */}
+      <span
+        className="hidden sm:block text-sm font-heading text-right tabular-nums"
+        style={{ color: displayPrice ? "var(--text)" : "var(--text-muted)" }}
+      >
+        {displayPrice ? `${formatPrice(displayPrice)} ₽` : "догов."}
+      </span>
+
+      {/* Quantity */}
+      <div className="flex justify-end sm:justify-center">
+        {item.price !== null ? (
+          <QuantityControl qty={qty} onSet={onSetQty} />
+        ) : (
+          <span className="text-[10px]" style={{ color: "var(--text-subtle)" }}>—</span>
+        )}
+      </div>
+
+      {/* Line total (desktop) */}
+      <span
+        className="hidden sm:block text-sm font-heading text-right tabular-nums font-semibold"
+        style={{ color: lineTotal > 0 ? "var(--accent)" : "var(--text-subtle)" }}
+      >
+        {lineTotal > 0 ? `${formatPrice(lineTotal)} ₽` : "—"}
+      </span>
+    </div>
+  );
+}
+
+/* ─── Section accordion ─── */
+function SectionAccordion({
+  section,
+  index,
+  isOpen,
+  onToggle,
+  quantities,
+  onSetQty,
+  withVat,
+  filteredItems,
+}: {
+  section: PriceSection;
+  index: number;
   isOpen: boolean;
   onToggle: () => void;
+  quantities: Quantities;
+  onSetQty: (id: number, v: number) => void;
+  withVat: boolean;
+  filteredItems: PriceItem[];
 }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const sectionTotal = filteredItems.reduce((sum, item) => {
+    const qty = quantities[item.id] || 0;
+    if (!item.price || qty === 0) return sum;
+    const p = withVat ? Math.round(item.price * (1 + VAT_RATE)) : item.price;
+    return sum + p * qty;
+  }, 0);
+
+  const selectedCount = filteredItems.filter((i) => (quantities[i.id] || 0) > 0).length;
+
   return (
     <div
       className="border-b transition-colors"
@@ -112,92 +176,81 @@ function CategoryTable({ category, isOpen, onToggle }: {
     >
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-5 sm:py-6 px-4 sm:px-6 text-left group"
+        className="w-full flex items-center justify-between py-4 sm:py-5 px-4 sm:px-6 text-left group"
       >
-        <div className="flex items-center gap-3 sm:gap-5">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <div className="min-w-0">
           <span
-            className="font-heading text-2xl sm:text-3xl md:text-4xl tabular-nums"
-            style={{ color: isOpen ? "var(--accent)" : "var(--text-subtle)" }}
-          >
-            {String(PRICE_DATA.indexOf(category) + 1).padStart(2, "0")}
-          </span>
-          <span
-            className="font-heading text-sm sm:text-base md:text-lg transition-colors"
+              className="font-heading text-sm sm:text-base transition-colors block truncate"
             style={{ color: isOpen ? "var(--text)" : "var(--text-muted)" }}
           >
-            {category.title}
+              {section.title}
+            </span>
+            <span className="text-[10px] sm:text-xs block mt-0.5" style={{ color: "var(--text-subtle)" }}>
+              {filteredItems.length} позиций
+              {selectedCount > 0 && (
+                <span style={{ color: "var(--accent)" }}> · {selectedCount} выбрано</span>
+              )}
           </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
+
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {sectionTotal > 0 && (
           <span
-            className="text-[10px] sm:text-xs tabular-nums"
-            style={{ color: "var(--text-subtle)" }}
+              className="text-xs sm:text-sm font-heading tabular-nums"
+              style={{ color: "var(--accent)" }}
+            >
+              {formatPrice(sectionTotal)} ₽
+            </span>
+          )}
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300"
+            style={{
+              backgroundColor: isOpen ? "rgba(201,168,76,0.15)" : "var(--bg-secondary)",
+              border: "1px solid var(--border)",
+            }}
           >
-            {category.items.length} позиций
-          </span>
           <ChevronDown
-            size={18}
+              size={14}
             className="transition-transform duration-300"
             style={{
-              color: "var(--text-muted)",
+                color: isOpen ? "var(--accent)" : "var(--text-muted)",
               transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
             }}
           />
+          </div>
         </div>
       </button>
 
       <div
         className="overflow-hidden transition-all duration-500 ease-in-out"
         style={{
-          maxHeight: isOpen ? `${category.items.length * 60 + 40}px` : "0",
+          maxHeight: isOpen ? `${(filteredItems.length + 1) * 60 + 80}px` : "0",
           opacity: isOpen ? 1 : 0,
         }}
       >
-        <div className="px-4 sm:px-6 pb-6">
-          {/* Table header */}
+        <div ref={contentRef} className="px-4 sm:px-6 pb-4 sm:pb-6">
+          {/* Table header (desktop) */}
           <div
-            className="hidden sm:grid grid-cols-[1fr_80px_120px] gap-4 pb-3 mb-2 border-b text-[10px] uppercase tracking-[0.15em]"
+            className="hidden sm:grid grid-cols-[1fr_70px_110px_140px_110px] gap-3 pb-2.5 mb-1 border-b text-[10px] uppercase tracking-[0.15em]"
             style={{ borderColor: "var(--border)", color: "var(--text-subtle)" }}
           >
             <span>Наименование</span>
             <span className="text-center">Ед.</span>
-            <span className="text-right">Цена, ₽</span>
+            <span className="text-right">Цена</span>
+            <span className="text-center">Кол-во</span>
+            <span className="text-right">Сумма</span>
           </div>
 
-          {/* Table rows */}
-          {category.items.map((item, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-1 sm:grid-cols-[1fr_80px_120px] gap-1 sm:gap-4 py-2.5 sm:py-3 border-b last:border-b-0 items-center"
-              style={{ borderColor: "var(--border)" }}
-            >
-              <span
-                className="text-xs sm:text-sm"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {item.name}
-              </span>
-              <div className="flex sm:block items-center gap-2">
-                <span
-                  className="sm:hidden text-[10px] uppercase"
-                  style={{ color: "var(--text-subtle)" }}
-                >
-                  Ед:
-                </span>
-                <span
-                  className="text-[11px] sm:text-xs text-center sm:block"
-                  style={{ color: "var(--text-subtle)" }}
-                >
-                  {item.unit}
-                </span>
-              </div>
-              <span
-                className="text-sm sm:text-base font-heading sm:text-right"
-                style={{ color: "var(--text)" }}
-              >
-                {item.price} ₽
-              </span>
-            </div>
+          {filteredItems.map((item) => (
+            <ItemRow
+              key={item.id}
+              item={item}
+              qty={quantities[item.id] || 0}
+              onSetQty={(v) => onSetQty(item.id, v)}
+              withVat={withVat}
+            />
           ))}
         </div>
       </div>
@@ -205,25 +258,78 @@ function CategoryTable({ category, isOpen, onToggle }: {
   );
 }
 
+/* ─── Main page ─── */
 export function PricePageContent() {
-  const [openCategories, setOpenCategories] = useState<Set<string>>(
-    new Set([PRICE_DATA[0].id])
-  );
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const [quantities, setQuantities] = useState<Quantities>({});
+  const [withVat, setWithVat] = useState(false);
+  const [search, setSearch] = useState("");
   const { openModal } = useModal();
 
-  const toggle = (id: string) => {
-    setOpenCategories((prev) => {
+  const setQty = useCallback((id: number, v: number) => {
+    setQuantities((prev) => {
+      const next = { ...prev };
+      if (v <= 0) delete next[id];
+      else next[id] = v;
+      return next;
+    });
+  }, []);
+
+  const toggle = useCallback((id: string) => {
+    setOpenSections((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  };
+  }, []);
+
+  const expandAll = useCallback(() => {
+    setOpenSections(new Set(PRICE_SECTIONS.map((s) => s.id)));
+  }, []);
+
+  const collapseAll = useCallback(() => {
+    setOpenSections(new Set());
+  }, []);
+
+  const clearEstimate = useCallback(() => {
+    setQuantities({});
+  }, []);
+
+  const searchLower = search.toLowerCase().trim();
+
+  const filteredSections = useMemo(() => {
+    if (!searchLower) return PRICE_SECTIONS.map((s) => ({ section: s, items: s.items }));
+    return PRICE_SECTIONS.map((s) => ({
+      section: s,
+      items: s.items.filter((i) => i.name.toLowerCase().includes(searchLower)),
+    })).filter((s) => s.items.length > 0);
+  }, [searchLower]);
+
+  const totalItems = useMemo(
+    () => Object.keys(quantities).length,
+    [quantities]
+  );
+
+  const totalSum = useMemo(() => {
+    let sum = 0;
+    for (const section of PRICE_SECTIONS) {
+      for (const item of section.items) {
+        const qty = quantities[item.id] || 0;
+        if (!item.price || qty === 0) continue;
+        const p = withVat ? Math.round(item.price * (1 + VAT_RATE)) : item.price;
+        sum += p * qty;
+      }
+    }
+    return sum;
+  }, [quantities, withVat]);
+
+  const totalItemsCount = PRICE_SECTIONS.reduce((n, s) => n + s.items.length, 0);
 
   return (
     <div style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
-      {/* Hero */}
-      <section className="pt-10 sm:pt-14 md:pt-20 pb-10 sm:pb-14 md:pb-20">
+      {/* ── Hero ── */}
+      <section className="pt-10 sm:pt-14 md:pt-20 pb-8 sm:pb-10 md:pb-14">
         <div className="container mx-auto">
           <p
             className="text-[10px] sm:text-xs uppercase tracking-[0.2em] mb-4 sm:mb-6"
@@ -231,52 +337,241 @@ export function PricePageContent() {
           >
             {SITE_NAME} / Прайс-лист
           </p>
-          <h1
-            className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.9] tracking-tight mb-5 sm:mb-8"
-          >
-            ПРАЙС-ЛИСТ
+          <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.9] tracking-tight mb-4 sm:mb-6">
+            КАЛЬКУЛЯТОР СМЕТЫ
           </h1>
           <p
             className="text-sm sm:text-base md:text-lg max-w-2xl leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Ориентировочные цены на электромонтажные работы. Точная стоимость
-            рассчитывается после выезда инженера и зависит от сложности объекта,
-            типа помещения и объёма работ.
+            Выберите нужные работы, укажите количество — калькулятор автоматически
+            рассчитает предварительную стоимость. Можете переключить расчёт с НДС.
           </p>
-        </div>
-      </section>
 
-      {/* Price table */}
-      <section className="pb-10 sm:pb-16 md:pb-24">
-        <div className="container mx-auto">
-          <div
-            className="rounded-2xl overflow-hidden border"
-            style={{ borderColor: "var(--border)" }}
-          >
-            {PRICE_DATA.map((category) => (
-              <CategoryTable
-                key={category.id}
-                category={category}
-                isOpen={openCategories.has(category.id)}
-                onToggle={() => toggle(category.id)}
-              />
+          {/* Stats */}
+          <div className="flex flex-wrap gap-4 sm:gap-6 mt-6 sm:mt-8">
+            {[
+              { label: "Разделов", value: PRICE_SECTIONS.length },
+              { label: "Видов работ", value: totalItemsCount },
+            ].map((stat) => (
+              <div key={stat.label} className="flex items-baseline gap-2">
+                <span className="font-heading text-2xl sm:text-3xl" style={{ color: "var(--accent)" }}>
+                  {stat.value}
+                </span>
+                <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                  {stat.label}
+                </span>
+              </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* Note */}
+      {/* ── Toolbar: search + VAT toggle + expand/collapse ── */}
+      <section className="sticky top-0 z-30 border-y backdrop-blur-xl" style={{ borderColor: "var(--border)", backgroundColor: "color-mix(in srgb, var(--bg) 85%, transparent)" }}>
+        <div className="container mx-auto py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ color: "var(--text-muted)" }}
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Поиск по названию работ..."
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl text-sm bg-transparent outline-none transition-all duration-200 focus:ring-1"
+                style={{
+                  border: "1px solid var(--border)",
+                  color: "var(--text)",
+                  ["--tw-ring-color" as string]: "var(--accent)",
+                }}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:opacity-70"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              {/* VAT toggle */}
+              <button
+                onClick={() => setWithVat(!withVat)}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300"
+                style={{
+                  backgroundColor: withVat ? "rgba(201,168,76,0.15)" : "var(--bg-secondary)",
+                  border: `1px solid ${withVat ? "rgba(201,168,76,0.5)" : "var(--border)"}`,
+                  color: withVat ? "var(--accent)" : "var(--text-muted)",
+                }}
+              >
+                <div
+                  className="w-8 h-[18px] rounded-full relative transition-colors duration-300"
+                  style={{ backgroundColor: withVat ? "var(--accent)" : "var(--border)" }}
+                >
+                  <div
+                    className="w-3.5 h-3.5 rounded-full absolute top-[2px] transition-all duration-300"
+                    style={{
+                      backgroundColor: withVat ? "#fff" : "var(--text-muted)",
+                      left: withVat ? "16px" : "2px",
+                    }}
+                  />
+                </div>
+                НДС 20%
+              </button>
+
+              <div className="hidden sm:flex items-center gap-1.5">
+                <button
+                  onClick={expandAll}
+                  className="px-3 py-2 rounded-xl text-xs transition-colors"
+                  style={{
+                    border: "1px solid var(--border)",
+                    color: "var(--text-muted)",
+                    backgroundColor: "var(--bg-secondary)",
+                  }}
+                >
+                  Развернуть
+                </button>
+                <button
+                  onClick={collapseAll}
+                  className="px-3 py-2 rounded-xl text-xs transition-colors"
+                  style={{
+                    border: "1px solid var(--border)",
+                    color: "var(--text-muted)",
+                    backgroundColor: "var(--bg-secondary)",
+                  }}
+                >
+                  Свернуть
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Search results count */}
+          {search && (
+            <p className="text-[11px] mt-2" style={{ color: "var(--text-subtle)" }}>
+              Найдено: {filteredSections.reduce((n, s) => n + s.items.length, 0)} позиций
+              в {filteredSections.length} разделах
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* ── Price table ── */}
+      <section className="pb-32 sm:pb-36">
+        <div className="container mx-auto">
+          <div
+            className="rounded-2xl overflow-hidden border mt-0"
+            style={{ borderColor: "var(--border)" }}
+          >
+            {filteredSections.length === 0 ? (
+              <div className="py-16 text-center">
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                  Ничего не найдено по запросу «{search}»
+                </p>
+                <button
+                  onClick={() => setSearch("")}
+                  className="mt-3 text-xs underline"
+                  style={{ color: "var(--accent)" }}
+                >
+                  Сбросить поиск
+                </button>
+              </div>
+            ) : (
+              filteredSections.map(({ section, items }, i) => (
+                <SectionAccordion
+                  key={section.id}
+                  section={section}
+                  index={i}
+                  isOpen={openSections.has(section.id)}
+                  onToggle={() => toggle(section.id)}
+                  quantities={quantities}
+                  onSetQty={setQty}
+                  withVat={withVat}
+                  filteredItems={items}
+                />
+              ))
+            )}
+          </div>
+
           <p
-            className="mt-6 sm:mt-8 text-[11px] sm:text-xs leading-relaxed max-w-2xl"
+            className="mt-6 text-[11px] sm:text-xs leading-relaxed max-w-2xl"
             style={{ color: "var(--text-subtle)" }}
           >
-            * Указаны ориентировочные цены. Окончательная стоимость определяется
-            после осмотра объекта и составления сметы. Минимальный заказ — 30 000 ₽.
-            Выезд инженера для замеров — бесплатно.
+            * Указаны ориентировочные цены без НДС. Окончательная стоимость определяется
+            после осмотра объекта и составления индивидуальной сметы.
           </p>
         </div>
       </section>
 
-      {/* Download + CTA */}
+      {/* ── Sticky bottom bar (estimate summary) ── */}
+      <div
+        className="fixed bottom-14 lg:bottom-0 left-0 right-0 z-40 border-t backdrop-blur-xl transition-all duration-500"
+        style={{
+          borderColor: "var(--border)",
+          backgroundColor: "color-mix(in srgb, var(--bg) 92%, transparent)",
+          transform: totalItems > 0 ? "translateY(0)" : "translateY(100%)",
+          opacity: totalItems > 0 ? 1 : 0,
+          pointerEvents: totalItems > 0 ? "auto" : "none",
+        }}
+      >
+        <div className="container mx-auto py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                  Итого{withVat ? " (с НДС)" : " (без НДС)"}
+                </p>
+                <p className="font-heading text-xl sm:text-2xl md:text-3xl tabular-nums" style={{ color: "var(--accent)" }}>
+                  {formatPrice(totalSum)} ₽
+                </p>
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                  Позиций
+                </p>
+                <p className="font-heading text-lg tabular-nums">{totalItems}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={clearEstimate}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
+                style={{
+                  border: "1px solid var(--border)",
+                  color: "var(--text-muted)",
+                }}
+                title="Очистить смету"
+              >
+                <Trash2 size={16} />
+              </button>
+              <button
+                onClick={openModal}
+                className="flex items-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 rounded-xl font-heading text-xs sm:text-sm transition-all duration-300 hover:scale-[1.02]"
+                style={{
+                  backgroundColor: "var(--accent)",
+                  color: "#000",
+                }}
+              >
+                <Send size={14} />
+                <span className="hidden sm:inline">Отправить смету</span>
+                <span className="sm:hidden">Отправить</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Download + CTA ── */}
       <section
         className="border-t py-12 sm:py-16 md:py-20"
         style={{ borderColor: "var(--border)" }}
@@ -284,9 +579,7 @@ export function PricePageContent() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
             <div>
-              <h2
-                className="font-heading text-xl sm:text-2xl md:text-3xl mb-3"
-              >
+              <h2 className="font-heading text-xl sm:text-2xl md:text-3xl mb-3">
                 Скачайте полный прайс-лист
               </h2>
               <p
@@ -297,44 +590,24 @@ export function PricePageContent() {
                 материалы и оборудование
               </p>
             </div>
-
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
               <a
                 href="/price-list.pdf"
                 download
                 className="flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-heading text-sm sm:text-base transition-all duration-300 hover:scale-[1.02] min-h-[48px]"
-                style={{
-                  backgroundColor: "var(--text)",
-                  color: "var(--bg)",
-                }}
+                style={{ backgroundColor: "var(--text)", color: "var(--bg)" }}
               >
                 <Download size={16} />
                 Скачать PDF
               </a>
-
-              <button
-                onClick={openModal}
-                className="flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-heading text-sm sm:text-base border transition-all duration-300 hover:scale-[1.02] min-h-[48px]"
-                style={{
-                  borderColor: "var(--border)",
-                  color: "var(--text)",
-                }}
-              >
-                Рассчитать стоимость
-                <ArrowRight size={16} />
-              </button>
             </div>
           </div>
 
-          {/* Contact hint */}
           <div
             className="mt-10 sm:mt-14 pt-8 sm:pt-10 border-t flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8"
             style={{ borderColor: "var(--border)" }}
           >
-            <p
-              className="text-xs sm:text-sm"
-              style={{ color: "var(--text-muted)" }}
-            >
+            <p className="text-xs sm:text-sm" style={{ color: "var(--text-muted)" }}>
               Нужна индивидуальная смета?
             </p>
             <a

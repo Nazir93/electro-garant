@@ -154,7 +154,7 @@ const NAV_SECTIONS = [
   {
     label: "О нас",
     items: [
-      { href: "/#contacts", label: "Контакты" },
+      { href: "/contacts", label: "Контакты" },
       { href: "/portfolio", label: "Портфолио" },
       { href: "/app", label: "Приложение" },
     ],
@@ -400,7 +400,6 @@ export function NavBar() {
 
   return (
     <div
-      data-navbar
       className="sticky top-0 z-40 border-b backdrop-blur-md"
       style={{
         backgroundColor: isDark ? "rgba(10,10,10,0.9)" : "rgba(255,255,255,0.9)",

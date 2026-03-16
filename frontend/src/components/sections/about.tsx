@@ -264,29 +264,6 @@ export function AboutSection() {
           </div>
         </div>
 
-        {/* ── Stats bar ── */}
-        <div
-          className="absolute bottom-0 left-0 right-0 border-t z-20"
-          style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}
-        >
-          <div className="container mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 py-3 sm:py-4 md:py-6 gap-y-3 sm:gap-y-4">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="px-2 sm:px-3 md:px-4">
-                  <div className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-0.5 sm:mb-1">
-                    <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-                  </div>
-                  <p
-                    className="text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.15em]"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Header } from "@/components/layout/header";
-import { ConditionalNavBar } from "@/components/layout/conditional-navbar";
-import { Footer } from "@/components/layout/footer";
+import { SiteShell } from "@/components/layout/site-shell";
 import { ThemeProvider } from "@/lib/theme-context";
 import { ModalProvider } from "@/lib/modal-context";
-import { CustomCursor } from "@/components/ui/custom-cursor";
-import { ContactModal } from "@/components/ui/contact-modal";
 import { SITE_NAME, CITY, SITE_URL } from "@/lib/constants";
+import { AnalyticsScripts } from "@/components/seo/analytics";
+import { JsonLd } from "@/components/seo/json-ld";
 import "./globals.css";
 
 const montserrat = localFont({
@@ -72,18 +70,17 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
         <meta name="format-detection" content="telephone=no" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        {/* @ts-expect-error Async Server Component */}
+        <JsonLd />
       </head>
       <body className="font-body antialiased theme-bg theme-text transition-colors duration-500">
         <ThemeProvider>
           <ModalProvider>
-            <CustomCursor />
-            <ContactModal />
-            <Header />
-            <ConditionalNavBar />
-            <main className="min-h-screen">{children}</main>
-            <Footer />
+            <SiteShell>{children}</SiteShell>
           </ModalProvider>
         </ThemeProvider>
+        {/* @ts-expect-error Async Server Component */}
+        <AnalyticsScripts />
       </body>
     </html>
   );
