@@ -78,7 +78,6 @@ export default function RootLayout({
             <SiteShell>{children}</SiteShell>
           </ModalProvider>
         </ThemeProvider>
-        {/* @ts-expect-error Async Server Component */}
         <AnalyticsScripts />
       </body>
     </html>
