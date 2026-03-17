@@ -294,7 +294,6 @@ export function Header() {
           className="fixed inset-0 z-[60] overflow-y-auto"
           style={{ backgroundColor: "var(--bg)" }}
         >
-          <CircuitGrid />
           {/* Close button */}
           <button
             onClick={() => setIsOpen(false)}

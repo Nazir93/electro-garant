@@ -2,14 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const HOVER_SELECTOR = "a, button, [role='button'], input, textarea, select, [data-cursor-hover]";
+
+function isHoverTarget(el: Element | null): boolean {
+  if (!el) return false;
+  return el.closest(HOVER_SELECTOR) !== null;
+}
+
 export function CustomCursor() {
   const blobRef = useRef<HTMLDivElement>(null);
   const pos = useRef({ x: -100, y: -100 });
   const target = useRef({ x: -100, y: -100 });
   const velocity = useRef({ x: 0, y: 0 });
   const prevMouse = useRef({ x: -100, y: -100 });
-  const [hovering, setHovering] = useState(false);
+  const hoveringRef = useRef(false);
   const [visible, setVisible] = useState(false);
+  const [hovering, setHovering] = useState(false);
 
   useEffect(() => {
     const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
@@ -25,30 +33,20 @@ export function CustomCursor() {
         x: target.current.x - prevMouse.current.x,
         y: target.current.y - prevMouse.current.y,
       };
+
+      const isHover = isHoverTarget(e.target as Element);
+      if (isHover !== hoveringRef.current) {
+        hoveringRef.current = isHover;
+        setHovering(isHover);
+      }
     };
 
     const handleMouseEnter = () => setVisible(true);
     const handleMouseLeave = () => setVisible(false);
-    const handleHoverIn = () => setHovering(true);
-    const handleHoverOut = () => setHovering(false);
 
-    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mousemove", handleMouseMove, { passive: true });
     document.addEventListener("mouseenter", handleMouseEnter);
     document.addEventListener("mouseleave", handleMouseLeave);
-
-    const addHoverListeners = () => {
-      const els = document.querySelectorAll(
-        "a, button, [role='button'], input, textarea, select, [data-cursor-hover]"
-      );
-      els.forEach((el) => {
-        el.addEventListener("mouseenter", handleHoverIn);
-        el.addEventListener("mouseleave", handleHoverOut);
-      });
-    };
-
-    addHoverListeners();
-    const observer = new MutationObserver(addHoverListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
 
     let animationId: number;
     const animate = () => {
@@ -83,7 +81,6 @@ export function CustomCursor() {
       document.removeEventListener("mouseenter", handleMouseEnter);
       document.removeEventListener("mouseleave", handleMouseLeave);
       cancelAnimationFrame(animationId);
-      observer.disconnect();
     };
   }, []);
 
