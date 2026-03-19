@@ -2,27 +2,38 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, MessageCircle, Sun, Moon } from "lucide-react";
-import { SOCIAL_LINKS, PHONE, PHONE_RAW, EMAIL } from "@/lib/constants";
+import { ArrowRight, ArrowUp, MessageCircle, Sun, Moon } from "lucide-react";
+import { SOCIAL_LINKS, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL } from "@/lib/constants";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
 
 const NAV_SECTIONS = [
   {
-    label: "О нас",
+    label: "О компании",
     items: [
       { href: "/contacts", label: "Контакты" },
       { href: "/portfolio", label: "Портфолио" },
-      { href: "/app", label: "Приложение" },
+      { href: "/technology", label: "Технология монтажа" },
+      { href: "/blog", label: "Блог" },
+    ],
+  },
+  {
+    label: "Услуги",
+    items: [
+      { href: "/services", label: "Все услуги" },
+      { href: "/services/electrical", label: "Электромонтаж" },
+      { href: "/services/acoustics", label: "Акустика" },
+      { href: "/services/smart-home", label: "Умный дом" },
+      { href: "/services/security", label: "Безопасность" },
+      { href: "/services/structured-cabling", label: "Слаботочные" },
     ],
   },
   {
     label: "Заказчикам",
     items: [
-      { href: "/services", label: "Услуги" },
       { href: "/price", label: "Прайс-листы" },
-      { href: "/docs", label: "Документация" },
       { href: "#calc", label: "Рассчитать стоимость", action: "openModal" as const },
+      { href: "/privacy", label: "Политика" },
     ],
   },
   {
@@ -30,15 +41,7 @@ const NAV_SECTIONS = [
     items: [
       { href: "/vacancies", label: "Вакансии" },
       { href: "/partners", label: "Стать партнёром" },
-      { href: "/cooperation", label: "Предложение о сотрудничестве" },
-    ],
-  },
-  {
-    label: "Информация",
-    items: [
-      { href: "/blog", label: "Блог" },
-      { href: "/forum", label: "Форум" },
-      { href: "/support", label: "Тех. поддержка" },
+      { href: "/support", label: "Поддержка" },
     ],
   },
 ];
@@ -110,6 +113,8 @@ export function DesktopSideNav() {
 
             <div className="flex items-center gap-3 text-[11px]" style={{ color: "var(--text-muted)" }}>
               <a href={`tel:${PHONE_RAW}`} className="hover:opacity-100 transition-opacity">{PHONE}</a>
+              <span style={{ color: "var(--text-subtle)" }}>/</span>
+              <a href={`tel:${PHONE2_RAW}`} className="hover:opacity-100 transition-opacity">{PHONE2}</a>
               <span style={{ color: "var(--text-subtle)" }}>/</span>
               <a href={`mailto:${EMAIL}`} className="hover:opacity-100 transition-opacity">{EMAIL}</a>
             </div>
@@ -208,11 +213,12 @@ export function DesktopSideNav() {
           pointerEvents: visible ? "auto" : "none",
           backgroundColor: isDark ? "rgba(10,10,10,0.92)" : "rgba(255,255,255,0.92)",
           backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
           borderLeft: "1px solid var(--border)",
         }}
       >
-        {/* Top: WhatsApp */}
-        <div className="flex flex-col items-center gap-4">
+        {/* Top: messengers + contacts */}
+        <div className="flex flex-col items-center gap-3">
           {SOCIAL_LINKS.whatsapp && (
             <a
               href={SOCIAL_LINKS.whatsapp}
@@ -239,6 +245,41 @@ export function DesktopSideNav() {
               </svg>
             </a>
           )}
+
+          {/* Email */}
+          <a
+            href={`mailto:${EMAIL}`}
+            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110"
+            style={{ borderColor: "var(--border)" }}
+            aria-label="Email"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4" style={{ color: "var(--text-muted)" }}>
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="M22 7l-10 7L2 7" />
+            </svg>
+          </a>
+
+          {/* Phones */}
+          <a
+            href={`tel:${PHONE_RAW}`}
+            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"
+            style={{ borderColor: "var(--border)" }}
+            aria-label={PHONE}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4" style={{ color: "var(--text-muted)" }}>
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+          </a>
+          <a
+            href={`tel:${PHONE2_RAW}`}
+            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"
+            style={{ borderColor: "var(--border)" }}
+            aria-label={PHONE2}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4" style={{ color: "var(--text-muted)" }}>
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+          </a>
         </div>
 
         {/* Center: vertical text "Обсудить проект" */}
@@ -265,12 +306,29 @@ export function DesktopSideNav() {
           </span>
         </button>
 
-        {/* Bottom: theme dot indicator */}
+        {/* Bottom: burger + scroll-to-top */}
         <div className="flex flex-col items-center gap-3">
-          <div
-            className="w-2 h-2 rounded-full transition-colors duration-500"
-            style={{ backgroundColor: "var(--accent)" }}
-          />
+          {/* Vertical burger — opens menu */}
+          <button
+            onClick={() => window.dispatchEvent(new Event("open-mobile-menu"))}
+            className="w-10 h-10 flex flex-col items-center justify-center gap-[5px] transition-opacity duration-300 hover:opacity-100"
+            style={{ opacity: 0.6 }}
+            aria-label="Открыть меню"
+          >
+            <span className="block w-5 h-[1.5px]" style={{ backgroundColor: "var(--text)" }} />
+            <span className="block w-5 h-[1.5px]" style={{ backgroundColor: "var(--text)" }} />
+            <span className="block w-3 h-[1.5px]" style={{ backgroundColor: "var(--text)" }} />
+          </button>
+
+          {/* Scroll to top */}
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"
+            style={{ borderColor: "var(--border)" }}
+            aria-label="Наверх"
+          >
+            <ArrowUp size={14} style={{ color: "var(--text-muted)" }} />
+          </button>
         </div>
       </div>
     </>

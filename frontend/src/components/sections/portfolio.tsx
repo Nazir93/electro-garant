@@ -38,8 +38,7 @@ function FillLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function PortfolioRow({ project, index }: { project: (typeof PORTFOLIO_CASES)[0]; index: number }) {
-  const [isOpen, setIsOpen] = useState(index === 0);
+function PortfolioRow({ project, index, isOpen, onToggle }: { project: (typeof PORTFOLIO_CASES)[0]; index: number; isOpen: boolean; onToggle: () => void }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -78,8 +77,8 @@ function PortfolioRow({ project, index }: { project: (typeof PORTFOLIO_CASES)[0]
     >
       {/* Row */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full grid grid-cols-[1fr_auto] md:grid-cols-[2fr_3fr_auto] items-center py-3.5 sm:py-4 px-0 text-left group cursor-pointer min-h-[48px]"
+        onClick={onToggle}
+        className="w-full grid grid-cols-[1fr_auto] md:grid-cols-[2fr_3fr_auto] items-center py-3.5 sm:py-4 lg:pr-20 text-left group cursor-pointer min-h-[48px]"
       >
         <span
           className="font-heading text-xs sm:text-sm md:text-base tracking-[0.05em] transition-colors duration-200 group-hover:text-[var(--accent)] pr-3"
@@ -103,7 +102,7 @@ function PortfolioRow({ project, index }: { project: (typeof PORTFOLIO_CASES)[0]
         className="overflow-hidden transition-[height] duration-500 ease-in-out"
         style={{ height: `${height}px` }}
       >
-        <div ref={contentRef} className="pb-8 pt-2">
+        <div ref={contentRef} className="pb-8 pt-2 lg:pr-20">
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr] gap-8">
             {/* Left: description */}
             <div className="max-w-sm">
@@ -137,6 +136,8 @@ function PortfolioRow({ project, index }: { project: (typeof PORTFOLIO_CASES)[0]
 }
 
 export function PortfolioSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
   return (
     <section
       id="portfolio"
@@ -150,7 +151,13 @@ export function PortfolioSection() {
 
         <div className="border-t" style={{ borderColor: "var(--border)" }}>
           {PORTFOLIO_CASES.map((project, i) => (
-            <PortfolioRow key={project.id} project={project} index={i} />
+            <PortfolioRow
+              key={project.id}
+              project={project}
+              index={i}
+              isOpen={openIndex === i}
+              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+            />
           ))}
         </div>
 

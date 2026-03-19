@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { X, Sun, Moon } from "lucide-react";
-import { PHONE, PHONE_RAW, EMAIL, SERVICES, SITE_NAME } from "@/lib/constants";
+import { X, Sun, Moon, MessageCircle } from "lucide-react";
+import { PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SERVICES, SITE_NAME, SOCIAL_LINKS } from "@/lib/constants";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
 
@@ -152,20 +152,31 @@ function CircuitGrid() {
 
 const NAV_SECTIONS = [
   {
-    label: "О нас",
+    label: "О компании",
     items: [
       { href: "/contacts", label: "Контакты" },
       { href: "/portfolio", label: "Портфолио" },
-      { href: "/app", label: "Приложение" },
+      { href: "/technology", label: "Технология монтажа" },
+      { href: "/blog", label: "Блог" },
+    ],
+  },
+  {
+    label: "Услуги",
+    items: [
+      { href: "/services", label: "Все услуги" },
+      { href: "/services/electrical", label: "Электромонтаж" },
+      { href: "/services/acoustics", label: "Акустика" },
+      { href: "/services/smart-home", label: "Умный дом" },
+      { href: "/services/security", label: "Безопасность" },
+      { href: "/services/structured-cabling", label: "Слаботочные" },
     ],
   },
   {
     label: "Заказчикам",
     items: [
-      { href: "/services", label: "Услуги" },
       { href: "/price", label: "Прайс-листы" },
-      { href: "/docs", label: "Документация" },
       { href: "#calc", label: "Рассчитать стоимость", action: "openModal" as const },
+      { href: "/privacy", label: "Политика" },
     ],
   },
   {
@@ -173,15 +184,7 @@ const NAV_SECTIONS = [
     items: [
       { href: "/vacancies", label: "Вакансии" },
       { href: "/partners", label: "Стать партнёром" },
-      { href: "/cooperation", label: "Предложение о сотрудничестве" },
-    ],
-  },
-  {
-    label: "Информация",
-    items: [
-      { href: "/blog", label: "Блог" },
-      { href: "/forum", label: "Форум" },
-      { href: "/support", label: "Тех. поддержка" },
+      { href: "/support", label: "Поддержка" },
     ],
   },
 ];
@@ -291,91 +294,274 @@ export function Header() {
       {/* Fullscreen menu overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[60] overflow-y-auto"
+          className="fixed inset-0 z-[60] overflow-hidden"
           style={{ backgroundColor: "var(--bg)" }}
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
         >
-          {/* Close button */}
-          <button
-            onClick={() => setIsOpen(false)}
-            className="fixed top-4 right-4 sm:top-5 sm:right-6 z-[70] w-12 h-12 flex items-center justify-center"
-            aria-label="Закрыть меню"
-          >
-            <X size={28} style={{ color: "var(--text)" }} />
-          </button>
-
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            className="fixed top-4 right-[72px] sm:top-5 sm:right-[80px] z-[70] w-12 h-12 flex items-center justify-center rounded-full border"
-            style={{ borderColor: "var(--border)" }}
-            aria-label="Переключить тему"
-          >
-            {isDark ? (
-              <Sun size={16} style={{ color: "var(--text-muted)" }} />
-            ) : (
-              <Moon size={16} style={{ color: "var(--text-muted)" }} />
-            )}
-          </button>
-
-          <nav className="container mx-auto pt-16 sm:pt-20 pb-4 sm:pb-6 flex flex-col min-h-full safe-bottom">
-            <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:gap-x-10 sm:gap-y-7">
-              {NAV_SECTIONS.map((section) => (
-                <div key={section.label}>
-                  <h3
-                    className="font-heading text-sm sm:text-base md:text-lg mb-2 sm:mb-3 pb-1.5 sm:pb-2 border-b"
-                    style={{ color: "var(--text)", borderColor: "rgba(255,255,255,0.06)" }}
-                  >
-                    {section.label}
-                  </h3>
-                  <div className="flex flex-col gap-0.5 sm:gap-1">
-                    {section.items.map((item) =>
-                      item.action === "openModal" ? (
-                        <button
-                          key={item.label}
-                          onClick={() => { setIsOpen(false); openModal(); }}
-                          className="text-left text-xs sm:text-sm transition-colors py-1 min-h-[36px] flex items-center"
-                          style={{ color: "var(--text-muted)" }}
-                        >
-                          {item.label}
-                        </button>
-                      ) : (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setIsOpen(false)}
-                          className="text-xs sm:text-sm transition-colors py-1 min-h-[36px] flex items-center"
-                          style={{ color: "var(--text-muted)" }}
-                        >
-                          {item.label}
-                        </Link>
-                      )
-                    )}
-                  </div>
-                </div>
+          {/* Blueprint background */}
+          <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+            <svg
+              className="absolute inset-0 w-full h-full"
+              viewBox="0 0 800 600"
+              preserveAspectRatio="xMidYMid slice"
+              fill="none"
+            >
+              {/* Grid */}
+              {Array.from({ length: 31 }, (_, i) => (
+                <line key={`gh-${i}`} x1={0} y1={i * 20} x2={800} y2={i * 20} stroke={isDark ? "rgba(201,168,76,0.04)" : "rgba(0,0,0,0.03)"} strokeWidth="0.5" />
               ))}
-            </div>
+              {Array.from({ length: 41 }, (_, i) => (
+                <line key={`gv-${i}`} x1={i * 20} y1={0} x2={i * 20} y2={600} stroke={isDark ? "rgba(201,168,76,0.04)" : "rgba(0,0,0,0.03)"} strokeWidth="0.5" />
+              ))}
 
-            <div className="flex-1 min-h-4" />
+              {/* DIN rail */}
+              <rect x="80" y="80" width="640" height="8" rx="1" stroke={isDark ? "rgba(201,168,76,0.08)" : "rgba(0,0,0,0.05)"} strokeWidth="0.5" fill="none" />
+              <rect x="80" y="200" width="640" height="8" rx="1" stroke={isDark ? "rgba(201,168,76,0.08)" : "rgba(0,0,0,0.05)"} strokeWidth="0.5" fill="none" />
+              <rect x="80" y="380" width="640" height="8" rx="1" stroke={isDark ? "rgba(201,168,76,0.08)" : "rgba(0,0,0,0.05)"} strokeWidth="0.5" fill="none" />
 
-            {/* CTA + contacts */}
-            <div className="pt-4 sm:pt-6 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              {/* Circuit breakers */}
+              {[120, 180, 240, 300, 360, 420, 480, 540, 600, 660].map((x, i) => (
+                <g key={`cb-${i}`} opacity={isDark ? 0.07 : 0.045}>
+                  <rect x={x - 12} y={90} width={24} height={40} rx="2" stroke="rgba(201,168,76,1)" strokeWidth="0.8" />
+                  <line x1={x} y1={90} x2={x} y2={80} stroke="rgba(201,168,76,1)" strokeWidth="0.5" />
+                  <line x1={x} y1={130} x2={x} y2={145} stroke="rgba(201,168,76,1)" strokeWidth="0.5" />
+                  <circle cx={x} cy={105} r="3" stroke="rgba(201,168,76,1)" strokeWidth="0.5" />
+                  <line x1={x - 2} y1={103} x2={x + 2} y2={107} stroke="rgba(201,168,76,1)" strokeWidth="0.5" />
+                </g>
+              ))}
+
+              {/* RCD symbols */}
+              {[150, 350, 550].map((x, i) => (
+                <g key={`rcd-${i}`} opacity={isDark ? 0.06 : 0.04}>
+                  <rect x={x - 18} y={210} width={36} height={50} rx="3" stroke="rgba(201,168,76,1)" strokeWidth="0.8" />
+                  <line x1={x} y1={200} x2={x} y2={210} stroke="rgba(201,168,76,1)" strokeWidth="0.5" />
+                  <line x1={x} y1={260} x2={x} y2={280} stroke="rgba(201,168,76,1)" strokeWidth="0.5" />
+                  <path d={`M${x - 8} 230 Q${x} 240 ${x + 8} 230`} stroke="rgba(201,168,76,1)" strokeWidth="0.6" />
+                  <text x={x} y={253} textAnchor="middle" fill="rgba(201,168,76,1)" fontSize="6" fontFamily="monospace">T</text>
+                </g>
+              ))}
+
+              {/* Wiring paths */}
+              {[
+                "M 120 145 L 120 200", "M 180 145 L 180 180 L 150 180 L 150 200",
+                "M 300 145 L 300 200", "M 420 145 L 420 180 L 350 180 L 350 200",
+                "M 540 145 L 540 180 L 550 180 L 550 200",
+                "M 150 280 L 150 380", "M 350 280 L 350 340 L 400 340 L 400 380",
+                "M 550 280 L 550 320 L 500 320 L 500 380",
+                "M 240 145 L 240 300 L 280 300 L 280 380",
+                "M 600 145 L 600 350 L 650 350 L 650 380",
+              ].map((d, i) => (
+                <path key={`w-${i}`} d={d} stroke={isDark ? "rgba(201,168,76,0.06)" : "rgba(0,0,0,0.035)"} strokeWidth="0.8" strokeLinejoin="round" />
+              ))}
+
+              {/* Ground symbol */}
+              <g opacity={isDark ? 0.06 : 0.04}>
+                <line x1={400} y1={500} x2={400} y2={520} stroke="rgba(201,168,76,1)" strokeWidth="0.8" />
+                <line x1={388} y1={520} x2={412} y2={520} stroke="rgba(201,168,76,1)" strokeWidth="0.8" />
+                <line x1={392} y1={525} x2={408} y2={525} stroke="rgba(201,168,76,1)" strokeWidth="0.6" />
+                <line x1={396} y1={530} x2={404} y2={530} stroke="rgba(201,168,76,1)" strokeWidth="0.4" />
+              </g>
+
+              {/* Junction dots */}
+              {[[120, 200], [300, 200], [150, 280], [350, 280], [550, 280], [280, 380], [400, 380], [500, 380], [650, 380]].map(([cx, cy], i) => (
+                <circle key={`jd-${i}`} cx={cx} cy={cy} r="2" fill={isDark ? "rgba(201,168,76,0.08)" : "rgba(0,0,0,0.04)"} />
+              ))}
+            </svg>
+          </div>
+
+          {/* Top bar */}
+          <div className="fixed top-0 left-0 right-0 z-[70] px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <Link
+              href="/"
+              onClick={() => setIsOpen(false)}
+              className="font-heading text-[11px] tracking-[0.12em] uppercase select-none"
+              style={{ color: "var(--text)" }}
+            >
+              Гарант Монтаж
+            </Link>
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => { setIsOpen(false); openModal(); }}
-                className="w-full mt-2 sm:mt-4 py-3 sm:py-4 text-sm sm:text-base font-heading text-center rounded-full mb-4 sm:mb-6 min-h-[44px]"
-                style={{ backgroundColor: "var(--accent)", color: "#0A0A0A" }}
+                onClick={toggleTheme}
+                className="w-9 h-9 rounded-full flex items-center justify-center border transition-colors"
+                style={{ borderColor: "var(--border)" }}
+                aria-label="Переключить тему"
               >
-                Рассчитать стоимость
+                {isDark ? <Sun size={13} style={{ color: "var(--text-muted)" }} /> : <Moon size={13} style={{ color: "var(--text-muted)" }} />}
               </button>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-                <a href={`tel:${PHONE_RAW}`} className="text-sm sm:text-base min-h-[36px] flex items-center" style={{ color: "var(--text-muted)" }}>
-                  {PHONE}
-                </a>
-                <a href={`mailto:${EMAIL}`} className="text-sm sm:text-base min-h-[36px] flex items-center" style={{ color: "var(--text-muted)" }}>
-                  {EMAIL}
-                </a>
-              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-9 h-9 rounded-full flex items-center justify-center border transition-colors"
+                style={{ borderColor: "var(--border)" }}
+                aria-label="Закрыть меню"
+              >
+                <X size={16} style={{ color: "var(--text)" }} />
+              </button>
             </div>
-          </nav>
+          </div>
+
+          {/* Main content: sections + right sidebar */}
+          <div className="relative z-10 h-full flex">
+            {/* Nav area */}
+            <nav className="flex-1 flex flex-col justify-center px-5 sm:px-8 md:px-10 lg:px-16 pt-12 pb-4">
+              <div className="flex-1 flex flex-col justify-center">
+                {NAV_SECTIONS.map((section, si) => (
+                  <div
+                    key={section.label}
+                    className="border-b py-3 sm:py-3.5 md:py-4 menu-stagger"
+                    style={{
+                      borderColor: "var(--border)",
+                      animation: `menuFadeIn 0.6s ease-out ${si * 0.08}s both`,
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3
+                          className="font-heading text-xl sm:text-2xl md:text-3xl tracking-tight mb-1.5 sm:mb-2"
+                          style={{ color: "var(--text)" }}
+                        >
+                          {section.label}
+                        </h3>
+                        <div className="flex flex-wrap gap-x-4 sm:gap-x-5 gap-y-0.5">
+                          {section.items.map((item) =>
+                            item.action === "openModal" ? (
+                              <button
+                                key={item.label}
+                                onClick={() => { setIsOpen(false); openModal(); }}
+                                className="text-[11px] sm:text-xs transition-colors duration-300 hover:text-[var(--accent)] py-0.5"
+                                style={{ color: "var(--text-muted)" }}
+                              >
+                                {item.label}
+                              </button>
+                            ) : (
+                              <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={() => setIsOpen(false)}
+                                className="text-[11px] sm:text-xs transition-colors duration-300 hover:text-[var(--accent)] py-0.5"
+                                style={{ color: "var(--text-muted)" }}
+                              >
+                                {item.label}
+                              </Link>
+                            )
+                          )}
+                        </div>
+                      </div>
+                      <span
+                        className="text-[9px] font-heading tracking-[0.2em] mt-1 shrink-0"
+                        style={{ color: "var(--text-subtle)" }}
+                      >
+                        {String(si + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom: contacts + CTA */}
+              <div
+                className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                style={{ animation: "menuFadeIn 0.6s ease-out 0.4s both" }}
+              >
+                <div className="flex items-center gap-3 sm:gap-5 flex-wrap">
+                  <a
+                    href={`tel:${PHONE_RAW}`}
+                    className="text-xs transition-colors duration-300 hover:text-[var(--accent)]"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {PHONE}
+                  </a>
+                  <a
+                    href={`tel:${PHONE2_RAW}`}
+                    className="text-xs transition-colors duration-300 hover:text-[var(--accent)]"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {PHONE2}
+                  </a>
+                  <a
+                    href={`mailto:${EMAIL}`}
+                    className="text-xs transition-colors duration-300 hover:text-[var(--accent)]"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {EMAIL}
+                  </a>
+                </div>
+                <button
+                  onClick={() => { setIsOpen(false); openModal(); }}
+                  className="px-7 py-2.5 text-xs font-heading uppercase tracking-[0.1em] rounded-full transition-all duration-500 hover:scale-105"
+                  style={{ backgroundColor: "var(--accent)", color: "#0A0A0A" }}
+                >
+                  Обсудить проект
+                </button>
+              </div>
+            </nav>
+
+            {/* Right sidebar — social + vertical text */}
+            <div
+              className="hidden sm:flex flex-col items-center justify-between w-14 md:w-16 py-14 border-l shrink-0"
+              style={{
+                borderColor: "var(--border)",
+                animation: "menuFadeIn 0.5s ease-out 0.3s both",
+              }}
+            >
+              <div className="flex flex-col items-center gap-3">
+                {SOCIAL_LINKS.whatsapp && (
+                  <a
+                    href={SOCIAL_LINKS.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[#25D366]"
+                    style={{ borderColor: "var(--border)" }}
+                    aria-label="WhatsApp"
+                  >
+                    <MessageCircle size={13} style={{ color: "var(--text-muted)" }} />
+                  </a>
+                )}
+                {SOCIAL_LINKS.telegram && (
+                  <a
+                    href={SOCIAL_LINKS.telegram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[#0088cc]"
+                    style={{ borderColor: "var(--border)" }}
+                    aria-label="Telegram"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5" style={{ color: "var(--text-muted)" }}>
+                      <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.855.075 1.644.357 1.937.793.825 2.009 1.467 3.097 2.033l.09.044c.397.208.775.406 1.025.607.282.219.435.396.484.52.05.124.065.278-.061.63-.136.38-.396.987-.744 1.773-.56 1.264-1.3 2.934-1.558 3.545-.19.453-.39.905-.078 1.384.156.24.397.44.742.508.346.068.626-.06.953-.217l.098-.046 3.965-2.556c.39 1.276.756 2.475 1.116 3.648.19.612.64.86 1.063.86.425 0 .822-.238 1.062-.86l3.065-10.39L21.198 4.58c.22-.085.468-.228.633-.46.165-.232.224-.544.174-.85a1.12 1.12 0 0 0-.807-.837z" />
+                    </svg>
+                  </a>
+                )}
+                {SOCIAL_LINKS.vk && (
+                  <a
+                    href={SOCIAL_LINKS.vk}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110"
+                    style={{ borderColor: "var(--border)" }}
+                    aria-label="VK"
+                  >
+                    <span className="text-[9px] font-bold" style={{ color: "var(--text-muted)" }}>VK</span>
+                  </a>
+                )}
+              </div>
+
+              <span
+                className="text-[8px] uppercase tracking-[0.25em] font-heading select-none"
+                style={{
+                  writingMode: "vertical-rl",
+                  textOrientation: "mixed",
+                  color: "var(--text-subtle)",
+                }}
+              >
+                Гарант Монтаж
+              </span>
+
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: "var(--accent)", opacity: 0.5 }}
+              />
+            </div>
+          </div>
         </div>
       )}
     </>
@@ -424,6 +610,8 @@ export function NavBar() {
           </Link>
           <div className="hidden md:flex items-center gap-3 text-[11px]" style={{ color: "var(--text-muted)" }}>
             <a href={`tel:${PHONE_RAW}`} className="hover:opacity-100 transition-opacity">{PHONE}</a>
+            <span style={{ color: "var(--text-subtle)" }}>/</span>
+            <a href={`tel:${PHONE2_RAW}`} className="hover:opacity-100 transition-opacity">{PHONE2}</a>
             <span style={{ color: "var(--text-subtle)" }}>/</span>
             <a href={`mailto:${EMAIL}`} className="hover:opacity-100 transition-opacity">{EMAIL}</a>
           </div>

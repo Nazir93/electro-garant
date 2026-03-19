@@ -6,7 +6,7 @@ import {
   Phone, Mail, MapPin, Clock, Send, MessageCircle,
   Building2, CreditCard, ChevronDown,
 } from "lucide-react";
-import { PHONE, PHONE_RAW, EMAIL, ADDRESS, WORKING_HOURS, SOCIAL_LINKS, COMPANY } from "@/lib/constants";
+import { PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, ADDRESS, WORKING_HOURS, SOCIAL_LINKS, COMPANY } from "@/lib/constants";
 
 function RequisitesBlock() {
   const [open, setOpen] = useState(false);
@@ -103,7 +103,7 @@ export function ContactsSection() {
         {/* Contact info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
           {[
-            { icon: Phone, label: "Телефон", value: PHONE, href: `tel:${PHONE_RAW}` },
+            { icon: Phone, label: "Телефон", value: `${PHONE} / ${PHONE2}`, href: `tel:${PHONE_RAW}` },
             { icon: Mail, label: "Email", value: EMAIL, href: `mailto:${EMAIL}` },
             { icon: MapPin, label: "Адрес", value: ADDRESS },
             { icon: Clock, label: "Режим работы", value: WORKING_HOURS },

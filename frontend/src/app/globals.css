@@ -58,7 +58,12 @@
     color: var(--text);
     transition: background-color 0.5s ease, color 0.5s ease;
     overflow-x: hidden;
+    overscroll-behavior-x: none;
     -webkit-overflow-scrolling: touch;
+  }
+
+  a, button {
+    touch-action: manipulation;
   }
 
   img,
@@ -214,6 +219,7 @@
       padding-right: 12px;
     }
   }
+
 }
 
 /* Electric circuit grid animation */
@@ -292,10 +298,49 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes priceTicker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-33.333%); }
+}
+
+@keyframes priceShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s ease-out both;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .price-pulse-border,
   .price-pulse-glow,
   .price-pulse-dot {
     animation: none;
+  }
+  .menu-stagger {
+    animation: none !important;
   }
 }

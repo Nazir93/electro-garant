@@ -70,7 +70,7 @@ export function FixedStatsBar() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[40] border-t transition-all duration-500 lg:right-[60px]"
+      className="fixed bottom-14 lg:bottom-0 left-0 right-0 z-[40] border-t transition-all duration-500 lg:right-[60px]"
       style={{
         borderColor: "var(--border)",
         backgroundColor: "var(--bg)",

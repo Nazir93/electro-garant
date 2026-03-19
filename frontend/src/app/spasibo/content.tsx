@@ -7,6 +7,8 @@ import { CheckCircle, Phone, ArrowRight, Send, MessageCircle } from "lucide-reac
 import {
   PHONE,
   PHONE_RAW,
+  PHONE2,
+  PHONE2_RAW,
   SOCIAL_LINKS,
   SITE_NAME,
 } from "@/lib/constants";
@@ -85,6 +87,13 @@ export function ThankYouContent() {
           >
             <Phone size={22} />
             {PHONE}
+          </a>
+          <a
+            href={`tel:${PHONE2_RAW}`}
+            className="flex items-center justify-center gap-3 text-brand-accent text-lg font-bold hover:text-white transition-colors mt-2"
+          >
+            <Phone size={20} />
+            {PHONE2}
           </a>
         </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef } from "react";
 import { Download, ChevronDown, Search, X, Trash2, Send } from "lucide-react";
-import { SITE_NAME, PHONE, PHONE_RAW } from "@/lib/constants";
+import { SITE_NAME, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW } from "@/lib/constants";
 import { useModal } from "@/lib/modal-context";
 import { PRICE_SECTIONS, type PriceSection, type PriceItem } from "./price-data";
 
@@ -610,13 +610,22 @@ export function PricePageContent() {
             <p className="text-xs sm:text-sm" style={{ color: "var(--text-muted)" }}>
               Нужна индивидуальная смета?
             </p>
-            <a
-              href={`tel:${PHONE_RAW}`}
-              className="font-heading text-lg sm:text-xl transition-colors hover:opacity-80"
-              style={{ color: "var(--text)" }}
-            >
-              {PHONE}
-            </a>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+              <a
+                href={`tel:${PHONE_RAW}`}
+                className="font-heading text-lg sm:text-xl transition-colors hover:opacity-80"
+                style={{ color: "var(--text)" }}
+              >
+                {PHONE}
+              </a>
+              <a
+                href={`tel:${PHONE2_RAW}`}
+                className="font-heading text-lg sm:text-xl transition-colors hover:opacity-80"
+                style={{ color: "var(--text)" }}
+              >
+                {PHONE2}
+              </a>
+            </div>
           </div>
         </div>
       </section>

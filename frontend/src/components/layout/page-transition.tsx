@@ -11,19 +11,17 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     const el = containerRef.current;
     if (!el) return;
     el.style.opacity = "0";
-    el.style.transform = "translateY(12px)";
 
     const raf = requestAnimationFrame(() => {
-      el.style.transition = "opacity 0.45s ease, transform 0.45s ease";
+      el.style.transition = "opacity 0.5s ease";
       el.style.opacity = "1";
-      el.style.transform = "translateY(0)";
     });
 
     return () => cancelAnimationFrame(raf);
   }, [pathname]);
 
   return (
-    <div ref={containerRef} style={{ willChange: "opacity, transform" }}>
+    <div ref={containerRef}>
       {children}
     </div>
   );

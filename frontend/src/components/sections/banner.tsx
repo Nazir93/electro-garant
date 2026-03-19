@@ -422,6 +422,7 @@ export function BannerSection() {
                     style={{
                       backgroundColor: isHov ? "rgba(201,168,76,0.15)" : "rgba(0,0,0,0.55)",
                       backdropFilter: "blur(8px)",
+                      WebkitBackdropFilter: "blur(8px)",
                       border: `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.1)"}`,
                     }}
                   >

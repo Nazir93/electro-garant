@@ -6,7 +6,6 @@ import { HeroSection } from "@/components/sections/hero";
 import { PriceBannerSection } from "@/components/sections/price-banner";
 import { PortfolioSection } from "@/components/sections/portfolio";
 import { AboutSection } from "@/components/sections/about";
-import { TechnologySection } from "@/components/sections/technology";
 
 import { PartnersSection } from "@/components/sections/partners";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -30,7 +29,7 @@ export default function HomePage() {
       <div className="relative z-[2] -mt-[100vh]">
         <AboutSection />
         <PortfolioSection />
-        <TechnologySection />
+
         <PartnersSection />
       </div>
     </>

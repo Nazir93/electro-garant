@@ -1,144 +1,189 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { STATS } from "@/lib/constants";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { useModal } from "@/lib/modal-context";
 
-const SLIDES = [
+type SlideAction =
+  | { type: "link"; href: string; label: string }
+  | { type: "modal"; label: string };
+
+interface Slide {
+  number: string;
+  heading: string;
+  highlight: string;
+  description: string;
+  imageLabel: string;
+  action: SlideAction;
+}
+
+const SLIDES: Slide[] = [
   {
     number: "01",
-    heading: "Полный цикл электромонтажных работ",
-    highlight: "280+ выполненных объектов",
+    heading: "Собственная технология монтажа",
+    highlight: "Авторская методика, отточенная на 280+ объектах",
     description:
-      "От проектирования и закупки оборудования до монтажа и пусконаладки. Мы берём на себя все этапы — вам не нужно координировать субподрядчиков.",
-    imageLabel: "Фото объекта — электрощит",
+      "Мы разработали собственную технологию электромонтажа, которая сокращает сроки работ на 30% без потери качества. Каждый этап документирован и стандартизирован — от разметки трасс до пусконаладки.",
+    imageLabel: "Фото — процесс монтажа",
+    action: { type: "link", href: "/technology", label: "Узнать подробнее" },
   },
   {
     number: "02",
-    heading: "Собственная технология монтажа",
-    highlight: "12 лет опыта и собственный штат инженеров",
+    heading: "Соблюдение нормативной документации",
+    highlight: "Полное соответствие ГОСТ, ПУЭ и СНиП",
     description:
-      "Авторская методика монтажа, сертифицированные специалисты и допуск СРО на все виды работ. Без субподряда — полный контроль качества.",
-    imageLabel: "Фото объекта — процесс монтажа",
+      "Каждый проект проходит многоступенчатую проверку на соответствие действующим нормативам. Исполнительная документация, акты скрытых работ и протоколы измерений — неотъемлемая часть нашей работы.",
+    imageLabel: "Фото — документация и проект",
+    action: { type: "modal", label: "Рассчитать стоимость" },
   },
   {
     number: "03",
+    heading: "Соблюдение сроков — наш приоритет",
+    highlight: "98% объектов сданы точно в срок",
+    description:
+      "Фиксированные сроки в договоре — не формальность, а принцип работы. Собственный штат инженеров и система управления проектами позволяют контролировать каждый этап без задержек.",
+    imageLabel: "Фото — координация на объекте",
+    action: { type: "modal", label: "Рассчитать стоимость" },
+  },
+  {
+    number: "04",
+    heading: "Большой комплекс монтажных работ",
+    highlight: "От слаботочных систем до силовых сетей",
+    description:
+      "Электромонтаж, коммерческая акустика, видеонаблюдение, умный дом, слаботочные системы — один подрядчик на все виды работ. Единая ответственность и слаженная команда.",
+    imageLabel: "Фото — щитовое оборудование",
+    action: { type: "link", href: "/services", label: "Все услуги" },
+  },
+  {
+    number: "05",
+    heading: "Следим за репутацией — 13 лет на рынке",
+    highlight: "Нам доверяют Radisson, Роза Хутор, Papa John's",
+    description:
+      "За 13 лет мы выполнили проекты для крупнейших сетей и частных заказчиков по всему югу России. Каждый объект — подтверждение компетенции и надёжности нашей команды.",
+    imageLabel: "Фото — готовый объект",
+    action: { type: "link", href: "/portfolio", label: "Портфолио" },
+  },
+  {
+    number: "06",
+    heading: "Работаем по всему Югу и в Москве",
+    highlight: "Сочи • Новороссийск • Краснодар • Ростов • Москва",
+    description:
+      "География наших проектов охватывает весь юг России и столицу. Выезд инженера и обследование объекта — бесплатно в любом из городов присутствия.",
+    imageLabel: "Фото — география проектов",
+    action: { type: "modal", label: "Рассчитать стоимость" },
+  },
+  {
+    number: "07",
     heading: "Гарантия и поддержка",
     highlight: "2 года гарантия + техническая поддержка 24/7",
     description:
       "Полная ответственность за каждый выполненный объект. Проектная документация по ГОСТ, сопровождение после сдачи — мы всегда на связи.",
-    imageLabel: "Фото объекта — готовый результат",
+    imageLabel: "Фото — обслуживание",
+    action: { type: "link", href: "/contacts", label: "Связаться с нами" },
   },
 ];
 
-function AnimatedCounter({
-  value,
-  suffix = "",
-}: {
-  value: number;
-  suffix: string;
-}) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const hasAnimated = useRef(false);
+function ImagePanel({ activeIndex, scrollProgress }: { activeIndex: number; scrollProgress: number }) {
+  const { openModal } = useModal();
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated.current) {
-          hasAnimated.current = true;
-          const duration = 2000;
-          const steps = 60;
-          const increment = value / steps;
-          let current = 0;
-          const timer = setInterval(() => {
-            current += increment;
-            if (current >= value) {
-              setCount(value);
-              clearInterval(timer);
-            } else {
-              setCount(Math.floor(current));
-            }
-          }, duration / steps);
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [value]);
+  const stripY = scrollProgress * 100;
 
   return (
-    <span ref={ref}>
-      {count.toLocaleString("ru-RU")}
-      {suffix}
-    </span>
-  );
-}
-
-function ConvexImagePanel({
-  activeIndex,
-  scrollProgress,
-}: {
-  activeIndex: number;
-  scrollProgress: number;
-}) {
-  const bulgeCenter = 0.12 + scrollProgress * 0.76;
-  const bulgeDepth = 0.08;
-  const bulgeHalf = 0.18;
-  const top = Math.max(0, bulgeCenter - bulgeHalf);
-  const bot = Math.min(1, bulgeCenter + bulgeHalf);
-
-  const d = [
-    `M 0 0`,
-    `L 0 ${top.toFixed(4)}`,
-    `Q ${bulgeDepth} ${bulgeCenter.toFixed(4)}, 0 ${bot.toFixed(4)}`,
-    `L 0 1`,
-    `L 1 1`,
-    `L 1 0`,
-    `Z`,
-  ].join(" ");
-
-  return (
-    <div className="h-full relative">
-      <svg className="absolute" style={{ width: 0, height: 0 }} aria-hidden="true">
-        <defs>
-          <clipPath id="convex-clip" clipPathUnits="objectBoundingBox">
-            <path d={d} />
-          </clipPath>
-        </defs>
-      </svg>
-
+    <div className="h-full relative overflow-hidden">
+      {/* Vertical strip with brand name sliding down */}
       <div
-        className="relative w-full h-full overflow-hidden"
-        style={{ clipPath: "url(#convex-clip)" }}
+        className="absolute left-0 top-0 bottom-0 z-20 flex items-start"
+        style={{ width: "40px" }}
       >
-        {SLIDES.map((slide, i) => (
+        <div
+          className="absolute left-0 w-full flex items-center justify-center transition-transform duration-100 ease-linear"
+          style={{
+            height: "100%",
+            transform: `translateY(0)`,
+          }}
+        >
           <div
-            key={i}
-            className="absolute inset-0 flex items-center justify-center transition-opacity duration-700"
+            className="whitespace-nowrap font-heading text-[10px] uppercase tracking-[0.3em] select-none"
             style={{
-              opacity: i === activeIndex ? 1 : 0,
-              backgroundColor: "#0A0A0A",
+              writingMode: "vertical-rl",
+              textOrientation: "mixed",
+              color: "rgba(201,168,76,0.5)",
+              transform: `translateY(${stripY - 50}%)`,
+              transition: "transform 0.3s ease-out",
             }}
           >
-            <span
-              className="text-[10px] uppercase tracking-[0.2em]"
-              style={{ color: "rgba(255,255,255,0.25)" }}
-            >
-              {slide.imageLabel}
-            </span>
+            ГАРАНТ МОНТАЖ • ЭЛЕКТРОМОНТАЖ ПРЕМИУМ-КЛАССА • ГАРАНТ МОНТАЖ • ЭЛЕКТРОМОНТАЖ ПРЕМИУМ-КЛАССА
           </div>
-        ))}
-
+        </div>
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0"
           style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
+            background: "linear-gradient(180deg, var(--bg) 0%, transparent 15%, transparent 85%, var(--bg) 100%)",
+            pointerEvents: "none",
           }}
         />
+        <div className="absolute right-0 top-0 bottom-0 w-[1px]" style={{ backgroundColor: "var(--border)" }} />
+      </div>
+
+      <div className="relative w-full h-full" style={{ paddingLeft: "40px" }}>
+      {SLIDES.map((slide, i) => (
+        <div
+          key={i}
+          className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-700"
+          style={{
+            opacity: i === activeIndex ? 1 : 0,
+            backgroundColor: "#0A0A0A",
+            pointerEvents: i === activeIndex ? "auto" : "none",
+          }}
+        >
+          <span
+            className="text-[10px] uppercase tracking-[0.2em] mb-8"
+            style={{ color: "rgba(255,255,255,0.25)" }}
+          >
+            {slide.imageLabel}
+          </span>
+
+          {slide.action.type === "link" ? (
+            <Link
+              href={slide.action.href}
+              className="group flex items-center gap-2 px-6 py-3 rounded-full border transition-all duration-500 hover:bg-[rgba(201,168,76,0.15)]"
+              style={{ borderColor: "rgba(201,168,76,0.4)" }}
+            >
+              <span
+                className="text-xs uppercase tracking-[0.12em] font-heading transition-colors duration-300 group-hover:text-[var(--accent)]"
+                style={{ color: "rgba(255,255,255,0.7)" }}
+              >
+                {slide.action.label}
+              </span>
+              <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" style={{ color: "rgba(201,168,76,0.8)" }} />
+            </Link>
+          ) : (
+            <button
+              onClick={openModal}
+              className="group flex items-center gap-2 px-6 py-3 rounded-full border transition-all duration-500 hover:bg-[rgba(201,168,76,0.15)]"
+              style={{ borderColor: "rgba(201,168,76,0.4)" }}
+            >
+              <span
+                className="text-xs uppercase tracking-[0.12em] font-heading transition-colors duration-300 group-hover:text-[var(--accent)]"
+                style={{ color: "rgba(255,255,255,0.7)" }}
+              >
+                {slide.action.label}
+              </span>
+              <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" style={{ color: "rgba(201,168,76,0.8)" }} />
+            </button>
+          )}
+        </div>
+      ))}
+
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
       </div>
     </div>
   );
@@ -186,10 +231,10 @@ export function AboutSection() {
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
         <div className="h-full flex flex-col md:flex-row">
 
-          {/* ── Left: text ── */}
+          {/* Left: text */}
           <div className="flex-1 md:w-[42%] md:flex-none h-full flex flex-col relative z-10">
-            {/* Mobile: progress dots */}
-            <div className="md:hidden flex items-center gap-2 px-5 sm:px-6 pt-6">
+            {/* Mobile progress dots */}
+            <div className="md:hidden flex items-center gap-2 px-5 sm:px-6 pt-28">
               {SLIDES.map((s, i) => (
                 <div key={i} className="flex items-center gap-1.5">
                   <div
@@ -204,6 +249,40 @@ export function AboutSection() {
                       {s.number}
                     </span>
                   )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop slide counter */}
+            <div className="hidden md:flex items-center gap-3 px-10 lg:px-16 pt-16 md:pt-20">
+              <span className="text-[10px] font-heading tracking-[0.2em]" style={{ color: "var(--text-subtle)" }}>
+                {String(activeIndex + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}
+              </span>
+              <div className="flex-1 h-[1px] max-w-[120px]" style={{ backgroundColor: "var(--border)" }}>
+                <div
+                  className="h-full transition-all duration-500 ease-out"
+                  style={{
+                    width: `${((activeIndex + 1) / SLIDES.length) * 100}%`,
+                    backgroundColor: "var(--accent)",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Background large number */}
+            <div className="absolute inset-0 flex items-center pointer-events-none select-none overflow-hidden">
+              {SLIDES.map((slide, i) => (
+                <div
+                  key={i}
+                  className="absolute inset-0 flex items-center transition-opacity duration-700"
+                  style={{ opacity: i === activeIndex ? 1 : 0 }}
+                >
+                  <span
+                    className="font-heading text-[30vw] md:text-[20vw] leading-none pl-4 md:pl-8"
+                    style={{ color: "var(--text)", opacity: 0.04 }}
+                  >
+                    {slide.number}
+                  </span>
                 </div>
               ))}
             </div>
@@ -225,14 +304,6 @@ export function AboutSection() {
                     pointerEvents: i === activeIndex ? "auto" : "none",
                   }}
                 >
-                  {/* Number — desktop */}
-                  <span
-                    className="hidden md:block font-heading text-[10px] tracking-[0.2em] mb-6"
-                    style={{ color: "var(--text-subtle)" }}
-                  >
-                    {slide.number}
-                  </span>
-
                   <h3
                     className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-[1.05] mb-5 md:mb-8 max-w-md"
                     style={{ color: "var(--text)" }}
@@ -253,18 +324,47 @@ export function AboutSection() {
                   >
                     {slide.description}
                   </p>
+
+                  {/* Mobile CTA */}
+                  <div className="md:hidden mt-6">
+                    {slide.action.type === "link" ? (
+                      <Link
+                        href={slide.action.href}
+                        className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.12em] font-heading transition-colors duration-300"
+                        style={{ color: "var(--accent)" }}
+                      >
+                        {slide.action.label}
+                        <ArrowRight size={14} />
+                      </Link>
+                    ) : (
+                      <MobileCTA label={slide.action.label} />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* ── Right: image with convex bulge edge ── */}
+          {/* Right: image panel — rectangular border */}
           <div className="hidden md:block md:w-[58%] h-full relative">
-            <ConvexImagePanel activeIndex={activeIndex} scrollProgress={scrollProgress} />
+            <ImagePanel activeIndex={activeIndex} scrollProgress={scrollProgress} />
           </div>
         </div>
-
       </div>
     </section>
+  );
+}
+
+function MobileCTA({ label }: { label: string }) {
+  const { openModal } = useModal();
+  return (
+    <button
+      onClick={openModal}
+      className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.12em] font-heading transition-colors duration-300"
+      style={{ color: "var(--accent)" }}
+    >
+      {label}
+      <ArrowRight size={14} />
+    </button>
   );
 }

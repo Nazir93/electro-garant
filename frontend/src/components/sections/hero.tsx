@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { CITY, PHONE, PHONE_RAW, EMAIL, SERVICES } from "@/lib/constants";
+import { CITY, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SERVICES } from "@/lib/constants";
 
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
@@ -210,13 +210,15 @@ export function HeroSection() {
 
                 {/* Contacts */}
                 <div
-                  className="absolute bottom-12 right-0 container mx-auto z-10 flex justify-end items-center gap-6"
+                  className="absolute bottom-12 right-0 container mx-auto z-10 flex justify-end items-center gap-6 lg:pr-[76px]"
                   style={{ transform: `scale(${textScale})`, transformOrigin: "bottom right" }}
                 >
                   <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
                     <span>{EMAIL}</span>
                     <span style={{ color: "var(--text-subtle)" }}>/</span>
                     <span>{PHONE}</span>
+                    <span style={{ color: "var(--text-subtle)" }}>/</span>
+                    <span>{PHONE2}</span>
                   </div>
                   <span
                     className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.1em] transition-all duration-300 hover:scale-105"

@@ -3,6 +3,7 @@ import {
   CITY,
   SITE_URL,
   PHONE_RAW,
+  PHONE2_RAW,
   EMAIL,
   ADDRESS,
 } from "@/lib/constants";
@@ -29,7 +30,7 @@ export async function JsonLd() {
     name: SITE_NAME,
     description: `Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в ${CITY}. 280+ объектов. Гарантия 5 лет.`,
     url: SITE_URL,
-    telephone: PHONE_RAW,
+    telephone: [PHONE_RAW, PHONE2_RAW],
     email: EMAIL,
     address: {
       "@type": "PostalAddress",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SITE_NAME, EMAIL, PHONE } from "@/lib/constants";
+import { SITE_NAME, EMAIL, PHONE, PHONE2, SITE_URL, COMPANY, ADDRESS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Политика конфиденциальности",
@@ -8,73 +8,204 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <section className="pt-32 pb-20 bg-white">
-      <div className="container mx-auto max-w-3xl">
-        <h1 className="text-3xl md:text-4xl font-heading font-bold text-brand mb-8">
+    <section
+      className="pt-32 pb-20 min-h-screen"
+      style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
+    >
+      <div className="container mx-auto max-w-3xl px-5 sm:px-8 lg:pr-[80px]">
+        <p
+          className="text-[10px] uppercase tracking-[0.25em] mb-4"
+          style={{ color: "var(--text-subtle)" }}
+        >
+          Юридическая информация
+        </p>
+        <h1
+          className="text-3xl md:text-4xl font-heading font-bold mb-3"
+          style={{ color: "var(--text)" }}
+        >
           Политика конфиденциальности
         </h1>
+        <p className="text-sm mb-10" style={{ color: "var(--text-muted)" }}>
+          Действует с 1 января 2024 г. &middot; {COMPANY.shortName}
+        </p>
 
-        <div className="prose prose-gray max-w-none space-y-6 text-gray-600 leading-relaxed">
-          <p>
-            Настоящая политика конфиденциальности определяет порядок обработки и
-            защиты персональных данных пользователей сайта компании {SITE_NAME}.
-          </p>
+        <div className="space-y-8 text-[15px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
 
-          <h2 className="text-xl font-heading font-bold text-brand mt-8 mb-3">
-            1. Сбор информации
-          </h2>
-          <p>
-            Мы собираем информацию, которую вы предоставляете при заполнении форм
-            на сайте: имя, номер телефона, адрес электронной почты. Данные
-            собираются исключительно с вашего согласия при отправке формы.
-          </p>
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              1. Общие положения
+            </h2>
+            <p>
+              Настоящая политика конфиденциальности (далее — «Политика») определяет порядок
+              обработки и защиты персональных данных пользователей сайта{" "}
+              <a href={SITE_URL} className="underline" style={{ color: "var(--accent)" }}>{SITE_URL}</a>{" "}
+              (далее — «Сайт»), принадлежащего {COMPANY.fullName} (ИНН {COMPANY.inn},
+              ОГРНИП {COMPANY.ogrnip}), далее — «Оператор».
+            </p>
+            <p className="mt-3">
+              Используя Сайт и/или отправляя свои персональные данные через формы обратной связи,
+              пользователь выражает согласие с условиями данной Политики. В случае несогласия с условиями
+              Политики пользователь должен прекратить использование Сайта.
+            </p>
+          </div>
 
-          <h2 className="text-xl font-heading font-bold text-brand mt-8 mb-3">
-            2. Использование информации
-          </h2>
-          <p>Собранная информация используется для:</p>
-          <ul className="list-disc pl-6 space-y-1">
-            <li>Связи с вами по вашему запросу</li>
-            <li>Предоставления консультации по услугам</li>
-            <li>Подготовки коммерческого предложения</li>
-            <li>Улучшения качества обслуживания</li>
-          </ul>
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              2. Персональные данные, подлежащие обработке
+            </h2>
+            <p>Оператор может обрабатывать следующие персональные данные пользователя:</p>
+            <ul className="list-disc pl-6 space-y-1 mt-2">
+              <li>Фамилия, имя, отчество</li>
+              <li>Номер телефона</li>
+              <li>Адрес электронной почты</li>
+              <li>Описание объекта и параметры запроса (тип объекта, площадь, услуги)</li>
+            </ul>
+            <p className="mt-3">
+              Оператор также автоматически получает данные, передаваемые устройством пользователя:
+              IP-адрес, данные cookie-файлов, информация о браузере, операционной системе,
+              время доступа, адреса запрашиваемых страниц.
+            </p>
+          </div>
 
-          <h2 className="text-xl font-heading font-bold text-brand mt-8 mb-3">
-            3. Защита данных
-          </h2>
-          <p>
-            Мы принимаем все необходимые меры для защиты ваших персональных данных
-            от несанкционированного доступа, изменения, раскрытия или уничтожения.
-            Передача данных осуществляется по защищённому протоколу HTTPS.
-          </p>
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              3. Цели обработки персональных данных
+            </h2>
+            <p>Персональные данные пользователя обрабатываются в следующих целях:</p>
+            <ul className="list-disc pl-6 space-y-1 mt-2">
+              <li>Обработка входящих запросов и связь с пользователем</li>
+              <li>Предоставление консультации по услугам электромонтажа</li>
+              <li>Подготовка коммерческого предложения и расчёт стоимости</li>
+              <li>Улучшение качества обслуживания и работы Сайта</li>
+              <li>Проведение статистических и аналитических исследований</li>
+              <li>Исполнение требований законодательства Российской Федерации</li>
+            </ul>
+          </div>
 
-          <h2 className="text-xl font-heading font-bold text-brand mt-8 mb-3">
-            4. Передача третьим лицам
-          </h2>
-          <p>
-            Мы не передаём ваши персональные данные третьим лицам, за исключением
-            случаев, предусмотренных законодательством Российской Федерации.
-          </p>
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              4. Правовые основания обработки
+            </h2>
+            <p>
+              Обработка персональных данных осуществляется на основании:
+            </p>
+            <ul className="list-disc pl-6 space-y-1 mt-2">
+              <li>Федерального закона от 27.07.2006 № 152-ФЗ «О персональных данных»</li>
+              <li>Согласия субъекта персональных данных на обработку</li>
+              <li>Необходимости исполнения договора, стороной которого является субъект персональных данных</li>
+            </ul>
+          </div>
 
-          <h2 className="text-xl font-heading font-bold text-brand mt-8 mb-3">
-            5. Файлы cookie
-          </h2>
-          <p>
-            Сайт может использовать файлы cookie для аналитики (Яндекс.Метрика,
-            Google Analytics). Вы можете отключить cookie в настройках браузера.
-          </p>
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              5. Защита персональных данных
+            </h2>
+            <p>
+              Оператор принимает необходимые организационные и технические меры для защиты
+              персональных данных от неправомерного или случайного доступа, уничтожения, изменения,
+              блокирования, копирования, распространения, а также от иных неправомерных действий
+              третьих лиц.
+            </p>
+            <p className="mt-3">
+              Передача данных между пользователем и Сайтом осуществляется по защищённому
+              протоколу HTTPS с использованием SSL-шифрования.
+            </p>
+          </div>
 
-          <h2 className="text-xl font-heading font-bold text-brand mt-8 mb-3">
-            6. Контакты
-          </h2>
-          <p>
-            По вопросам обработки персональных данных обращайтесь:
-          </p>
-          <ul className="list-disc pl-6 space-y-1">
-            <li>Email: {EMAIL}</li>
-            <li>Телефон: {PHONE}</li>
-          </ul>
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              6. Передача данных третьим лицам
+            </h2>
+            <p>
+              Оператор не передаёт персональные данные третьим лицам, за исключением случаев:
+            </p>
+            <ul className="list-disc pl-6 space-y-1 mt-2">
+              <li>Наличия явного согласия пользователя</li>
+              <li>Требований законодательства Российской Федерации</li>
+              <li>Необходимости защиты прав и законных интересов Оператора</li>
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              7. Файлы cookie
+            </h2>
+            <p>
+              Сайт использует файлы cookie для обеспечения корректной работы, анализа
+              пользовательской активности и улучшения качества обслуживания. Используются
+              следующие типы cookie:
+            </p>
+            <ul className="list-disc pl-6 space-y-1 mt-2">
+              <li><strong style={{ color: "var(--text)" }}>Необходимые</strong> — обеспечивают базовую функциональность Сайта (хранение темы, согласие на cookie)</li>
+              <li><strong style={{ color: "var(--text)" }}>Аналитические</strong> — сбор анонимной статистики посещений (Яндекс.Метрика, Google Analytics)</li>
+            </ul>
+            <p className="mt-3">
+              Пользователь может отключить использование файлов cookie в настройках своего браузера.
+              Отключение cookie может повлиять на доступность отдельных функций Сайта.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              8. Сроки хранения данных
+            </h2>
+            <p>
+              Персональные данные пользователей хранятся до момента достижения целей обработки
+              или до получения запроса на удаление от субъекта персональных данных. Обработка
+              персональных данных может быть прекращена по запросу пользователя — для этого
+              необходимо направить письменный запрос на электронную почту Оператора.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              9. Права пользователя
+            </h2>
+            <p>Пользователь имеет право:</p>
+            <ul className="list-disc pl-6 space-y-1 mt-2">
+              <li>Получить информацию об обработке своих персональных данных</li>
+              <li>Требовать уточнения, блокирования или уничтожения персональных данных</li>
+              <li>Отозвать согласие на обработку персональных данных</li>
+              <li>Обжаловать действия Оператора в Роскомнадзор</li>
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-heading font-bold mb-3" style={{ color: "var(--text)" }}>
+              10. Изменение политики
+            </h2>
+            <p>
+              Оператор оставляет за собой право вносить изменения в настоящую Политику.
+              Новая редакция вступает в силу с момента её публикации на Сайте. Продолжение
+              использования Сайта после внесения изменений означает согласие пользователя
+              с новой редакцией Политики.
+            </p>
+          </div>
+
+          <div
+            className="mt-12 p-6 rounded-2xl border"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--card-bg)" }}
+          >
+            <h2 className="text-lg font-heading font-bold mb-4" style={{ color: "var(--text)" }}>
+              Контакты оператора
+            </h2>
+            <div className="space-y-2 text-sm" style={{ color: "var(--text-muted)" }}>
+              <p>{COMPANY.fullName}</p>
+              <p>ИНН: {COMPANY.inn} &middot; ОГРНИП: {COMPANY.ogrnip}</p>
+              <p>Адрес: {ADDRESS}</p>
+              <p>
+                Телефон:{" "}
+                <a href={`tel:${PHONE.replace(/\D/g, "")}`} className="underline" style={{ color: "var(--accent)" }}>{PHONE}</a>
+                {" / "}
+                <a href={`tel:${PHONE2.replace(/\D/g, "")}`} className="underline" style={{ color: "var(--accent)" }}>{PHONE2}</a>
+              </p>
+              <p>
+                Email:{" "}
+                <a href={`mailto:${EMAIL}`} className="underline" style={{ color: "var(--accent)" }}>{EMAIL}</a>
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

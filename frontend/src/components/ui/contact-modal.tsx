@@ -6,8 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { X, ArrowRight, ArrowLeft, Paperclip, Loader2, CheckCircle, FileText, Eye, Calculator } from "lucide-react";
 import { useModal } from "@/lib/modal-context";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { z } from "zod";
-import { PHONE, PHONE_RAW } from "@/lib/constants";
+import { PHONE, PHONE_RAW, PHONE2, PHONE2_RAW } from "@/lib/constants";
 
 type WizardStep =
   | "q1"
@@ -48,6 +49,9 @@ const calculatorSchema = z.object({
   objectType: z.string().min(1, "Выберите тип объекта"),
   area: z.string().min(1, "Укажите площадь"),
   rooms: z.string().optional(),
+  floors: z.string().optional(),
+  tier: z.enum(["econom", "standard", "premium"]),
+  withMaterials: z.boolean(),
   services: z.array(z.string()).min(1, "Выберите хотя бы одну услугу"),
   name: z.string().min(2, "Минимум 2 символа"),
   phone: z.string().min(10, "Введите корректный номер"),
@@ -70,6 +74,7 @@ const BUDGET_OPTIONS = [
 const OBJECT_TYPES = [
   "Квартира",
   "Частный дом",
+  "Гостиница",
   "Ресторан / Кафе",
   "Офис",
   "Магазин",
@@ -79,22 +84,31 @@ const OBJECT_TYPES = [
 
 const SERVICE_OPTIONS = [
   { id: "electrical", label: "Электромонтажные работы" },
-  { id: "lighting", label: "Освещение" },
+  { id: "lighting", label: "Архитектурная подсветка" },
   { id: "acoustics", label: "Коммерческая акустика" },
-  { id: "cabling", label: "Слаботочные системы (СКС)" },
+  { id: "cabling", label: "Слаботочные системы" },
   { id: "smart-home", label: "Умный дом" },
   { id: "security", label: "Видеонаблюдение и безопасность" },
   { id: "design", label: "Проектирование" },
 ];
 
-const PRICE_MAP: Record<string, number> = {
-  electrical: 2500,
-  lighting: 1200,
-  acoustics: 1800,
-  cabling: 1500,
-  "smart-home": 3500,
-  security: 1400,
-  design: 800,
+const TIERS = ["econom", "standard", "premium"] as const;
+const TIER_LABELS: Record<string, string> = {
+  econom: "Эконом",
+  standard: "Стандарт",
+  premium: "Премиум",
+};
+
+type PriceEntry = { noMat: [number, number, number]; withMat: [number, number, number] };
+
+const PRICE_TABLE: Record<string, PriceEntry> = {
+  electrical:  { noMat: [4000, 5500, 9000],   withMat: [6800, 12400, 21000] },
+  lighting:    { noMat: [1200, 1900, 4300],    withMat: [2200, 3650, 9800] },
+  acoustics:   { noMat: [900, 1400, 2600],     withMat: [4500, 10200, 14800] },
+  cabling:     { noMat: [800, 1300, 1900],      withMat: [1400, 1990, 3200] },
+  "smart-home": { noMat: [6500, 9000, 16900],  withMat: [9200, 13500, 29000] },
+  security:    { noMat: [500, 1400, 4200],      withMat: [800, 2400, 7500] },
+  design:      { noMat: [800, 1400, 2000],      withMat: [800, 1400, 2000] },
 };
 
 /* ───── Shared UI ───── */
@@ -319,6 +333,12 @@ function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
                 {errors.privacy && <span className="text-red-400 text-[10px] ml-1">*</span>}
               </label>
             </div>
+            <p className="text-[10px] px-5 -mt-2" style={{ color: "var(--text-subtle)" }}>
+              Мы не передаём ваши данные третьим лицам.{" "}
+              <Link href="/privacy" className="underline hover:text-[var(--accent)] transition-colors" onClick={(e) => e.stopPropagation()}>
+                Политика конфиденциальности
+              </Link>
+            </p>
             <div className="absolute opacity-0 h-0 overflow-hidden" aria-hidden="true">
               <input tabIndex={-1} autoComplete="off" {...register("honeypot")} />
             </div>
@@ -412,9 +432,15 @@ function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
             </InputField>
             <label className="flex items-center gap-2 cursor-pointer text-xs mt-2" style={{ color: "var(--text-muted)" }}>
               <input type="checkbox" className="w-4 h-4 accent-[var(--accent)]" {...register("privacy")} />
-              <span>Я согласен с <a href="/privacy" className="underline" target="_blank">политикой конфиденциальности</a></span>
+              <span>Я согласен с <Link href="/privacy" className="underline" onClick={(e) => e.stopPropagation()}>политикой конфиденциальности</Link></span>
               {errors.privacy && <span className="text-red-400 text-[10px] ml-1">*</span>}
             </label>
+            <p className="text-[10px] -mt-2" style={{ color: "var(--text-subtle)" }}>
+              Мы не передаём ваши данные третьим лицам.{" "}
+              <Link href="/consent" className="underline hover:text-[var(--accent)] transition-colors" onClick={(e) => e.stopPropagation()}>
+                Согласие на обработку ПДн
+              </Link>
+            </p>
             <div className="absolute opacity-0 h-0 overflow-hidden" aria-hidden="true">
               <input tabIndex={-1} autoComplete="off" {...register("honeypot")} />
             </div>
@@ -433,28 +459,66 @@ function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
 function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () => void }) {
   const [loading, setLoading] = useState(false);
   const [estimate, setEstimate] = useState<number | null>(null);
-  const { register, handleSubmit, formState: { errors }, watch, reset } = useForm<CalculatorFormData>({
+  const [withEquipment, setWithEquipment] = useState(false);
+  const { register, handleSubmit, formState: { errors }, watch, reset, setValue } = useForm<CalculatorFormData>({
     resolver: zodResolver(calculatorSchema),
-    defaultValues: { services: [] },
+    defaultValues: { services: [], tier: "standard", withMaterials: false },
   });
 
   const watchArea = watch("area");
-  const watchServices = watch("services");
+  const watchServices = watch("services") || [];
+  const watchTier = watch("tier");
+  const watchMaterials = watch("withMaterials");
+  const watchObjectType = watch("objectType");
+
+  const showFloors = ["Квартира", "Частный дом", "Гостиница"].includes(watchObjectType);
+  const hasAcoustics = watchServices.includes("acoustics");
+  const hasSmartHome = watchServices.includes("smart-home");
+  const hasDesign = watchServices.includes("design");
+  const designAutoForced = hasSmartHome && !hasDesign;
+  const materialsDisabled = hasDesign || designAutoForced;
 
   useEffect(() => {
-    const area = parseFloat(watchArea || "0");
-    if (area > 0 && watchServices?.length > 0) {
-      const pricePerSqm = watchServices.reduce((sum, s) => sum + (PRICE_MAP[s] || 0), 0);
-      setEstimate(Math.round(area * pricePerSqm));
+    if (materialsDisabled) setValue("withMaterials", false);
+  }, [materialsDisabled, setValue]);
+
+  useEffect(() => {
+    const rawArea = parseFloat(watchArea || "0");
+    const area = rawArea > 0 ? Math.max(rawArea, 30) : 0;
+    const tierIdx = TIERS.indexOf(watchTier || "standard");
+
+    const services = [...watchServices];
+    if (services.includes("smart-home") && !services.includes("design")) {
+      services.push("design");
+    }
+
+    if (area > 0 && services.length > 0 && tierIdx >= 0) {
+      const total = services.reduce((sum, s) => {
+        const entry = PRICE_TABLE[s];
+        if (!entry) return sum;
+        if (s === "acoustics") {
+          return sum + (withEquipment ? entry.withMat : entry.noMat)[tierIdx];
+        }
+        if (s === "design") {
+          return sum + entry.noMat[tierIdx];
+        }
+        const prices = watchMaterials ? entry.withMat : entry.noMat;
+        return sum + prices[tierIdx];
+      }, 0);
+      setEstimate(Math.round(area * total));
     } else {
       setEstimate(null);
     }
-  }, [watchArea, watchServices]);
+  }, [watchArea, watchServices, watchTier, watchMaterials, withEquipment]);
 
   const onSubmit = async (data: CalculatorFormData) => {
     if (data.honeypot) return;
     setLoading(true);
     try {
+      const services = [...data.services];
+      if (services.includes("smart-home") && !services.includes("design")) {
+        services.push("design");
+      }
       const params = new URLSearchParams(window.location.search);
       const response = await fetch("/api/leads", {
         method: "POST",
@@ -462,7 +526,9 @@ function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
         body: JSON.stringify({
           name: data.name, phone: data.phone, source: "calculator",
           objectType: data.objectType, area: data.area, rooms: data.rooms,
-          services: data.services, estimate,
+          floors: data.floors, services, estimate,
+          tier: data.tier, withMaterials: data.withMaterials,
+          withEquipment: hasAcoustics ? withEquipment : undefined,
           pageUrl: window.location.href,
           utmSource: params.get("utm_source"), utmMedium: params.get("utm_medium"), utmCampaign: params.get("utm_campaign"),
         }),
@@ -488,46 +554,191 @@ function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
             Заполните параметры объекта — мы рассчитаем примерную стоимость
           </p>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+
+            {/* ── Тип объекта ── */}
             <InputField label="Тип объекта" error={errors.objectType?.message}>
               <select className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none cursor-pointer appearance-none" style={{ borderColor: errors.objectType ? "#ef4444" : "var(--border)", color: "var(--text)", backgroundColor: "transparent" }} {...register("objectType")}>
                 <option value="" style={{ backgroundColor: "var(--bg)" }}>Выберите тип</option>
                 {OBJECT_TYPES.map((t) => <option key={t} value={t} style={{ backgroundColor: "var(--bg)" }}>{t}</option>)}
               </select>
             </InputField>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <InputField label="Площадь (м²)" error={errors.area?.message}>
-                <input type="text" placeholder="100" inputMode="numeric" className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.area ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("area")} />
-              </InputField>
-              <InputField label="Кол-во комнат / зон">
-                <input type="text" placeholder="5" inputMode="numeric" className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: "var(--border)", color: "var(--text)" }} {...register("rooms")} />
-              </InputField>
-            </div>
 
+            {/* ── Количество этажей (для Квартира / Частный дом / Гостиница) ── */}
+            {showFloors && (
+              <InputField label="Количество этажей">
+                <select className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none cursor-pointer appearance-none" style={{ borderColor: "var(--border)", color: "var(--text)", backgroundColor: "transparent" }} {...register("floors")}>
+                  <option value="" style={{ backgroundColor: "var(--bg)" }}>Выберите</option>
+                  {["1", "2", "3", "4", "5+"].map((f) => <option key={f} value={f} style={{ backgroundColor: "var(--bg)" }}>{f}</option>)}
+                </select>
+              </InputField>
+            )}
+
+            {/* ── Тип услуги ── */}
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] mb-4" style={{ color: "var(--text-subtle)" }}>
-                Необходимые услуги
+                Тип услуги
               </p>
               {errors.services && <p className="text-[11px] text-red-400 mb-2">{errors.services.message}</p>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {SERVICE_OPTIONS.map((service) => (
-                  <label
-                    key={service.id}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors duration-200"
-                    style={{ border: "1px solid var(--border)" }}
+                {SERVICE_OPTIONS.map((service) => {
+                  const isSelected = watchServices.includes(service.id);
+                  const isAutoForced = service.id === "design" && hasSmartHome && !isSelected;
+
+                  if (isAutoForced) {
+                    return (
+                      <div
+                        key={service.id}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
+                        style={{
+                          border: "1px solid var(--accent)",
+                          backgroundColor: "rgba(201,168,76,0.08)",
+                          opacity: 0.75,
+                        }}
+                      >
+                        <div className="w-4 h-4 rounded shrink-0 flex items-center justify-center" style={{ backgroundColor: "var(--accent)" }}>
+                          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        </div>
+                        <span className="text-sm" style={{ color: "var(--accent)" }}>Проектирование умного дома</span>
+                        <span className="text-[8px] ml-auto uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: "var(--accent)", border: "1px solid rgba(201,168,76,0.3)" }}>авто</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <label
+                      key={service.id}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-300"
+                      style={{
+                        border: `1px solid ${isSelected ? "var(--accent)" : "var(--border)"}`,
+                        backgroundColor: isSelected ? "rgba(201,168,76,0.08)" : "transparent",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        value={service.id}
+                        className="w-4 h-4 accent-[var(--accent)] shrink-0"
+                        {...register("services")}
+                      />
+                      <span className="text-sm transition-colors duration-300" style={{ color: isSelected ? "var(--accent)" : "var(--text-muted)" }}>
+                        {service.label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── Рассчитать с оборудованием (только для акустики) ── */}
+            {hasAcoustics && (
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--text-subtle)" }}>
+                  Рассчитать с оборудованием
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setWithEquipment(false)}
+                    className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
+                    style={{
+                      border: !withEquipment ? "1px solid var(--accent)" : "1px solid var(--border)",
+                      backgroundColor: !withEquipment ? "rgba(201,168,76,0.1)" : "transparent",
+                      color: !withEquipment ? "var(--accent)" : "var(--text-muted)",
+                    }}
                   >
-                    <input
-                      type="checkbox"
-                      value={service.id}
-                      className="w-4 h-4 accent-[var(--accent)] shrink-0"
-                      {...register("services")}
-                    />
-                    <span className="text-sm" style={{ color: "var(--text-muted)" }}>{service.label}</span>
+                    Нет
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWithEquipment(true)}
+                    className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
+                    style={{
+                      border: withEquipment ? "1px solid var(--accent)" : "1px solid var(--border)",
+                      backgroundColor: withEquipment ? "rgba(201,168,76,0.1)" : "transparent",
+                      color: withEquipment ? "var(--accent)" : "var(--text-muted)",
+                    }}
+                  >
+                    Да
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Площадь ── */}
+            <InputField label="Площадь (м²)" error={errors.area?.message}>
+              <input type="text" placeholder="от 30" inputMode="numeric" className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.area ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("area")} />
+            </InputField>
+            <p className="text-[9px] -mt-3" style={{ color: "var(--text-subtle)" }}>
+              Минимальная площадь расчёта — 30 м²
+            </p>
+
+            {/* ── Ценовой сегмент ── */}
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--text-subtle)" }}>
+                Ценовой сегмент
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {TIERS.map((tier) => (
+                  <label
+                    key={tier}
+                    className="flex items-center justify-center py-3 rounded-xl cursor-pointer text-sm font-heading uppercase tracking-wide transition-all duration-300"
+                    style={{
+                      border: watchTier === tier ? "1px solid var(--accent)" : "1px solid var(--border)",
+                      backgroundColor: watchTier === tier ? "rgba(201,168,76,0.1)" : "transparent",
+                      color: watchTier === tier ? "var(--accent)" : "var(--text-muted)",
+                    }}
+                  >
+                    <input type="radio" value={tier} className="sr-only" {...register("tier")} />
+                    {TIER_LABELS[tier]}
                   </label>
                 ))}
               </div>
             </div>
 
-            {/* Estimate display */}
+            {/* ── Рассчитать с материалом (неактивно при проектировании) ── */}
+            <div
+              className="transition-opacity duration-300"
+              style={{
+                opacity: materialsDisabled ? 0.35 : 1,
+                pointerEvents: materialsDisabled ? "none" : "auto",
+              }}
+            >
+              <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--text-subtle)" }}>
+                Рассчитать с материалом
+              </p>
+              {materialsDisabled && (
+                <p className="text-[9px] -mt-1 mb-3" style={{ color: "var(--text-subtle)" }}>
+                  Не применимо при выборе проектирования
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setValue("withMaterials", false)}
+                  className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
+                  style={{
+                    border: !watchMaterials ? "1px solid var(--accent)" : "1px solid var(--border)",
+                    backgroundColor: !watchMaterials ? "rgba(201,168,76,0.1)" : "transparent",
+                    color: !watchMaterials ? "var(--accent)" : "var(--text-muted)",
+                  }}
+                >
+                  Нет
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setValue("withMaterials", true)}
+                  className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
+                  style={{
+                    border: watchMaterials ? "1px solid var(--accent)" : "1px solid var(--border)",
+                    backgroundColor: watchMaterials ? "rgba(201,168,76,0.1)" : "transparent",
+                    color: watchMaterials ? "var(--accent)" : "var(--text-muted)",
+                  }}
+                >
+                  Да
+                </button>
+              </div>
+            </div>
+
+            {/* ── Ориентировочная стоимость ── */}
             {estimate !== null && (
               <div
                 className="p-6 rounded-2xl text-center"
@@ -556,9 +767,15 @@ function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
 
             <label className="flex items-center gap-2 cursor-pointer text-xs mt-2" style={{ color: "var(--text-muted)" }}>
               <input type="checkbox" className="w-4 h-4 accent-[var(--accent)]" {...register("privacy")} />
-              <span>Я согласен с <a href="/privacy" className="underline" target="_blank">политикой конфиденциальности</a></span>
+              <span>Я согласен с <Link href="/privacy" className="underline" onClick={(e) => e.stopPropagation()}>политикой конфиденциальности</Link></span>
               {errors.privacy && <span className="text-red-400 text-[10px] ml-1">*</span>}
             </label>
+            <p className="text-[10px] -mt-2" style={{ color: "var(--text-subtle)" }}>
+              Мы не передаём ваши данные третьим лицам.{" "}
+              <Link href="/consent" className="underline hover:text-[var(--accent)] transition-colors" onClick={(e) => e.stopPropagation()}>
+                Согласие на обработку ПДн
+              </Link>
+            </p>
             <div className="absolute opacity-0 h-0 overflow-hidden" aria-hidden="true">
               <input tabIndex={-1} autoComplete="off" {...register("honeypot")} />
             </div>
@@ -583,7 +800,7 @@ function SuccessScreen({ onClose }: { onClose: () => void }) {
         Мы свяжемся с вами в ближайшее время
       </p>
       <p className="text-sm mb-10" style={{ color: "var(--text-subtle)" }}>
-        Или позвоните нам: <a href={`tel:${PHONE_RAW}`} className="underline" style={{ color: "var(--text-muted)" }}>{PHONE}</a>
+        Или позвоните нам: <a href={`tel:${PHONE_RAW}`} className="underline" style={{ color: "var(--text-muted)" }}>{PHONE}</a>{" / "}<a href={`tel:${PHONE2_RAW}`} className="underline" style={{ color: "var(--text-muted)" }}>{PHONE2}</a>
       </p>
       <button
         onClick={onClose}
@@ -612,7 +829,13 @@ export function ContactModal() {
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) setStep("q1");
+    if (isOpen) {
+      setStep("q1");
+      window.__lenis?.stop();
+    } else {
+      window.__lenis?.start();
+    }
+    return () => { window.__lenis?.start(); };
   }, [isOpen]);
 
   const handleClose = () => {
@@ -642,6 +865,8 @@ export function ContactModal() {
     <div
       className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain safe-bottom"
       style={{ backgroundColor: "var(--bg)", WebkitOverflowScrolling: "touch" }}
+      onWheel={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
     >
       <button
         onClick={handleClose}

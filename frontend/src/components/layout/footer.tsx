@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { SITE_NAME, PHONE, PHONE_RAW, EMAIL, SOCIAL_LINKS } from "@/lib/constants";
+import { SITE_NAME, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SOCIAL_LINKS } from "@/lib/constants";
 import { useModal } from "@/lib/modal-context";
 
 export function Footer() {
@@ -16,7 +17,7 @@ export function Footer() {
       style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}
     >
       {/* CTA Button */}
-      <div className="container mx-auto py-8 sm:py-12 md:py-16">
+      <div className="container mx-auto py-8 sm:py-12 md:py-16 pr-5 lg:pr-[80px]">
         <button
           onClick={openModal}
           onMouseEnter={() => setBtnHovered(true)}
@@ -48,7 +49,7 @@ export function Footer() {
       </div>
 
       {/* Large company name */}
-      <div className="container mx-auto pb-3 sm:pb-4 md:pb-6">
+      <div className="container mx-auto pb-3 sm:pb-4 md:pb-6 pr-5 lg:pr-[80px]">
         <h2
           className="font-heading text-[13vw] sm:text-[14vw] md:text-[14vw] lg:text-[12vw] leading-[0.85] tracking-tight select-none"
           style={{ color: "var(--text)" }}
@@ -64,7 +65,7 @@ export function Footer() {
         className="border-t"
         style={{ borderColor: "var(--border)" }}
       >
-        <div className="container mx-auto py-4 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 safe-bottom">
+        <div className="container mx-auto py-4 sm:py-6 pr-5 lg:pr-[80px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <p
             className="text-[10px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.15em]"
             style={{ color: "var(--text-subtle)" }}
@@ -118,7 +119,50 @@ export function Footer() {
             >
               {PHONE}
             </a>
+            <a
+              href={`tel:${PHONE2_RAW}`}
+              className="transition-colors duration-200 hover:text-[var(--text)]"
+            >
+              {PHONE2}
+            </a>
+            <Link
+              href="/privacy"
+              className="transition-colors duration-200 hover:text-[var(--text)]"
+            >
+              Политика конфиденциальности
+            </Link>
           </div>
+        </div>
+      </div>
+
+      {/* Developer credit */}
+      <div
+        className="border-t"
+        style={{ borderColor: "var(--border)" }}
+      >
+        <div className="container mx-auto py-3 pr-5 lg:pr-[80px] flex items-center justify-center safe-bottom">
+          <p
+            className="text-[9px] sm:text-[10px] tracking-[0.1em]"
+            style={{ color: "var(--text-subtle)" }}
+          >
+            <a
+              href="tel:+79177041893"
+              className="transition-colors duration-200 hover:text-[var(--accent)]"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Проект разработан
+            </a>
+            {" "}
+            <a
+              href="https://www.code1618.ru"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors duration-200 hover:text-[var(--accent)]"
+              style={{ color: "var(--text-muted)" }}
+            >
+              студией CODE1618
+            </a>
+          </p>
         </div>
       </div>
     </footer>

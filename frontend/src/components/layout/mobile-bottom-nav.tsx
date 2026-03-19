@@ -63,8 +63,9 @@ export function MobileBottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t backdrop-blur-xl safe-bottom"
       style={{
-        backgroundColor: "color-mix(in srgb, var(--bg) 90%, transparent)",
+        backgroundColor: "var(--bg)",
         borderColor: "var(--border)",
+        opacity: 0.97,
       }}
     >
       <div className="flex items-stretch justify-around">

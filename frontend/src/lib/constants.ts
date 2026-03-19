@@ -4,6 +4,8 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:30
 
 export const PHONE = "8 (928) 455-455-9";
 export const PHONE_RAW = "89284554559";
+export const PHONE2 = "8 (900) 233-66-39";
+export const PHONE2_RAW = "89002336639";
 export const EMAIL = "garantmontaj@gmail.com";
 export const ADDRESS = "Краснодарский край, г. Сочи, ул. Пасечная 61/2, кв. 48";
 export const WORKING_HOURS = "Пн–Пт 09:00–18:00, Сб по записи";

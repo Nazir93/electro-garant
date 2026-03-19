@@ -10,6 +10,7 @@ import { SmoothScroll } from "./smooth-scroll";
 import { PageTransition } from "./page-transition";
 import { CustomCursor } from "../ui/custom-cursor";
 import { ContactModal } from "../ui/contact-modal";
+import { CookieBanner } from "../ui/cookie-banner";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -32,6 +33,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <Footer />
       <FixedStatsBar />
       <MobileBottomNav />
+      <CookieBanner />
       <div className="h-14 lg:hidden" />
     </>
   );
