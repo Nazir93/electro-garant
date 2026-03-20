@@ -28,6 +28,7 @@
   :root {
     --bg: #0A0A0A;
     --bg-secondary: #111111;
+    --card-bg: #141414;
     --text: #FFFFFF;
     --text-muted: rgba(255, 255, 255, 0.65);
     --text-subtle: rgba(255, 255, 255, 0.35);
@@ -39,6 +40,7 @@
   [data-theme="light"] {
     --bg: #FFFFFF;
     --bg-secondary: #F5F5F5;
+    --card-bg: #FAFAFA;
     --text: #0A0A0A;
     --text-muted: rgba(10, 10, 10, 0.7);
     --text-subtle: rgba(10, 10, 10, 0.4);

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useModal } from "@/lib/modal-context";
+import { useThrottledScroll } from "@/lib/use-throttled-scroll";
 
 type SlideAction =
   | { type: "link"; href: string; label: string }
@@ -129,7 +130,7 @@ function ImagePanel({ activeIndex, scrollProgress }: { activeIndex: number; scro
       <div className="relative w-full h-full" style={{ paddingLeft: "40px" }}>
       {SLIDES.map((slide, i) => (
         <div
-          key={i}
+          key={slide.number}
           className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-700"
           style={{
             opacity: i === activeIndex ? 1 : 0,
@@ -194,28 +195,24 @@ export function AboutSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      const sectionHeight = sectionRef.current.offsetHeight;
-      const viewportH = window.innerHeight;
-      const scrolled = -rect.top;
-      const scrollRange = sectionHeight - viewportH;
-      if (scrollRange <= 0) return;
-      const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
-      setScrollProgress(progress);
-      const idx = Math.min(
-        Math.floor(progress * SLIDES.length),
-        SLIDES.length - 1
-      );
-      setActiveIndex(idx);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+  const handleScroll = useCallback(() => {
+    if (!sectionRef.current) return;
+    const rect = sectionRef.current.getBoundingClientRect();
+    const sectionHeight = sectionRef.current.offsetHeight;
+    const viewportH = window.innerHeight;
+    const scrolled = -rect.top;
+    const scrollRange = sectionHeight - viewportH;
+    if (scrollRange <= 0) return;
+    const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
+    setScrollProgress(progress);
+    const idx = Math.min(
+      Math.floor(progress * SLIDES.length),
+      SLIDES.length - 1
+    );
+    setActiveIndex(idx);
   }, []);
+
+  useThrottledScroll(handleScroll, 32);
 
   return (
     <section
@@ -236,7 +233,7 @@ export function AboutSection() {
             {/* Mobile progress dots */}
             <div className="md:hidden flex items-center gap-2 px-5 sm:px-6 pt-28">
               {SLIDES.map((s, i) => (
-                <div key={i} className="flex items-center gap-1.5">
+                <div key={s.number} className="flex items-center gap-1.5">
                   <div
                     className="h-[2px] transition-all duration-500"
                     style={{
@@ -273,7 +270,7 @@ export function AboutSection() {
             <div className="absolute inset-0 flex items-center pointer-events-none select-none overflow-hidden">
               {SLIDES.map((slide, i) => (
                 <div
-                  key={i}
+                  key={`bg-${slide.number}`}
                   className="absolute inset-0 flex items-center transition-opacity duration-700"
                   style={{ opacity: i === activeIndex ? 1 : 0 }}
                 >
@@ -291,7 +288,7 @@ export function AboutSection() {
             <div className="flex-1 flex items-center relative">
               {SLIDES.map((slide, i) => (
                 <div
-                  key={i}
+                  key={`text-${slide.number}`}
                   className="absolute inset-x-0 px-5 sm:px-8 md:px-10 lg:px-16 transition-all duration-700 ease-out"
                   style={{
                     opacity: i === activeIndex ? 1 : 0,

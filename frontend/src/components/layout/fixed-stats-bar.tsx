@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { STATS } from "@/lib/constants";
+import { useThrottledScroll } from "@/lib/use-throttled-scroll";
 
 function AnimatedCounter({ value, suffix = "" }: { value: number; suffix: string }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const hasAnimated = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -17,11 +19,12 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix: string
           const steps = 60;
           const increment = value / steps;
           let current = 0;
-          const timer = setInterval(() => {
+          timerRef.current = setInterval(() => {
             current += increment;
             if (current >= value) {
               setCount(value);
-              clearInterval(timer);
+              if (timerRef.current) clearInterval(timerRef.current);
+              timerRef.current = null;
             } else {
               setCount(Math.floor(current));
             }
@@ -31,7 +34,10 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix: string
       { threshold: 0.5 }
     );
     if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [value]);
 
   return (
@@ -45,32 +51,28 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix: string
 export function FixedStatsBar() {
   const [show, setShow] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const aboutSection = document.getElementById("about");
-      const footer = document.querySelector("footer");
-      if (!aboutSection) return;
+  const handleScroll = useCallback(() => {
+    const aboutSection = document.getElementById("about");
+    const footer = document.querySelector("footer");
+    if (!aboutSection) return;
 
-      const aboutRect = aboutSection.getBoundingClientRect();
-      const reachedAbout = aboutRect.top <= window.innerHeight * 0.5;
+    const aboutRect = aboutSection.getBoundingClientRect();
+    const reachedAbout = aboutRect.top <= window.innerHeight * 0.5;
 
-      let reachedFooter = false;
-      if (footer) {
-        const footerRect = footer.getBoundingClientRect();
-        reachedFooter = footerRect.top <= window.innerHeight;
-      }
+    let reachedFooter = false;
+    if (footer) {
+      const footerRect = footer.getBoundingClientRect();
+      reachedFooter = footerRect.top <= window.innerHeight;
+    }
 
-      setShow(reachedAbout && !reachedFooter);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    setShow(reachedAbout && !reachedFooter);
   }, []);
+
+  useThrottledScroll(handleScroll, 50);
 
   return (
     <div
-      className="fixed bottom-14 lg:bottom-0 left-0 right-0 z-[40] border-t transition-all duration-500 lg:right-[60px]"
+      className="fixed bottom-0 left-0 right-0 z-[40] border-t transition-all duration-500 lg:right-[60px] hidden lg:block"
       style={{
         borderColor: "var(--border)",
         backgroundColor: "var(--bg)",

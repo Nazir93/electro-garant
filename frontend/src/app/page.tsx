@@ -8,12 +8,10 @@ import { PortfolioSection } from "@/components/sections/portfolio";
 import { AboutSection } from "@/components/sections/about";
 
 import { PartnersSection } from "@/components/sections/partners";
-import { JsonLd } from "@/components/seo/json-ld";
 
 export default function HomePage() {
   return (
     <>
-      <JsonLd />
       <BannerSection />
       <HeroSection />
       <ViewAllServices />

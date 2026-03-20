@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUp, MessageCircle, Sun, Moon } from "lucide-react";
 import { SOCIAL_LINKS, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL } from "@/lib/constants";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
+import { useThrottledScroll } from "@/lib/use-throttled-scroll";
 
 const NAV_SECTIONS = [
   {
@@ -54,6 +55,10 @@ export function DesktopSideNav() {
   const { isDark, toggleTheme } = useTheme();
   const { openModal } = useModal();
 
+  useEffect(() => {
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+  }, []);
+
   const handleEnter = (label: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setOpenSection(label);
@@ -63,25 +68,20 @@ export function DesktopSideNav() {
     timeoutRef.current = setTimeout(() => setOpenSection(null), 200);
   };
 
-  useEffect(() => {
+  const handleScroll = useCallback(() => {
     const trigger = document.querySelector("[data-navbar]");
     if (!trigger) return;
-
-    const handleScroll = () => {
-      const rect = trigger.getBoundingClientRect();
-      setVisible(rect.top <= 80);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    const rect = trigger.getBoundingClientRect();
+    setVisible(rect.top <= 80);
   }, []);
+
+  useThrottledScroll(handleScroll, 50);
 
   return (
     <>
-      {/* ═══ Top horizontal navbar (desktop only) ═══ */}
+      {/* ═══ Top horizontal navbar ═══ */}
       <div
-        className="fixed top-0 left-0 right-[60px] z-[45] hidden lg:block transition-all duration-500"
+        className="fixed top-0 left-0 right-0 lg:right-[60px] z-[45] transition-all duration-500"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(-100%)",
@@ -89,16 +89,16 @@ export function DesktopSideNav() {
         }}
       >
         <div
-          className="backdrop-blur-xl border-b"
+          className="border-b"
           style={{
-            backgroundColor: isDark ? "rgba(10,10,10,0.92)" : "rgba(255,255,255,0.92)",
+            backgroundColor: isDark ? "rgba(10,10,10,0.96)" : "rgba(255,255,255,0.96)",
             borderColor: "var(--border)",
           }}
         >
-          <div className="container mx-auto flex items-center justify-between py-3">
+          <div className="container mx-auto flex items-center justify-between py-2.5 lg:py-3 px-4 sm:px-6">
             <Link href="/" className="shrink-0 flex items-center">
               <span
-                className="font-heading select-none leading-[1.05]"
+                className="font-heading select-none flex flex-col leading-[1.05]"
                 style={{
                   color: "var(--text)",
                   fontSize: "11px",
@@ -107,19 +107,42 @@ export function DesktopSideNav() {
                   textTransform: "uppercase",
                 }}
               >
-                ГАРАНТ МОНТАЖ
+                <span>ГАРАНТ</span>
+                <span>МОНТАЖ</span>
               </span>
             </Link>
 
-            <div className="flex items-center gap-3 text-[11px]" style={{ color: "var(--text-muted)" }}>
-              <a href={`tel:${PHONE_RAW}`} className="hover:opacity-100 transition-opacity">{PHONE}</a>
-              <span style={{ color: "var(--text-subtle)" }}>/</span>
-              <a href={`tel:${PHONE2_RAW}`} className="hover:opacity-100 transition-opacity">{PHONE2}</a>
-              <span style={{ color: "var(--text-subtle)" }}>/</span>
-              <a href={`mailto:${EMAIL}`} className="hover:opacity-100 transition-opacity">{EMAIL}</a>
+            {/* Mobile: phone + theme + burger */}
+            <div className="flex items-center gap-3 lg:hidden">
+              <a href={`tel:${PHONE_RAW}`} className="text-[11px] transition-opacity hover:opacity-100" style={{ color: "var(--text-muted)" }}>{PHONE}</a>
+              <button
+                onClick={toggleTheme}
+                className="w-8 h-8 rounded-full flex items-center justify-center border transition-colors"
+                style={{ borderColor: "var(--border)" }}
+                aria-label="Переключить тему"
+              >
+                {isDark ? <Sun size={13} style={{ color: "var(--text-muted)" }} /> : <Moon size={13} style={{ color: "var(--text-muted)" }} />}
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new Event("open-mobile-menu"))}
+                className="w-8 h-8 flex flex-col items-center justify-center gap-[4px]"
+                aria-label="Открыть меню"
+              >
+                <span className="block w-4 h-[1.5px]" style={{ backgroundColor: "var(--text)" }} />
+                <span className="block w-4 h-[1.5px]" style={{ backgroundColor: "var(--text)" }} />
+              </button>
             </div>
 
-            <nav className="flex items-center gap-6 xl:gap-8">
+            {/* Desktop: contacts */}
+            <div className="hidden lg:flex items-center gap-3 text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+              <a href={`tel:${PHONE_RAW}`} className="hover:opacity-100 transition-opacity whitespace-nowrap">{PHONE}</a>
+              <span style={{ color: "var(--text-subtle)" }}>/</span>
+              <a href={`tel:${PHONE2_RAW}`} className="hover:opacity-100 transition-opacity whitespace-nowrap">{PHONE2}</a>
+              <span style={{ color: "var(--text-subtle)" }}>/</span>
+              <a href={`mailto:${EMAIL}`} className="hover:opacity-100 transition-opacity whitespace-nowrap">{EMAIL}</a>
+            </div>
+
+            <nav className="hidden lg:flex items-center gap-6 xl:gap-8 whitespace-nowrap">
               {NAV_SECTIONS.map((section) => (
                 <div
                   key={section.label}
@@ -137,9 +160,9 @@ export function DesktopSideNav() {
                   {openSection === section.label && (
                     <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3">
                       <div
-                        className="min-w-[240px] py-2 backdrop-blur-xl"
+                        className="min-w-[240px] py-2"
                         style={{
-                          backgroundColor: isDark ? "rgba(20,20,20,0.95)" : "rgba(255,255,255,0.95)",
+                          backgroundColor: isDark ? "rgba(20,20,20,0.98)" : "rgba(255,255,255,0.98)",
                           border: "1px solid var(--border)",
                           borderRadius: "12px",
                         }}
@@ -211,9 +234,7 @@ export function DesktopSideNav() {
           opacity: visible ? 1 : 0,
           transform: visible ? "translateX(0)" : "translateX(100%)",
           pointerEvents: visible ? "auto" : "none",
-          backgroundColor: isDark ? "rgba(10,10,10,0.92)" : "rgba(255,255,255,0.92)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          backgroundColor: isDark ? "rgba(10,10,10,0.96)" : "rgba(255,255,255,0.96)",
           borderLeft: "1px solid var(--border)",
         }}
       >

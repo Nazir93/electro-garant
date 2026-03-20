@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useModal } from "@/lib/modal-context";
 import { useTheme } from "@/lib/theme-context";
@@ -172,20 +173,10 @@ export function BannerSection() {
             cx="28" cy="28" r="26"
             stroke="rgba(201,168,76,1)" strokeWidth="2"
             fill="rgba(0,0,0,0.25)"
-            style={{
-              filter: cursorDown
-                ? "drop-shadow(0 0 10px rgba(201,168,76,0.8))"
-                : "drop-shadow(0 0 4px rgba(201,168,76,0.3))",
-              transition: "filter 0.15s",
-            }}
           />
           <path
             d="M29 13L19 29h8l-2 14 10-16h-8l2-14z"
             fill="rgba(201,168,76,1)"
-            style={{
-              filter: cursorDown ? "brightness(1.4) drop-shadow(0 0 6px rgba(201,168,76,0.9))" : "brightness(1)",
-              transition: "filter 0.15s",
-            }}
           />
         </svg>
       </div>
@@ -295,12 +286,6 @@ export function BannerSection() {
                   <path
                     d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
                     fill="rgba(201,168,76,1)"
-                    style={{
-                      filter: isDark
-                        ? "brightness(1) drop-shadow(0 0 4px rgba(201,168,76,0.4))"
-                        : "brightness(1.2) drop-shadow(0 0 6px rgba(201,168,76,0.6))",
-                      transition: "filter 0.5s",
-                    }}
                   />
                 </svg>
               </div>
@@ -329,10 +314,13 @@ export function BannerSection() {
             }}
           >
             {/* House image */}
-            <img
+            <Image
               src="/IMG_0980.PNG"
               alt="Гарант Монтаж — полный цикл электромонтажных работ"
-              className="absolute inset-0 w-full h-full object-contain"
+              fill
+              className="object-contain"
+              priority
+              sizes="(max-width: 768px) 0vw, 60vw"
             />
 
             {/* ---- SVG: dots + connecting lines ---- */}
@@ -362,19 +350,6 @@ export function BannerSection() {
                       className="transition-all duration-300"
                     />
 
-                    {/* Pulsing ring */}
-                    <circle
-                      cx={a.dotX}
-                      cy={a.dotY}
-                      r="1"
-                      fill="none"
-                      stroke="rgba(201,168,76,0.3)"
-                      strokeWidth="0.15"
-                    >
-                      <animate attributeName="r" values="1;2.8;1" dur="2.5s" repeatCount="indefinite" />
-                      <animate attributeName="opacity" values="0.5;0;0.5" dur="2.5s" repeatCount="indefinite" />
-                    </circle>
-
                     {/* Center dot */}
                     <circle
                       cx={a.dotX}
@@ -382,9 +357,7 @@ export function BannerSection() {
                       r={isHov ? 1.2 : 0.8}
                       fill={isHov ? "rgba(201,168,76,1)" : "rgba(201,168,76,0.8)"}
                       className="transition-all duration-300"
-                    >
-                      <animate attributeName="r" values="0.7;1.1;0.7" dur="2s" repeatCount="indefinite" />
-                    </circle>
+                    />
 
                     {/* Label endpoint dot */}
                     <circle
@@ -420,9 +393,7 @@ export function BannerSection() {
                     href={a.href}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 cursor-none"
                     style={{
-                      backgroundColor: isHov ? "rgba(201,168,76,0.15)" : "rgba(0,0,0,0.55)",
-                      backdropFilter: "blur(8px)",
-                      WebkitBackdropFilter: "blur(8px)",
+                      backgroundColor: isHov ? "rgba(201,168,76,0.15)" : "rgba(0,0,0,0.75)",
                       border: `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.1)"}`,
                     }}
                   >
@@ -547,17 +518,9 @@ export function BannerSection() {
           >
             <svg viewBox="0 0 24 24" fill="none" className="w-[45%] h-[45%]">
               <path
-                d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
-                fill="rgba(201,168,76,1)"
-                style={{
-                  filter: ctaHovered
-                    ? "brightness(1.3) drop-shadow(0 0 6px rgba(201,168,76,0.8))"
-                    : isDark
-                      ? "brightness(1)"
-                      : "brightness(1.2) drop-shadow(0 0 4px rgba(201,168,76,0.5))",
-                  transition: "filter 0.5s",
-                }}
-              />
+                    d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                    fill="rgba(201,168,76,1)"
+                  />
             </svg>
           </div>
         </div>
@@ -590,15 +553,15 @@ export function BannerSection() {
           margin: "10px",
           borderRadius: "4px",
           boxShadow: isDark
-            ? "0 0 15px 2px rgba(201,168,76,0.08), inset 0 0 15px 2px rgba(201,168,76,0.05)"
-            : "0 0 40px 8px rgba(255,255,255,0.5), 0 0 80px 20px rgba(255,255,255,0.25), inset 0 0 40px 8px rgba(255,255,255,0.3), inset 0 0 80px 20px rgba(255,255,255,0.1)",
+            ? "0 0 15px 2px rgba(201,168,76,0.08)"
+            : "0 0 30px 6px rgba(255,255,255,0.3)",
         }}
       />
 
-      {/* Subtle vignette */}
+      {/* Subtle vignette — lightweight */}
       <div
         className="absolute inset-0 z-[0] pointer-events-none"
-        style={{ boxShadow: "inset 0 0 80px 30px rgba(0,0,0,0.4)" }}
+        style={{ boxShadow: "inset 0 0 40px 15px rgba(0,0,0,0.3)" }}
       />
     </section>
   );

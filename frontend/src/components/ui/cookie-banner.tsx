@@ -40,8 +40,6 @@ export function CookieBanner() {
         style={{
           backgroundColor: "var(--bg)",
           borderColor: "var(--border)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
         }}
       >
         <div className="flex-1 min-w-0">

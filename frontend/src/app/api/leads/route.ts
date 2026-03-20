@@ -7,9 +7,19 @@ import { sendTelegramNotification, formatLeadMessage } from "@/lib/telegram";
 const RATE_LIMIT_MAP = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_WINDOW = 10 * 60 * 1000;
+const CLEANUP_INTERVAL = 5 * 60 * 1000;
+let lastCleanup = Date.now();
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
+
+  if (now - lastCleanup > CLEANUP_INTERVAL) {
+    lastCleanup = now;
+    RATE_LIMIT_MAP.forEach((val, key) => {
+      if (now > val.resetAt) RATE_LIMIT_MAP.delete(key);
+    });
+  }
+
   const entry = RATE_LIMIT_MAP.get(ip);
 
   if (!entry || now > entry.resetAt) {

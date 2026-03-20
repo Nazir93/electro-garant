@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { X, Sun, Moon, MessageCircle } from "lucide-react";
-import { PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SERVICES, SITE_NAME, SOCIAL_LINKS } from "@/lib/constants";
+import { PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SITE_NAME, SOCIAL_LINKS } from "@/lib/constants";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
 
@@ -574,6 +574,10 @@ export function NavBar() {
   const { isDark, toggleTheme } = useTheme();
   const { openModal } = useModal();
 
+  useEffect(() => {
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+  }, []);
+
   const handleEnter = (label: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setOpenSection(label);
@@ -585,9 +589,9 @@ export function NavBar() {
 
   return (
     <div
-      className="sticky top-0 z-40 border-b backdrop-blur-md"
+      className="sticky top-0 z-40 border-b"
       style={{
-        backgroundColor: isDark ? "rgba(10,10,10,0.9)" : "rgba(255,255,255,0.9)",
+        backgroundColor: isDark ? "rgba(10,10,10,0.96)" : "rgba(255,255,255,0.96)",
         borderColor: "var(--border)",
       }}
     >
@@ -636,9 +640,9 @@ export function NavBar() {
               {openSection === section.label && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3">
                   <div
-                    className="min-w-[240px] py-2 backdrop-blur-xl"
+                    className="min-w-[240px] py-2"
                     style={{
-                      backgroundColor: isDark ? "rgba(20,20,20,0.95)" : "rgba(255,255,255,0.95)",
+                      backgroundColor: isDark ? "rgba(20,20,20,0.98)" : "rgba(255,255,255,0.98)",
                       border: "1px solid var(--border)",
                       borderRadius: "12px",
                     }}

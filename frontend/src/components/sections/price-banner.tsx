@@ -56,15 +56,14 @@ export function PriceBannerSection() {
         className="sticky top-0 h-[100dvh] overflow-hidden"
         style={{ backgroundColor: "var(--bg)" }}
       >
-        {/* Ambient glow orbs */}
+        {/* Ambient glow orbs — no blur filter for performance */}
         <div
           className="absolute pointer-events-none"
           style={{
             top: "10%", left: "-10%",
             width: "50vw", height: "50vw",
             borderRadius: "50%",
-            background: `radial-gradient(circle, rgba(${accentRGB},${isDark ? 0.06 : 0.04}) 0%, transparent 70%)`,
-            filter: "blur(40px)",
+            background: `radial-gradient(circle, rgba(${accentRGB},${isDark ? 0.05 : 0.03}) 0%, transparent 60%)`,
           }}
         />
         <div
@@ -73,8 +72,7 @@ export function PriceBannerSection() {
             bottom: "5%", right: "-5%",
             width: "40vw", height: "40vw",
             borderRadius: "50%",
-            background: `radial-gradient(circle, rgba(${accentRGB},${isDark ? 0.04 : 0.03}) 0%, transparent 70%)`,
-            filter: "blur(40px)",
+            background: `radial-gradient(circle, rgba(${accentRGB},${isDark ? 0.03 : 0.02}) 0%, transparent 60%)`,
           }}
         />
 

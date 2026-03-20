@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 const LOGOS: { name: string; src: string; h?: number }[] = [
   { name: "FAMILY", src: "/logo/FAMILY.png" },
   { name: "LAVICON", src: "/logo/LAVICON.png" },
@@ -47,14 +49,17 @@ export function PartnersSection() {
               key={`${logo.name}-${i}`}
               className="inline-flex items-center justify-center mx-6 sm:mx-10 md:mx-14 flex-shrink-0 opacity-80 hover:opacity-100 transition-opacity duration-300"
             >
-              <img
+              <Image
                 src={logo.src}
                 alt={logo.name}
+                width={130}
+                height={logo.h || 40}
                 className="w-auto object-contain"
                 style={{
                   height: `${logo.h || 40}px`,
                   maxWidth: "130px",
                 }}
+                loading="lazy"
               />
             </div>
           ))}

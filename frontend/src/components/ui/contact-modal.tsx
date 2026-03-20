@@ -863,6 +863,9 @@ export function ContactModal() {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Форма обратной связи"
       className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain safe-bottom"
       style={{ backgroundColor: "var(--bg)", WebkitOverflowScrolling: "touch" }}
       onWheel={(e) => e.stopPropagation()}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { CITY, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SERVICES } from "@/lib/constants";
 
@@ -47,10 +48,13 @@ function ServiceCard({
           className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
         />
       ) : coverImage ? (
-        <img
+        <Image
           src={coverImage}
           alt={title}
-          className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+          fill
+          sizes="(max-width: 768px) 50vw, 25vw"
+          className="absolute inset-0 object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+          loading="lazy"
         />
       ) : null}
       <span

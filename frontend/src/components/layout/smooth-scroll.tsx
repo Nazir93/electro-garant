@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
+import { isLowPerfDevice } from "@/lib/use-perf";
 
 declare global {
   interface Window {
@@ -11,6 +12,8 @@ declare global {
 
 export function SmoothScroll() {
   useEffect(() => {
+    if (isLowPerfDevice()) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

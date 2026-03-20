@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { isLowPerfDevice } from "@/lib/use-perf";
 
 const HOVER_SELECTOR = "a, button, [role='button'], input, textarea, select, [data-cursor-hover]";
 
@@ -13,26 +14,19 @@ export function CustomCursor() {
   const blobRef = useRef<HTMLDivElement>(null);
   const pos = useRef({ x: -100, y: -100 });
   const target = useRef({ x: -100, y: -100 });
-  const velocity = useRef({ x: 0, y: 0 });
-  const prevMouse = useRef({ x: -100, y: -100 });
   const hoveringRef = useRef(false);
   const [visible, setVisible] = useState(false);
   const [hovering, setHovering] = useState(false);
 
   useEffect(() => {
+    if (isLowPerfDevice()) return;
     const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     if (isTouchDevice) return;
 
     setVisible(true);
 
     const handleMouseMove = (e: MouseEvent) => {
-      prevMouse.current = { ...target.current };
       target.current = { x: e.clientX, y: e.clientY };
-
-      velocity.current = {
-        x: target.current.x - prevMouse.current.x,
-        y: target.current.y - prevMouse.current.y,
-      };
 
       const isHover = isHoverTarget(e.target as Element);
       if (isHover !== hoveringRef.current) {
@@ -50,26 +44,12 @@ export function CustomCursor() {
 
     let animationId: number;
     const animate = () => {
-      pos.current.x += (target.current.x - pos.current.x) * 0.35;
-      pos.current.y += (target.current.y - pos.current.y) * 0.35;
-
-      const vx = velocity.current.x;
-      const vy = velocity.current.y;
-      const speed = Math.sqrt(vx * vx + vy * vy);
-
-      const stretch = Math.min(speed / 30, 0.7);
-      const angle = Math.atan2(vy, vx) * (180 / Math.PI);
-      const sx = 1 + stretch;
-      const sy = 1 - stretch * 0.4;
-
-      velocity.current.x *= 0.88;
-      velocity.current.y *= 0.88;
+      pos.current.x += (target.current.x - pos.current.x) * 0.25;
+      pos.current.y += (target.current.y - pos.current.y) * 0.25;
 
       if (blobRef.current) {
         blobRef.current.style.transform =
-          `translate(-50%, -50%) rotate(${angle}deg) scale(${sx}, ${sy})`;
-        blobRef.current.style.left = `${pos.current.x}px`;
-        blobRef.current.style.top = `${pos.current.y}px`;
+          `translate(${pos.current.x}px, ${pos.current.y}px) translate(-50%, -50%)`;
       }
 
       animationId = requestAnimationFrame(animate);
@@ -86,11 +66,11 @@ export function CustomCursor() {
 
   if (!visible) return null;
 
-  const size = hovering ? 64 : 36;
+  const size = hovering ? 56 : 32;
 
   return (
     <>
-      <style>{`* { cursor: none !important; }`}</style>
+      <style>{`@media (hover: hover) and (pointer: fine) { * { cursor: none !important; } }`}</style>
 
       <div
         ref={blobRef}
@@ -103,8 +83,8 @@ export function CustomCursor() {
             ? "radial-gradient(circle, var(--accent) 0%, rgba(201,168,76,0.3) 60%, transparent 100%)"
             : "radial-gradient(circle, var(--text) 0%, rgba(255,255,255,0.25) 50%, transparent 100%)",
           opacity: 1,
-          mixBlendMode: "difference",
-          transition: "width 0.4s cubic-bezier(0.22,1,0.36,1), height 0.4s cubic-bezier(0.22,1,0.36,1), background 0.3s",
+          transition: "width 0.3s ease, height 0.3s ease, background 0.3s",
+          willChange: "transform",
         }}
       />
     </>
