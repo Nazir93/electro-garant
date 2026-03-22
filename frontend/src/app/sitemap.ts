@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 import { SITE_URL } from "@/lib/constants";
+import { PORTFOLIO_CASES } from "@/lib/portfolio-data";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +48,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
     ];
   } catch {
-    // DB unavailable
+    dynamicPages = PORTFOLIO_CASES.map((c) => ({
+      url: `${baseUrl}/portfolio/${c.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
   }
 
   return [...staticPages, ...dynamicPages];

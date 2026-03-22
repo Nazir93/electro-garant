@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { CITY, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SERVICES } from "@/lib/constants";
+import type { ServiceItem } from "@/lib/get-services";
 
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
@@ -18,6 +19,7 @@ function ServiceCard({
   borderRadius,
   coverImage,
   videoUrl,
+  shortDescription,
 }: {
   title: string;
   slug: string;
@@ -26,11 +28,12 @@ function ServiceCard({
   borderRadius: number;
   coverImage?: string | null;
   videoUrl?: string | null;
+  shortDescription?: string;
 }) {
   return (
     <Link
       href={slug}
-      className="w-full h-full flex items-center justify-center overflow-hidden transition-colors duration-300 group relative"
+      className="w-full h-full flex flex-col items-center justify-center overflow-hidden transition-colors duration-300 group relative"
       style={{
         opacity,
         transform: `scale(${scale})`,
@@ -45,7 +48,7 @@ function ServiceCard({
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+          className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-500"
         />
       ) : coverImage ? (
         <Image
@@ -53,16 +56,36 @@ function ServiceCard({
           alt={title}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
-          className="absolute inset-0 object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+          className="absolute inset-0 object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-500"
           loading="lazy"
         />
       ) : null}
+
+      {/* Title */}
       <span
-        className="relative z-10 text-xs md:text-sm uppercase tracking-[0.1em] text-center px-3 transition-colors duration-300 group-hover:text-[var(--accent)]"
-        style={{ color: "var(--text-muted)", opacity }}
+        className="relative z-10 text-[10px] lg:text-xs uppercase tracking-[0.1em] text-center px-3 font-semibold transition-all duration-300 group-hover:text-[var(--accent)] group-hover:-translate-y-1"
+        style={{ color: "var(--text-muted)" }}
       >
         {title}
       </span>
+
+      {/* Hover description */}
+      {shortDescription && (
+        <span
+          className="relative z-10 text-[8px] lg:text-[9px] text-center px-3 mt-1.5 leading-relaxed max-w-[90%] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 line-clamp-3"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {shortDescription}
+        </span>
+      )}
+
+      {/* Arrow on hover */}
+      <div
+        className="absolute bottom-3 right-3 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+        style={{ border: "1px solid var(--border)" }}
+      >
+        <ArrowRight size={10} style={{ color: "var(--text-muted)" }} />
+      </div>
     </Link>
   );
 }
@@ -86,7 +109,8 @@ function MobileServiceLink({ title, slug }: { title: string; slug: string }) {
   );
 }
 
-export function HeroSection() {
+export function HeroSection({ services: propServices }: { services?: ServiceItem[] } = {}) {
+  const services = propServices && propServices.length > 0 ? propServices : SERVICES;
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -149,13 +173,14 @@ export function HeroSection() {
             <div className="flex flex-1 min-h-0" style={{ gap: `${gap}px` }}>
               <div style={{ flex: `0 0 ${progress * 20}%` }}>
                 <ServiceCard
-                  title={SERVICES[0].title}
-                  slug={SERVICES[0].slug}
+                  title={services[0].title}
+                  slug={services[0].slug}
                   opacity={sideOpacity}
                   scale={sideScale}
                   borderRadius={borderRadius}
-                  coverImage={SERVICES[0].coverImage}
-                  videoUrl={SERVICES[0].videoUrl}
+                  coverImage={services[0].coverImage}
+                  videoUrl={services[0].videoUrl}
+                  shortDescription={services[0].shortDescription}
                 />
               </div>
 
@@ -195,10 +220,15 @@ export function HeroSection() {
                     transformOrigin: "center center",
                   }}
                 >
-                  <h1 className="font-heading text-[clamp(40px,6.5vw,140px)] leading-[0.9] tracking-tight">
+                  <h1 className="font-heading text-[clamp(36px,5.5vw,120px)] leading-[0.9] tracking-tight">
                     <span style={{ color: "var(--text)" }}>ЭЛЕКТРОМОНТАЖ</span>
                     <br />
-                    <span style={{ color: "var(--accent)" }}>ПРЕМИУМ-КЛАССА</span>
+                    <span
+                      className="text-[clamp(12px,1.4vw,24px)] font-light tracking-[0.2em] uppercase block mt-2"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      полный цикл работ под ключ
+                    </span>
                   </h1>
                 </div>
 
@@ -214,18 +244,16 @@ export function HeroSection() {
 
                 {/* Contacts */}
                 <div
-                  className="absolute bottom-12 right-0 container mx-auto z-10 flex justify-end items-center gap-6 lg:pr-[76px]"
+                  className="absolute bottom-8 lg:bottom-12 left-0 right-0 container mx-auto z-10 flex justify-end items-center gap-4 lg:gap-6 lg:pr-[76px]"
                   style={{ transform: `scale(${textScale})`, transformOrigin: "bottom right" }}
                 >
-                  <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+                  <div className="hidden lg:flex items-center gap-4 text-xs whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
                     <span>{EMAIL}</span>
                     <span style={{ color: "var(--text-subtle)" }}>/</span>
                     <span>{PHONE}</span>
-                    <span style={{ color: "var(--text-subtle)" }}>/</span>
-                    <span>{PHONE2}</span>
                   </div>
                   <span
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.1em] transition-all duration-300 hover:scale-105"
+                    className="flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-2.5 rounded-full text-[10px] lg:text-xs uppercase tracking-[0.1em] transition-all duration-300 hover:scale-105 whitespace-nowrap"
                     style={{
                       border: "1px solid var(--accent)",
                       color: "var(--accent)",
@@ -239,13 +267,14 @@ export function HeroSection() {
 
               <div style={{ flex: `0 0 ${progress * 22}%` }}>
                 <ServiceCard
-                  title={SERVICES[1].title}
-                  slug={SERVICES[1].slug}
+                  title={services[1].title}
+                  slug={services[1].slug}
                   opacity={sideOpacity}
                   scale={sideScale}
                   borderRadius={borderRadius}
-                  coverImage={SERVICES[1].coverImage}
-                  videoUrl={SERVICES[1].videoUrl}
+                  coverImage={services[1].coverImage}
+                  videoUrl={services[1].videoUrl}
+                  shortDescription={services[1].shortDescription}
                 />
               </div>
             </div>
@@ -259,7 +288,7 @@ export function HeroSection() {
                 opacity: sideOpacity,
               }}
             >
-              {SERVICES.slice(2).map((s) => (
+              {services.slice(2).map((s) => (
                 <div key={s.id} className="flex-1 flex">
                   <ServiceCard
                     title={s.title}
@@ -269,6 +298,7 @@ export function HeroSection() {
                     borderRadius={borderRadius}
                     coverImage={s.coverImage}
                     videoUrl={s.videoUrl}
+                    shortDescription={s.shortDescription}
                   />
                 </div>
               ))}
@@ -296,11 +326,15 @@ export function HeroSection() {
 
           <div className="relative z-10">
             <Link href="/services">
-              <h1 className="font-heading text-[clamp(28px,9vw,60px)] leading-[0.92] tracking-tight mb-6">
+              <h1 className="font-heading text-[clamp(28px,9vw,60px)] leading-[0.92] tracking-tight mb-2">
                 <span style={{ color: "var(--text)" }}>ЭЛЕКТРОМОНТАЖ</span>
-                <br />
-                <span style={{ color: "var(--accent)" }}>ПРЕМИУМ-КЛАССА</span>
               </h1>
+              <p
+                className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] mb-6"
+                style={{ color: "var(--text-muted)" }}
+              >
+                полный цикл работ под ключ
+              </p>
             </Link>
             <p
               className="text-[11px] uppercase tracking-[0.2em] max-w-xs leading-relaxed mb-6"
@@ -331,7 +365,7 @@ export function HeroSection() {
             Наши услуги
           </p>
           <div className="border-t" style={{ borderColor: "var(--border)" }}>
-            {SERVICES.map((service) => (
+            {services.map((service) => (
               <MobileServiceLink
                 key={service.id}
                 title={service.title}

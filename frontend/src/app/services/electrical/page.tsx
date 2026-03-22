@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { CITY, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { CITY, SITE_NAME } from "@/lib/constants";
+import { getPageMeta } from "@/lib/get-page-meta";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingShowcase } from "@/components/landing/landing-showcase";
 import { LandingPain } from "@/components/landing/landing-pain";
@@ -12,28 +12,14 @@ import { LandingServiceSchema } from "@/components/landing/landing-service-schem
 const SERVICE_NAME = `Электромонтажные работы под ключ в ${CITY}`;
 const SERVICE_SLUG = "/services/electrical";
 
-export const metadata: Metadata = {
-  title: `${SERVICE_NAME} — от проекта до пусконаладки | ${SITE_NAME}`,
-  description: `Электромонтаж квартир, ресторанов и офисов в ${CITY}. Проектирование, щитовое оборудование, силовые сети. Допуск СРО. Гарантия 5 лет. Бесплатный выезд инженера.`,
-  keywords: [
-    `электромонтаж ${CITY}`,
-    `электромонтажные работы ${CITY}`,
-    `электрик ${CITY}`,
-    "электромонтаж под ключ",
-    "монтаж электрики квартира",
-    "электромонтаж ресторан",
-    "щитовое оборудование",
-    "проектирование электрики",
-    `${SITE_NAME}`,
-  ],
-  openGraph: {
-    title: `${SERVICE_NAME} | ${SITE_NAME}`,
-    description: `Электромонтаж квартир, ресторанов и офисов в ${CITY}. Проектирование, щитовое оборудование, силовые сети. Гарантия 5 лет.`,
-    type: "website",
-    url: `${SITE_URL}${SERVICE_SLUG}`,
-  },
-  alternates: { canonical: SERVICE_SLUG },
-};
+export async function generateMetadata() {
+  return getPageMeta({
+    title: `${SERVICE_NAME} — от проекта до пусконаладки | ${SITE_NAME}`,
+    description: `Электромонтаж квартир, ресторанов и офисов в ${CITY}. Проектирование, щитовое оборудование, силовые сети. Допуск СРО. Гарантия 5 лет.`,
+    path: SERVICE_SLUG,
+    keywords: [`электромонтаж ${CITY}`, `электромонтажные работы ${CITY}`, `электрик ${CITY}`, "электромонтаж под ключ", SITE_NAME],
+  });
+}
 
 export default function ElectricalPage() {
   return (

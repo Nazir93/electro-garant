@@ -1,0 +1,105 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowLeft, Calendar, Tag } from "lucide-react";
+
+interface BlogPost {
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  category: string;
+  coverImage: string | null;
+  createdAt: string;
+}
+
+export function BlogPostContent({ post }: { post: BlogPost }) {
+  const date = new Date(post.createdAt).toLocaleDateString("ru-RU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  return (
+    <article className="pt-28 pb-16 md:pt-36 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
+      <div className="container mx-auto max-w-3xl px-5">
+        <Link
+          href="/blog"
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] mb-10 transition-colors duration-200 hover:opacity-70"
+          style={{ color: "var(--text-muted)" }}
+        >
+          <ArrowLeft size={14} />
+          Все статьи
+        </Link>
+
+        <div className="flex items-center gap-4 mb-6">
+          <span
+            className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.15em] px-3 py-1 rounded-full"
+            style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
+          >
+            <Tag size={10} />
+            {post.category}
+          </span>
+          <span
+            className="inline-flex items-center gap-1.5 text-[10px] tracking-wider"
+            style={{ color: "var(--text-subtle)" }}
+          >
+            <Calendar size={10} />
+            {date}
+          </span>
+        </div>
+
+        <h1
+          className="font-heading text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-8"
+          style={{ color: "var(--text)" }}
+        >
+          {post.title}
+        </h1>
+
+        <p className="text-base md:text-lg leading-relaxed mb-10" style={{ color: "var(--text-muted)" }}>
+          {post.excerpt}
+        </p>
+
+        {post.coverImage && (
+          <div className="relative w-full aspect-[16/9] mb-10 rounded-2xl overflow-hidden">
+            <Image
+              src={post.coverImage}
+              alt={post.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 720px"
+              priority
+            />
+          </div>
+        )}
+
+        <div
+          className="prose prose-lg max-w-none"
+          style={{ color: "var(--text)" }}
+          dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
+        />
+
+        <div className="mt-16 pt-8" style={{ borderTop: "1px solid var(--border)" }}>
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.1em] transition-colors duration-200 hover:opacity-70"
+            style={{ color: "var(--accent)" }}
+          >
+            <ArrowLeft size={16} />
+            Вернуться к статьям
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function formatContent(raw: string): string {
+  if (raw.startsWith("<")) return raw;
+  return raw
+    .split("\n\n")
+    .filter(Boolean)
+    .map((p) => `<p>${p.replace(/\n/g, "<br/>")}</p>`)
+    .join("");
+}

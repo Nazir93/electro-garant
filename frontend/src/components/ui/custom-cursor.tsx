@@ -66,7 +66,7 @@ export function CustomCursor() {
 
   if (!visible) return null;
 
-  const size = hovering ? 56 : 32;
+  const size = hovering ? 36 : 28;
 
   return (
     <>
@@ -78,15 +78,26 @@ export function CustomCursor() {
         style={{
           width: `${size}px`,
           height: `${size}px`,
-          borderRadius: "50%",
-          background: hovering
-            ? "radial-gradient(circle, var(--accent) 0%, rgba(201,168,76,0.3) 60%, transparent 100%)"
-            : "radial-gradient(circle, var(--text) 0%, rgba(255,255,255,0.25) 50%, transparent 100%)",
           opacity: 1,
-          transition: "width 0.3s ease, height 0.3s ease, background 0.3s",
+          transition: "width 0.25s ease, height 0.25s ease",
           willChange: "transform",
         }}
-      />
+      >
+        <svg viewBox="0 0 56 56" fill="none" className="w-full h-full">
+          <circle
+            cx="28"
+            cy="28"
+            r="26"
+            stroke="rgba(201,168,76,1)"
+            strokeWidth="2"
+            fill={hovering ? "rgba(201,168,76,0.15)" : "rgba(0,0,0,0.2)"}
+          />
+          <path
+            d="M29 13L19 29h8l-2 14 10-16h-8l2-14z"
+            fill="rgba(201,168,76,1)"
+          />
+        </svg>
+      </div>
     </>
   );
 }

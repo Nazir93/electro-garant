@@ -51,11 +51,12 @@ export function PriceBannerSection() {
   const accentRGB = "201,168,76";
 
   return (
-    <div ref={sectionRef} className="relative" style={{ height: "200vh" }}>
-      <div
-        className="sticky top-0 h-[100dvh] overflow-hidden"
-        style={{ backgroundColor: "var(--bg)" }}
-      >
+    <div
+      ref={sectionRef}
+      className="relative overflow-hidden"
+      style={{ backgroundColor: "var(--bg)" }}
+    >
+      <div className="min-h-[100dvh]">
         {/* Ambient glow orbs — no blur filter for performance */}
         <div
           className="absolute pointer-events-none"

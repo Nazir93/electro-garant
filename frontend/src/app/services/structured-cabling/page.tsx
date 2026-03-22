@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { CITY, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { CITY, SITE_NAME } from "@/lib/constants";
+import { getPageMeta } from "@/lib/get-page-meta";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingShowcase } from "@/components/landing/landing-showcase";
 import { LandingPain } from "@/components/landing/landing-pain";
@@ -12,28 +12,14 @@ import { LandingServiceSchema } from "@/components/landing/landing-service-schem
 const SERVICE_NAME = `Слаботочные системы и СКС под ключ в ${CITY}`;
 const SERVICE_SLUG = "/services/structured-cabling";
 
-export const metadata: Metadata = {
-  title: `${SERVICE_NAME} — IT-инфраструктура для бизнеса | ${SITE_NAME}`,
-  description: `Проектирование и монтаж структурированных кабельных сетей (СКС) в ${CITY}. Интернет, телефония, серверные комнаты. Cat 6A, 10 Гбит/с. Сертификация Fluke. Гарантия 5 лет.`,
-  keywords: [
-    `СКС ${CITY}`,
-    `слаботочные системы ${CITY}`,
-    `монтаж сети ${CITY}`,
-    "структурированные кабельные сети",
-    "IT инфраструктура офис",
-    "серверная комната",
-    "Cat 6A",
-    "Wi-Fi покрытие",
-    `${SITE_NAME}`,
-  ],
-  openGraph: {
-    title: `${SERVICE_NAME} | ${SITE_NAME}`,
+export async function generateMetadata() {
+  return getPageMeta({
+    title: `${SERVICE_NAME} — IT-инфраструктура для бизнеса | ${SITE_NAME}`,
     description: `Проектирование и монтаж СКС в ${CITY}. Интернет, телефония, серверные. Cat 6A, 10 Гбит/с. Гарантия 5 лет.`,
-    type: "website",
-    url: `${SITE_URL}${SERVICE_SLUG}`,
-  },
-  alternates: { canonical: SERVICE_SLUG },
-};
+    path: SERVICE_SLUG,
+    keywords: [`СКС ${CITY}`, `слаботочные системы ${CITY}`, "структурированные кабельные сети", "Cat 6A", SITE_NAME],
+  });
+}
 
 export default function StructuredCablingPage() {
   return (

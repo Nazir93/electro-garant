@@ -1,15 +1,18 @@
-import type { Metadata } from "next";
-import { SITE_NAME } from "@/lib/constants";
+import { SITE_NAME, CITY } from "@/lib/constants";
 import { prisma } from "@/lib/db";
+import { getPageMeta } from "@/lib/get-page-meta";
 import { BlogPageContent } from "./content";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: `Блог — статьи и новости | ${SITE_NAME}`,
-  description: `Полезные статьи об электромонтаже, умном доме, видеонаблюдении и акустике. Советы экспертов ${SITE_NAME}.`,
-  alternates: { canonical: "/blog" },
-};
+export async function generateMetadata() {
+  return getPageMeta({
+    title: `Блог — статьи и новости | ${SITE_NAME}`,
+    description: `Полезные статьи об электромонтаже, умном доме, видеонаблюдении и акустике в ${CITY}. Советы экспертов ${SITE_NAME}.`,
+    path: "/blog",
+    keywords: [`блог ${CITY}`, "электромонтаж статьи", "умный дом советы", SITE_NAME],
+  });
+}
 
 const FALLBACK_POSTS = [
   { id: "1", title: "Как выбрать подрядчика для электромонтажа", excerpt: "Разбираем критерии оценки: допуск СРО, портфолио, гарантия, проектная документация. На что обратить внимание при выборе.", category: "Электромонтаж", date: "12.02.2026" },
@@ -33,6 +36,7 @@ async function getPosts() {
     if (dbPosts.length > 0) {
       return dbPosts.map((p) => ({
         id: p.id,
+        slug: p.slug,
         title: p.title,
         excerpt: p.excerpt,
         category: p.category,

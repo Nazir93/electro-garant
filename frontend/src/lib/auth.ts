@@ -10,19 +10,18 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Пароль", type: "password" },
       },
       async authorize(credentials) {
-        const adminEmail =
-          process.env.ADMIN_EMAIL || "admin@garantmontazh.ru";
-        const adminSecret = process.env.ADMIN_SECRET;
+        const adminEmail = (process.env.ADMIN_EMAIL || "admin@garantmontazh.ru").trim();
+        const adminSecret = process.env.ADMIN_SECRET?.trim();
 
         if (!adminSecret) {
           console.error("[AUTH] ADMIN_SECRET is not set");
           return null;
         }
 
-        if (
-          credentials?.email === adminEmail &&
-          credentials?.password === adminSecret
-        ) {
+        const inputEmail = credentials?.email?.trim() ?? "";
+        const inputPassword = credentials?.password ?? "";
+
+        if (inputEmail === adminEmail && inputPassword === adminSecret) {
           return { id: "1", email: adminEmail, name: "Администратор" };
         }
 

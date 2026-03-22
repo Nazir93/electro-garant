@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { CITY, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { CITY, SITE_NAME } from "@/lib/constants";
+import { getPageMeta } from "@/lib/get-page-meta";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingShowcase } from "@/components/landing/landing-showcase";
 import { LandingPain } from "@/components/landing/landing-pain";
@@ -12,27 +12,14 @@ import { LandingServiceSchema } from "@/components/landing/landing-service-schem
 const SERVICE_NAME = `Коммерческая акустика для ресторанов и магазинов в ${CITY}`;
 const SERVICE_SLUG = "/services/acoustics";
 
-export const metadata: Metadata = {
-  title: `${SERVICE_NAME} — мультизональный звук | ${SITE_NAME}`,
-  description: `Проектирование и монтаж звуковых систем для ресторанов, кафе, магазинов и офисов в ${CITY}. Мультизональный звук, архитектурная акустика. Bose, JBL. Гарантия 5 лет.`,
-  keywords: [
-    `акустика ресторан ${CITY}`,
-    `коммерческий звук ${CITY}`,
-    `озвучка кафе ${CITY}`,
-    "мультизональный звук",
-    "архитектурная акустика",
-    "потолочные динамики",
-    "звуковая система ресторан",
-    `${SITE_NAME}`,
-  ],
-  openGraph: {
-    title: `${SERVICE_NAME} | ${SITE_NAME}`,
-    description: `Проектирование и монтаж мультизональных звуковых систем в ${CITY}. Чистый, равномерный звук в каждой зоне. Гарантия 5 лет.`,
-    type: "website",
-    url: `${SITE_URL}${SERVICE_SLUG}`,
-  },
-  alternates: { canonical: SERVICE_SLUG },
-};
+export async function generateMetadata() {
+  return getPageMeta({
+    title: `${SERVICE_NAME} — мультизональный звук | ${SITE_NAME}`,
+    description: `Проектирование и монтаж звуковых систем для ресторанов, кафе, магазинов и офисов в ${CITY}. Bose, JBL. Гарантия 5 лет.`,
+    path: SERVICE_SLUG,
+    keywords: [`акустика ресторан ${CITY}`, `коммерческий звук ${CITY}`, "мультизональный звук", SITE_NAME],
+  });
+}
 
 export default function AcousticsPage() {
   return (

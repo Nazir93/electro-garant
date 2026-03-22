@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ArrowDown, SlidersHorizontal } from "lucide-react";
-import { PORTFOLIO_CASES } from "@/lib/portfolio-data";
+import type { ProjectListItem } from "@/lib/get-projects";
 
 function LoadMoreButton({ onClick }: { onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
@@ -38,7 +39,7 @@ function LoadMoreButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-function ProjectCard({ project }: { project: (typeof PORTFOLIO_CASES)[0] }) {
+function ProjectCard({ project }: { project: ProjectListItem }) {
   return (
     <Link
       href={`/portfolio/${project.slug}`}
@@ -46,14 +47,23 @@ function ProjectCard({ project }: { project: (typeof PORTFOLIO_CASES)[0] }) {
       style={{ border: "1px solid var(--border)" }}
     >
       <div className="flex items-center gap-5 md:gap-8 p-4 md:p-6">
-        {/* Thumbnail */}
         <div
-          className="shrink-0 w-28 h-20 md:w-40 md:h-28 rounded-xl overflow-hidden flex items-center justify-center"
+          className="shrink-0 w-28 h-20 md:w-40 md:h-28 rounded-xl overflow-hidden flex items-center justify-center relative"
           style={{ backgroundColor: "var(--bg-secondary)" }}
         >
-          <span className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
-            Фото
-          </span>
+          {project.coverImage ? (
+            <Image
+              src={project.coverImage}
+              alt={project.title}
+              fill
+              className="object-cover"
+              sizes="160px"
+            />
+          ) : (
+            <span className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
+              Фото
+            </span>
+          )}
         </div>
 
         {/* Info */}
@@ -105,11 +115,11 @@ function ProjectCard({ project }: { project: (typeof PORTFOLIO_CASES)[0] }) {
 
 const INITIAL_COUNT = 5;
 
-export function PortfolioPageContent() {
+export function PortfolioPageContent({ projects }: { projects: ProjectListItem[] }) {
   const [showAll, setShowAll] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
-  const visibleProjects = showAll ? PORTFOLIO_CASES : PORTFOLIO_CASES.slice(0, INITIAL_COUNT);
+  const visibleProjects = showAll ? projects : projects.slice(0, INITIAL_COUNT);
 
   const FILTERS = ["Все", "Электромонтаж", "Умный дом", "Акустика", "Видеонаблюдение", "СКС"];
 
@@ -175,7 +185,7 @@ export function PortfolioPageContent() {
         </div>
 
         {/* Load more */}
-        {!showAll && PORTFOLIO_CASES.length > INITIAL_COUNT && (
+        {!showAll && projects.length > INITIAL_COUNT && (
           <LoadMoreButton onClick={() => setShowAll(true)} />
         )}
       </div>

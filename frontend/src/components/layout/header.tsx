@@ -229,13 +229,13 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome]);
 
-  const headerColor = isHome ? "#FFFFFF" : "var(--text)";
-  const headerBorderColor = isHome ? "rgba(255,255,255,0.2)" : "var(--border)";
-  const headerMutedColor = isHome ? "rgba(255,255,255,0.6)" : "var(--text-muted)";
+  const headerColor = isHome ? (isDark ? "#FFFFFF" : "#0A0A0A") : "var(--text)";
+  const headerBorderColor = isHome ? (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)") : "var(--border)";
+  const headerMutedColor = isHome ? (isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)") : "var(--text-muted)";
 
   return (
     <>
-      {/* Minimal floating header — logo + theme + hamburger */}
+      {/* Minimal floating header — на белом фоне чёрный шрифт, без чёрной полосы */}
       <header
         className="fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-500"
         style={{

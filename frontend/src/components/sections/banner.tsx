@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { useModal } from "@/lib/modal-context";
 import { useTheme } from "@/lib/theme-context";
 
@@ -33,7 +34,7 @@ const ANNOTATIONS = [
     desc: "Силовые сети, освещение",
     href: "/services/electrical",
     dotX: 53, dotY: 46,
-    labelX: 10, labelY: 55,
+    labelX: 20, labelY: 65,
     align: "right" as const,
     icon: "zap",
   },
@@ -43,7 +44,7 @@ const ANNOTATIONS = [
     desc: "Автоматизация и управление",
     href: "/services/smart-home",
     dotX: 58, dotY: 60,
-    labelX: 20, labelY: 64,
+    labelX: 23, labelY: 68,
     align: "left" as const,
     icon: "home",
   },
@@ -53,7 +54,7 @@ const ANNOTATIONS = [
     desc: "СКС, интернет, телефония",
     href: "/services/structured-cabling",
     dotX: 28, dotY: 60,
-    labelX: 8, labelY: 64,
+    labelX: 8, labelY: 59,
     align: "right" as const,
     icon: "network",
   },
@@ -118,24 +119,15 @@ const ICONS: Record<string, React.ReactNode> = {
 
 export function BannerSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const cursorRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [ctaHovered, setCtaHovered] = useState(false);
-  const [cursorIn, setCursorIn] = useState(false);
-  const [cursorDown, setCursorDown] = useState(false);
+  const [bannerCtaHovered, setBannerCtaHovered] = useState(false);
   const { openModal } = useModal();
   const { isDark } = useTheme();
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 400);
     return () => clearTimeout(t);
-  }, []);
-
-  const onMove = useCallback((e: React.MouseEvent) => {
-    if (!cursorRef.current || !sectionRef.current) return;
-    const r = sectionRef.current.getBoundingClientRect();
-    cursorRef.current.style.transform = `translate(${e.clientX - r.left}px, ${e.clientY - r.top}px) translate(-50%, -50%)`;
   }, []);
 
   return (
@@ -145,57 +137,43 @@ export function BannerSection() {
       style={{
         height: "100dvh",
         minHeight: "600px",
-        backgroundColor: "#000000",
+        backgroundColor: isDark ? "#000000" : "#FFFFFF",
         cursor: "none",
       }}
-      onMouseMove={onMove}
-      onMouseEnter={() => setCursorIn(true)}
-      onMouseLeave={() => { setCursorIn(false); setCursorDown(false); }}
-      onMouseDown={() => setCursorDown(true)}
-      onMouseUp={() => setCursorDown(false)}
     >
-      {/* Custom cursor — circle + lightning */}
+      {/* ============== Mobile + Tablet: title at top (чуть ниже) ============== */}
       <div
-        ref={cursorRef}
-        className="absolute z-[20] pointer-events-none hidden md:block"
-        style={{
-          top: 0,
-          left: 0,
-          width: cursorDown ? "48px" : "56px",
-          height: cursorDown ? "48px" : "56px",
-          opacity: cursorIn ? 1 : 0,
-          transition: "width 0.15s, height 0.15s, opacity 0.2s",
-          willChange: "transform",
-        }}
-      >
-        <svg viewBox="0 0 56 56" fill="none" className="w-full h-full">
-          <circle
-            cx="28" cy="28" r="26"
-            stroke="rgba(201,168,76,1)" strokeWidth="2"
-            fill="rgba(0,0,0,0.25)"
-          />
-          <path
-            d="M29 13L19 29h8l-2 14 10-16h-8l2-14z"
-            fill="rgba(201,168,76,1)"
-          />
-        </svg>
-      </div>
-      {/* ============== Mobile + Tablet: title at top ============== */}
-      <div
-        className="absolute md:hidden top-16 sm:top-20 left-0 right-0 z-[6] flex justify-center transition-all duration-1000"
+        className="absolute md:hidden top-20 sm:top-24 left-0 right-0 z-[6] flex justify-center transition-all duration-1000"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(30px)",
         }}
       >
-        <h1 className="font-heading font-bold leading-[0.92] tracking-tight text-white text-center">
+        <h1 className="font-heading font-bold leading-[0.92] tracking-tight text-center">
           <span
             className="block text-[clamp(36px,10vw,70px)] sm:text-[clamp(44px,8vw,72px)]"
             style={{ color: "rgba(201,168,76,1)" }}
           >
             ГАРАНТ
           </span>
-          <span className="block text-[clamp(36px,10vw,70px)] sm:text-[clamp(44px,8vw,72px)]">МОНТАЖ</span>
+          <span className="block text-[clamp(36px,10vw,70px)] sm:text-[clamp(44px,8vw,72px)]">
+            {isDark ? (
+              <span style={{ color: "#fff" }}>МОНТАЖ</span>
+            ) : (
+              <>
+                <span style={{ color: "#0A0A0A" }}>МОНТА</span>
+                <span
+                  style={{
+                    color: "#0A0A0A",
+                    textShadow:
+                      "0 0 8px #fff, 0 0 16px rgba(255,255,255,0.95), 0 0 24px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.35)",
+                  }}
+                >
+                  Ж
+                </span>
+              </>
+            )}
+          </span>
         </h1>
       </div>
 
@@ -203,7 +181,7 @@ export function BannerSection() {
       <div className="relative z-[2] h-full flex items-center md:flex-row">
 
         {/* ---- LEFT: Title (desktop only) ---- */}
-        <div className="hidden md:flex flex-shrink-0 w-[25%] lg:w-[32%] h-full flex-col items-start justify-end pl-[12%] lg:pl-[16%] pr-4 pb-[22%] z-[5]">
+        <div className="hidden md:flex flex-shrink-0 w-[25%] lg:w-[32%] h-full flex-col items-start justify-end pl-[12%] lg:pl-[16%] pr-4 pb-[16%] lg:pb-[18%] z-[5]">
           <div
             className="transition-all duration-1000"
             style={{
@@ -211,97 +189,128 @@ export function BannerSection() {
               transform: visible ? "translateY(0)" : "translateY(30px)",
             }}
           >
-            <h1 className="font-heading font-bold leading-[0.92] tracking-tight text-white">
-              <span
-                className="block text-[clamp(36px,7vw,90px)]"
-                style={{ color: "rgba(201,168,76,1)" }}
+            <div className="w-fit max-w-full">
+              <h1 className="font-heading font-bold leading-[0.92] tracking-tight">
+                <span
+                  className="block text-[clamp(36px,7vw,90px)]"
+                  style={{ color: "rgba(201,168,76,1)" }}
+                >
+                  ГАРАНТ
+                </span>
+                <span className="block text-[clamp(36px,7vw,90px)]">
+                  {isDark ? (
+                    <span style={{ color: "#fff" }}>МОНТАЖ</span>
+                  ) : (
+                    <>
+                      <span style={{ color: "#0A0A0A" }}>МОНТА</span>
+                      <span
+                        style={{
+                          color: "#0A0A0A",
+                          textShadow:
+                            "0 0 10px #fff, 0 0 20px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.3)",
+                        }}
+                      >
+                        Ж
+                      </span>
+                    </>
+                  )}
+                </span>
+              </h1>
+              {/* Как в footer: ширина = блоку ГАРАНТ / МОНТАЖ */}
+              <button
+                type="button"
+                onClick={openModal}
+                onMouseEnter={() => setBannerCtaHovered(true)}
+                onMouseLeave={() => setBannerCtaHovered(false)}
+                className="group relative w-[85%] flex items-center justify-between gap-2 px-4 py-2.5 mt-3 md:mt-4 overflow-hidden transition-colors duration-700 cursor-none"
+                style={{
+                  border: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}`,
+                  borderRadius: "14px",
+                  boxShadow: isDark
+                    ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
+                    : "2px 0 12px rgba(255,255,255,0.7), 4px 0 24px rgba(255,255,255,0.4)",
+                }}
+                aria-label="Обсудить проект"
               >
-                ГАРАНТ
-              </span>
-              <span className="block text-[clamp(36px,7vw,90px)]">МОНТАЖ</span>
-            </h1>
+                <div
+                  className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
+                  style={{
+                    backgroundColor: isDark ? "#FFFFFF" : "#0A0A0A",
+                    transform: bannerCtaHovered ? "scaleX(1)" : "scaleX(0)",
+                  }}
+                />
+                <span
+                  className="relative z-10 font-heading text-[11px] lg:text-[13px] uppercase tracking-[0.14em] leading-tight text-left transition-colors duration-700 flex-1"
+                  style={{
+                    color: bannerCtaHovered
+                      ? (isDark ? "#0A0A0A" : "#FFFFFF")
+                      : (isDark ? "#FFFFFF" : "#0A0A0A"),
+                  }}
+                >
+                  Обсудить проект
+                </span>
+                <ArrowRight
+                  size={16}
+                  className="relative z-10 shrink-0 transition-colors duration-700"
+                  style={{
+                    color: bannerCtaHovered
+                      ? (isDark ? "#0A0A0A" : "#FFFFFF")
+                      : (isDark ? "#FFFFFF" : "#0A0A0A"),
+                  }}
+                />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* ---- Mobile/Tablet: spinning circle as main element ---- */}
-        <div className="flex-1 md:hidden h-full flex items-center justify-center relative">
+        {/* ---- Mobile/Tablet: фото дома + кнопка ---- */}
+        <div className="flex-1 md:hidden h-full flex flex-col items-center justify-center relative min-h-0 overflow-hidden">
           <div
-            className="relative transition-all duration-1000 delay-300"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-[140%] h-[80%] transition-all duration-1000 delay-300"
             style={{
-              width: "clamp(200px, 55vw, 320px)",
-              height: "clamp(200px, 55vw, 320px)",
               opacity: visible ? 1 : 0,
-              transform: visible ? "scale(1)" : "scale(0.85)",
+              transform: visible ? "translateY(-50%) scale(1)" : "translateY(-50%) scale(0.92)",
             }}
           >
-            {/* Rotating text ring */}
-            <svg
-              viewBox="0 0 200 200"
-              className="absolute inset-0 w-full h-full"
-              style={{ animation: "spin-slow 12s linear infinite" }}
-            >
-              <defs>
-                <path
-                  id="circlePathMobile"
-                  d="M 100,100 m -82,0 a 82,82 0 1,1 164,0 a 82,82 0 1,1 -164,0"
-                />
-              </defs>
-              <text
-                className="uppercase"
-                style={{
-                  fill: isDark ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.95)",
-                  fontSize: "14.5px",
-                  fontWeight: 600,
-                  transition: "fill 0.5s",
-                }}
-              >
-                <textPath
-                  href="#circlePathMobile"
-                  startOffset="0%"
-                  textLength={2 * Math.PI * 82 * 0.88}
-                  lengthAdjust="spacing"
-                >
-                  НАЧАТЬ РАБОТАТЬ С ГАРАНТ МОНТАЖ
-                </textPath>
-              </text>
-            </svg>
-
-            {/* Center: lightning + glow */}
-            <button
-              onClick={openModal}
-              className="absolute inset-0 flex items-center justify-center"
-              aria-label="Начать работать с Гарант Монтаж"
-            >
-              <div
-                className="w-[50%] h-[50%] rounded-full flex items-center justify-center transition-all duration-700"
-                style={{
-                  backgroundColor: isDark ? "rgba(201,168,76,0.08)" : "rgba(201,168,76,0.12)",
-                  border: `1.5px solid ${isDark ? "rgba(201,168,76,0.35)" : "rgba(255,255,255,0.7)"}`,
-                  boxShadow: isDark
-                    ? "0 0 20px 5px rgba(201,168,76,0.15)"
-                    : "0 0 30px 8px rgba(255,255,255,0.3), inset 0 0 15px rgba(255,255,255,0.15)",
-                }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" className="w-[40%] h-[40%]">
-                  <path
-                    d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
-                    fill="rgba(201,168,76,1)"
-                  />
-                </svg>
-              </div>
-            </button>
-
-            {/* Outer ring */}
-            <div
-              className="absolute inset-[2px] rounded-full pointer-events-none transition-all duration-700"
-              style={{
-                border: `1px solid ${isDark ? "rgba(201,168,76,0.2)" : "rgba(255,255,255,0.5)"}`,
-                boxShadow: isDark
-                  ? "none"
-                  : "0 0 30px 6px rgba(255,255,255,0.2), inset 0 0 15px 3px rgba(255,255,255,0.08)",
-              }}
+            <Image
+              src={isDark ? "/IMG_0980.PNG" : "/logo/photo_2026-03-20_15-02-09.jpg"}
+              alt="Гарант Монтаж"
+              fill
+              className="object-contain object-left"
+              priority
+              sizes="140vw"
             />
           </div>
+
+          {/* CTA button under the house image */}
+          <button
+            type="button"
+            onClick={openModal}
+            className="absolute bottom-28 sm:bottom-32 left-1/2 -translate-x-1/2 z-[8] flex items-center justify-between gap-3 px-6 py-3 overflow-hidden transition-all duration-700 cursor-pointer w-[70%] max-w-[280px]"
+            style={{
+              opacity: visible ? 1 : 0,
+              transitionDelay: "800ms",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}`,
+              borderRadius: "14px",
+              backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.85)",
+              boxShadow: isDark
+                ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
+                : "0 0 12px rgba(255,255,255,0.5)",
+            }}
+            aria-label="Обсудить проект"
+          >
+            <span
+              className="font-heading text-[12px] sm:text-[13px] uppercase tracking-[0.14em] flex-1 text-left"
+              style={{ color: isDark ? "#FFFFFF" : "#0A0A0A" }}
+            >
+              Обсудить проект
+            </span>
+            <ArrowRight
+              size={16}
+              className="shrink-0"
+              style={{ color: isDark ? "#FFFFFF" : "#0A0A0A" }}
+            />
+          </button>
         </div>
 
         {/* ---- House image + annotation dots + label cards (desktop only) ---- */}
@@ -313,9 +322,9 @@ export function BannerSection() {
               transform: visible ? "scale(1)" : "scale(0.92)",
             }}
           >
-            {/* House image */}
+            {/* House image: дневной вариант — белый дом с тенью, ночной — тёмный */}
             <Image
-              src="/IMG_0980.PNG"
+              src={isDark ? "/IMG_0980.PNG" : "/logo/photo_2026-03-20_15-02-09.jpg"}
               alt="Гарант Монтаж — полный цикл электромонтажных работ"
               fill
               className="object-contain"
@@ -393,22 +402,28 @@ export function BannerSection() {
                     href={a.href}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 cursor-none"
                     style={{
-                      backgroundColor: isHov ? "rgba(201,168,76,0.15)" : "rgba(0,0,0,0.75)",
-                      border: `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.1)"}`,
+                      backgroundColor: isDark
+                        ? (isHov ? "rgba(201,168,76,0.15)" : "rgba(0,0,0,0.75)")
+                        : (isHov ? "rgba(201,168,76,0.2)" : "rgba(255,255,255,0.95)"),
+                      border: isDark
+                        ? `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.1)"}`
+                        : `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(0,0,0,0.12)"}`,
                     }}
                   >
                     <span
                       className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-300"
                       style={{
-                        backgroundColor: isHov ? "rgba(201,168,76,0.25)" : "rgba(201,168,76,0.1)",
-                        color: isHov ? "rgba(201,168,76,1)" : "rgba(255,255,255,0.5)",
+                        backgroundColor: isDark ? (isHov ? "rgba(201,168,76,0.25)" : "rgba(201,168,76,0.1)") : (isHov ? "rgba(201,168,76,0.3)" : "rgba(201,168,76,0.12)"),
+                        color: isDark ? (isHov ? "rgba(201,168,76,1)" : "rgba(255,255,255,0.5)") : (isHov ? "rgba(201,168,76,1)" : "rgba(0,0,0,0.6)"),
                       }}
                     >
                       {ICONS[a.icon]}
                     </span>
                     <span
                       className="text-[9px] lg:text-[10px] tracking-wide uppercase whitespace-nowrap transition-colors duration-300 pr-1"
-                      style={{ color: isHov ? "rgba(201,168,76,1)" : "rgba(255,255,255,0.7)" }}
+                      style={{
+                        color: isDark ? (isHov ? "rgba(201,168,76,1)" : "rgba(255,255,255,0.7)") : (isHov ? "rgba(201,168,76,1)" : "rgba(0,0,0,0.75)"),
+                      }}
                     >
                       {a.label}
                     </span>
@@ -421,148 +436,22 @@ export function BannerSection() {
 
       </div>
 
-      {/* ---- Bottom center: slogan ---- */}
+      {/* ---- Лозунг снизу: просто текст на фоне баннера ---- */}
       <div
-        className="absolute bottom-10 sm:bottom-14 md:bottom-16 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-1000 delay-[1000ms]"
+        className="absolute bottom-20 sm:bottom-24 md:bottom-16 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-1000 delay-[1000ms]"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(10px)",
         }}
       >
         <p
-          className="text-[12px] sm:text-[clamp(14px,1.8vw,22px)] md:text-[clamp(16px,1.8vw,24px)] font-light tracking-wide whitespace-nowrap"
-          style={{ color: "rgba(255,255,255,0.9)" }}
+          className="text-[15px] sm:text-[17px] md:text-[clamp(16px,1.8vw,24px)] font-light tracking-wide whitespace-nowrap"
+          style={{ color: isDark ? "rgba(255,255,255,0.9)" : "rgba(10,10,10,0.9)" }}
         >
           Мы не создаём проблем — мы их решаем
         </p>
       </div>
 
-      {/* ---- Circular CTA: spinning text + lightning center (desktop only) ---- */}
-      <button
-        onClick={openModal}
-        onMouseEnter={() => setCtaHovered(true)}
-        onMouseLeave={() => setCtaHovered(false)}
-        className="absolute z-[10] cursor-none transition-all duration-700 hidden md:block"
-        style={{
-          bottom: "clamp(80px, 15%, 160px)",
-          right: "clamp(40px, 8%, 120px)",
-          width: "clamp(130px, 18vw, 190px)",
-          height: "clamp(130px, 18vw, 190px)",
-        }}
-        aria-label="Начать работать с Гарант Монтаж"
-      >
-        {/* Rotating text ring */}
-        <svg
-          viewBox="0 0 200 200"
-          className="absolute inset-0 w-full h-full"
-          style={{
-            animation: "spin-slow 12s linear infinite",
-          }}
-        >
-          <defs>
-            <path
-              id="circlePath"
-              d="M 100,100 m -82,0 a 82,82 0 1,1 164,0 a 82,82 0 1,1 -164,0"
-            />
-          </defs>
-          <text
-            className="uppercase"
-            style={{
-              fill: ctaHovered
-                ? "rgba(201,168,76,1)"
-                : isDark
-                  ? "rgba(255,255,255,0.85)"
-                  : "rgba(255,255,255,0.95)",
-              fontSize: "14.5px",
-              fontWeight: 600,
-              transition: "fill 0.5s",
-            }}
-          >
-            <textPath
-              href="#circlePath"
-              startOffset="0%"
-              textLength={2 * Math.PI * 82 * 0.95}
-              lengthAdjust="spacing"
-            >
-              НАЧАТЬ РАБОТАТЬ С ГАРАНТ МОНТАЖ
-            </textPath>
-          </text>
-        </svg>
-
-        {/* Center: lightning icon + glow */}
-        <div
-          className="absolute inset-0 flex items-center justify-center transition-transform duration-500"
-          style={{ transform: ctaHovered ? "scale(1.12)" : "scale(1)" }}
-        >
-          <div
-            className="w-[52%] h-[52%] rounded-full flex items-center justify-center transition-all duration-700"
-            style={{
-              backgroundColor: ctaHovered
-                ? "rgba(201,168,76,0.25)"
-                : isDark
-                  ? "rgba(201,168,76,0.08)"
-                  : "rgba(201,168,76,0.12)",
-              border: `1.5px solid ${
-                ctaHovered
-                  ? "rgba(201,168,76,0.8)"
-                  : isDark
-                    ? "rgba(201,168,76,0.35)"
-                    : "rgba(255,255,255,0.7)"
-              }`,
-              boxShadow: ctaHovered
-                ? "0 0 30px 8px rgba(201,168,76,0.35), inset 0 0 15px rgba(201,168,76,0.15)"
-                : isDark
-                  ? "0 0 15px 3px rgba(201,168,76,0.1)"
-                  : "0 0 25px 6px rgba(255,255,255,0.3), inset 0 0 12px rgba(255,255,255,0.15)",
-            }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="w-[45%] h-[45%]">
-              <path
-                    d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
-                    fill="rgba(201,168,76,1)"
-                  />
-            </svg>
-          </div>
-        </div>
-
-        {/* Outer ring border */}
-        <div
-          className="absolute inset-[2px] rounded-full pointer-events-none transition-all duration-700"
-          style={{
-            border: `1px solid ${
-              ctaHovered
-                ? "rgba(201,168,76,0.6)"
-                : isDark
-                  ? "rgba(201,168,76,0.2)"
-                  : "rgba(255,255,255,0.5)"
-            }`,
-            boxShadow: ctaHovered
-              ? "0 0 20px 4px rgba(201,168,76,0.15)"
-              : isDark
-                ? "none"
-                : "0 0 30px 6px rgba(255,255,255,0.2), inset 0 0 15px 3px rgba(255,255,255,0.08)",
-          }}
-        />
-      </button>
-
-      {/* ---- Glowing frame border — reacts to theme ---- */}
-      <div
-        className="absolute inset-0 z-[1] pointer-events-none transition-all duration-1000"
-        style={{
-          border: isDark ? "1px solid rgba(201,168,76,0.15)" : "1px solid rgba(255,255,255,0.6)",
-          margin: "10px",
-          borderRadius: "4px",
-          boxShadow: isDark
-            ? "0 0 15px 2px rgba(201,168,76,0.08)"
-            : "0 0 30px 6px rgba(255,255,255,0.3)",
-        }}
-      />
-
-      {/* Subtle vignette — lightweight */}
-      <div
-        className="absolute inset-0 z-[0] pointer-events-none"
-        style={{ boxShadow: "inset 0 0 40px 15px rgba(0,0,0,0.3)" }}
-      />
     </section>
   );
 }

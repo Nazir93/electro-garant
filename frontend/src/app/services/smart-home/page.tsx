@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { CITY, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { CITY, SITE_NAME } from "@/lib/constants";
+import { getPageMeta } from "@/lib/get-page-meta";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingShowcase } from "@/components/landing/landing-showcase";
 import { LandingPain } from "@/components/landing/landing-pain";
@@ -12,27 +12,14 @@ import { LandingServiceSchema } from "@/components/landing/landing-service-schem
 const SERVICE_NAME = `Умный дом под ключ в ${CITY}`;
 const SERVICE_SLUG = "/services/smart-home";
 
-export const metadata: Metadata = {
-  title: `${SERVICE_NAME} — монтаж и автоматизация | ${SITE_NAME}`,
-  description: `Монтаж систем умного дома в ${CITY}. KNX, Z-Wave, автоматизация света, климата и мультимедиа. Управление с телефона. От проекта до настройки. Гарантия 5 лет.`,
-  keywords: [
-    `умный дом ${CITY}`,
-    `автоматизация квартиры ${CITY}`,
-    `KNX монтаж ${CITY}`,
-    "умный дом под ключ",
-    "автоматизация света",
-    "управление климатом",
-    "Z-Wave",
-    `${SITE_NAME}`,
-  ],
-  openGraph: {
+export async function generateMetadata() {
+  return getPageMeta({
     title: `${SERVICE_NAME} — монтаж и автоматизация | ${SITE_NAME}`,
-    description: `Монтаж систем умного дома в ${CITY}. KNX, Z-Wave, автоматизация света и климата. Гарантия 5 лет.`,
-    type: "website",
-    url: `${SITE_URL}${SERVICE_SLUG}`,
-  },
-  alternates: { canonical: SERVICE_SLUG },
-};
+    description: `Монтаж систем умного дома в ${CITY}. KNX, Z-Wave, автоматизация света, климата и мультимедиа. Гарантия 5 лет.`,
+    path: SERVICE_SLUG,
+    keywords: [`умный дом ${CITY}`, `KNX монтаж ${CITY}`, "автоматизация света", "Z-Wave", SITE_NAME],
+  });
+}
 
 export default function SmartHomePage() {
   return (

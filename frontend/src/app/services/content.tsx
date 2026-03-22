@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { SERVICES } from "@/lib/constants";
 import { useModal } from "@/lib/modal-context";
@@ -51,14 +52,23 @@ function ServiceCard({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Image placeholder */}
         <div
-          className="aspect-[16/9] flex items-center justify-center"
+          className="aspect-[16/9] flex items-center justify-center relative overflow-hidden"
           style={{ backgroundColor: "var(--bg-secondary)" }}
         >
-          <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
-            Фото услуги
-          </span>
+          {service.coverImage ? (
+            <Image
+              src={service.coverImage}
+              alt={service.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          ) : (
+            <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
+              Фото услуги
+            </span>
+          )}
         </div>
 
         {/* Content */}

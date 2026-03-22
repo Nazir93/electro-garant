@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { PORTFOLIO_CASES } from "@/lib/portfolio-data";
+import type { ProjectListItem } from "@/lib/get-projects";
 
 function FillLink({ href, label }: { href: string; label: string }) {
   const [hovered, setHovered] = useState(false);
@@ -38,7 +40,17 @@ function FillLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function PortfolioRow({ project, index, isOpen, onToggle }: { project: (typeof PORTFOLIO_CASES)[0]; index: number; isOpen: boolean; onToggle: () => void }) {
+interface PortfolioProject {
+  id: string;
+  slug: string;
+  title: string;
+  type: string;
+  year: string;
+  shortDescription: string;
+  coverImage?: string | null;
+}
+
+function PortfolioRow({ project, index, isOpen, onToggle }: { project: PortfolioProject; index: number; isOpen: boolean; onToggle: () => void }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -119,14 +131,23 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: (typeof P
               </Link>
             </div>
 
-            {/* Right: image placeholder */}
             <div
-              className="aspect-[4/3] md:aspect-[16/10] flex items-center justify-center rounded-lg overflow-hidden"
+              className="aspect-[4/3] md:aspect-[16/10] flex items-center justify-center rounded-lg overflow-hidden relative"
               style={{ backgroundColor: "var(--bg-secondary)" }}
             >
-              <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
-                Фото / Видео проекта
-              </span>
+              {project.coverImage ? (
+                <Image
+                  src={project.coverImage}
+                  alt={project.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              ) : (
+                <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
+                  Фото / Видео проекта
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -135,8 +156,28 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: (typeof P
   );
 }
 
-export function PortfolioSection() {
+export function PortfolioSection({ projects: propProjects }: { projects?: ProjectListItem[] } = {}) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  const items: PortfolioProject[] = propProjects && propProjects.length > 0
+    ? propProjects.map((p) => ({
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        type: p.type,
+        year: p.year,
+        shortDescription: p.shortDescription,
+        coverImage: p.coverImage,
+      }))
+    : PORTFOLIO_CASES.map((c) => ({
+        id: c.id,
+        slug: c.slug,
+        title: c.title,
+        type: c.type,
+        year: c.year,
+        shortDescription: c.shortDescription,
+        coverImage: null,
+      }));
 
   return (
     <section
@@ -150,7 +191,7 @@ export function PortfolioSection() {
         </h2>
 
         <div className="border-t" style={{ borderColor: "var(--border)" }}>
-          {PORTFOLIO_CASES.map((project, i) => (
+          {items.map((project, i) => (
             <PortfolioRow
               key={project.id}
               project={project}
@@ -161,7 +202,6 @@ export function PortfolioSection() {
           ))}
         </div>
 
-        {/* "Смотреть все" */}
         <FillLink href="/portfolio" label="Смотреть все проекты" />
       </div>
     </section>

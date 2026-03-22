@@ -40,6 +40,12 @@ model Project {
   description String      @db.Text
   coverImage  String
   videoUrl    String?
+  location    String?
+  year        String?
+  industry    String?
+  projectType String?
+  features    String?     @db.Text
+  goals       String?     @db.Text
   published   Boolean     @default(false)
   order       Int         @default(0)
   createdAt   DateTime    @default(now())

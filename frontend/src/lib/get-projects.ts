@@ -1,0 +1,146 @@
+import { prisma } from "@/lib/db";
+import { PORTFOLIO_CASES, type PortfolioCase } from "@/lib/portfolio-data";
+
+export interface ProjectListItem {
+  id: string;
+  slug: string;
+  title: string;
+  tag: string;
+  industry: string;
+  type: string;
+  year: string;
+  area: string;
+  coverImage: string | null;
+  shortDescription: string;
+}
+
+function serviceTypeToLabel(st: string): string {
+  const map: Record<string, string> = {
+    ELECTRICAL: "Электромонтаж",
+    ACOUSTICS: "Акустика",
+    STRUCTURED_CABLING: "СКС",
+    SMART_HOME: "Умный дом",
+    SECURITY: "Видеонаблюдение",
+  };
+  return map[st] || st;
+}
+
+function categoryToLabel(cat: string): string {
+  const map: Record<string, string> = {
+    RESTAURANT: "Ресторан",
+    OFFICE: "Офис",
+    APARTMENT: "Квартира",
+    SHOP: "Магазин",
+    OTHER: "Другое",
+  };
+  return map[cat] || cat;
+}
+
+export async function getProjectsList(): Promise<ProjectListItem[]> {
+  try {
+    const dbProjects = await prisma.project.findMany({
+      where: { published: true },
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        category: true,
+        service: true,
+        area: true,
+        coverImage: true,
+        description: true,
+        industry: true,
+        projectType: true,
+        year: true,
+      },
+    });
+
+    if (dbProjects.length > 0) {
+      return dbProjects.map((p) => ({
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        tag: categoryToLabel(p.category),
+        industry: p.industry || categoryToLabel(p.category).toUpperCase(),
+        type: p.projectType || serviceTypeToLabel(p.service),
+        year: p.year || "",
+        area: p.area ? `${p.area} м²` : "",
+        coverImage: p.coverImage,
+        shortDescription: p.description.substring(0, 200),
+      }));
+    }
+  } catch {
+    // DB unavailable
+  }
+
+  return PORTFOLIO_CASES.map((c) => ({
+    id: c.id,
+    slug: c.slug,
+    title: c.title,
+    tag: c.tag,
+    industry: c.industry,
+    type: c.type,
+    year: c.year,
+    area: c.area,
+    coverImage: null,
+    shortDescription: c.shortDescription,
+  }));
+}
+
+export async function getProjectBySlug(slug: string): Promise<PortfolioCase | null> {
+  try {
+    const dbProject = await prisma.project.findUnique({
+      where: { slug },
+      include: { images: { orderBy: { order: "asc" } } },
+    });
+
+    if (dbProject && dbProject.published) {
+      const features = dbProject.features
+        ? dbProject.features.split("\n").filter(Boolean)
+        : [];
+
+      return {
+        id: dbProject.id,
+        slug: dbProject.slug,
+        title: dbProject.title,
+        tag: categoryToLabel(dbProject.category),
+        industry: dbProject.industry || categoryToLabel(dbProject.category).toUpperCase(),
+        type: dbProject.projectType || serviceTypeToLabel(dbProject.service),
+        year: dbProject.year || new Date(dbProject.createdAt).getFullYear().toString(),
+        area: dbProject.area ? `${dbProject.area} м²` : "",
+        location: dbProject.location || "",
+        shortDescription: dbProject.description.substring(0, 200),
+        heroDescription: dbProject.description,
+        features,
+        goals: dbProject.goals || "",
+        leftText1: "",
+        rightText1: "",
+        leftText2: "",
+        rightText2: "",
+        showcaseLabel1: dbProject.images[0]?.alt || "Фото проекта",
+        showcaseLabel2: dbProject.images[1]?.alt || "Фото проекта",
+      };
+    }
+  } catch {
+    // DB unavailable
+  }
+
+  return PORTFOLIO_CASES.find((c) => c.slug === slug) || null;
+}
+
+export async function getAllProjectSlugs(): Promise<string[]> {
+  try {
+    const dbSlugs = await prisma.project.findMany({
+      where: { published: true },
+      select: { slug: true },
+    });
+    if (dbSlugs.length > 0) {
+      return dbSlugs.map((p) => p.slug);
+    }
+  } catch {
+    // DB unavailable
+  }
+
+  return PORTFOLIO_CASES.map((c) => c.slug);
+}

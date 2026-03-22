@@ -1,37 +1,33 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SITE_NAME, SITE_URL } from "@/lib/constants";
-import { getCaseBySlug, getAllCaseSlugs } from "@/lib/portfolio-data";
+import { getProjectBySlug, getAllProjectSlugs } from "@/lib/get-projects";
+import { getPageMeta } from "@/lib/get-page-meta";
 import { CaseContent } from "./content";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: { slug: string };
 }
 
-export function generateStaticParams() {
-  return getAllCaseSlugs().map((slug) => ({ slug }));
-}
-
-export function generateMetadata({ params }: Props): Metadata {
-  const project = getCaseBySlug(params.slug);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const project = await getProjectBySlug(params.slug);
   if (!project) return {};
 
-  return {
+  return getPageMeta({
     title: `${project.title} — ${project.type} | ${SITE_NAME}`,
     description: project.shortDescription,
-    openGraph: {
-      title: `${project.title} | ${SITE_NAME}`,
-      description: project.shortDescription,
-      type: "article",
-      url: `${SITE_URL}/portfolio/${project.slug}`,
-    },
-    alternates: { canonical: `/portfolio/${project.slug}` },
-  };
+    path: `/portfolio/${project.slug}`,
+    keywords: [project.title, project.type, project.industry, SITE_NAME],
+  });
 }
 
-export default function CasePage({ params }: Props) {
-  const project = getCaseBySlug(params.slug);
+export default async function CasePage({ params }: Props) {
+  const project = await getProjectBySlug(params.slug);
   if (!project) notFound();
 
-  return <CaseContent project={project} />;
+  const allSlugs = await getAllProjectSlugs();
+
+  return <CaseContent project={project} allSlugs={allSlugs} />;
 }

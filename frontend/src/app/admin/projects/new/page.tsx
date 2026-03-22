@@ -33,6 +33,12 @@ export default function NewProjectPage() {
     description: "",
     coverImage: "",
     videoUrl: "",
+    location: "",
+    year: new Date().getFullYear().toString(),
+    industry: "",
+    projectType: "",
+    features: "",
+    goals: "",
     published: false,
   });
 
@@ -137,6 +143,52 @@ export default function NewProjectPage() {
           />
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Локация</label>
+            <input
+              type="text"
+              value={form.location}
+              onChange={(e) => set("location", e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+              placeholder="Сочи, Курортный проспект"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Год</label>
+            <input
+              type="text"
+              value={form.year}
+              onChange={(e) => set("year", e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+              placeholder="2026"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Отрасль</label>
+            <input
+              type="text"
+              value={form.industry}
+              onChange={(e) => set("industry", e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+              placeholder="РЕСТОРАН, HORECA"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Тип проекта</label>
+            <input
+              type="text"
+              value={form.projectType}
+              onChange={(e) => set("projectType", e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+              placeholder="ЭЛЕКТРОМОНТАЖ, АКУСТИКА"
+            />
+          </div>
+        </div>
+
         <div>
           <label className="block text-xs font-medium text-white/40 mb-1">Описание</label>
           <textarea
@@ -145,6 +197,28 @@ export default function NewProjectPage() {
             rows={4}
             className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
             placeholder="Подробное описание проекта..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-white/40 mb-1">Особенности (каждая с новой строки)</label>
+          <textarea
+            value={form.features}
+            onChange={(e) => set("features", e.target.value)}
+            rows={3}
+            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+            placeholder={"Электромонтаж силовых сетей\nМультизональная акустика\nДиммируемое освещение"}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-white/40 mb-1">Ключевые задачи</label>
+          <textarea
+            value={form.goals}
+            onChange={(e) => set("goals", e.target.value)}
+            rows={2}
+            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+            placeholder="Создание надёжной электрической инфраструктуры..."
           />
         </div>
 

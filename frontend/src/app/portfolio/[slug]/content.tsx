@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { PortfolioCase, PORTFOLIO_CASES } from "@/lib/portfolio-data";
+import type { PortfolioCase } from "@/lib/portfolio-data";
 
 function useScrollVisible(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -179,16 +179,16 @@ function NavLink({ href, label, direction }: { href: string; label: string; dire
   );
 }
 
-export function CaseContent({ project }: { project: PortfolioCase }) {
+export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase; allSlugs?: string[] }) {
   const [heroVisible, setHeroVisible] = useState(false);
 
   useEffect(() => {
     setHeroVisible(true);
   }, []);
 
-  const currentIndex = PORTFOLIO_CASES.findIndex((c) => c.id === project.id);
-  const prevCase = currentIndex > 0 ? PORTFOLIO_CASES[currentIndex - 1] : null;
-  const nextCase = currentIndex < PORTFOLIO_CASES.length - 1 ? PORTFOLIO_CASES[currentIndex + 1] : null;
+  const currentIndex = allSlugs.indexOf(project.slug);
+  const prevSlug = currentIndex > 0 ? allSlugs[currentIndex - 1] : null;
+  const nextSlug = currentIndex < allSlugs.length - 1 ? allSlugs[currentIndex + 1] : null;
 
   return (
     <article>
@@ -331,19 +331,20 @@ export function CaseContent({ project }: { project: PortfolioCase }) {
       {/* Text block 2 (accent) */}
       <TextBlock leftText={project.leftText2} rightText={project.rightText2} accent />
 
-      {/* Navigation between cases */}
-      <section className="py-16 md:py-20" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}>
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row gap-4">
-            {prevCase && (
-              <NavLink href={`/portfolio/${prevCase.slug}`} label={prevCase.title} direction="prev" />
-            )}
-            {nextCase && (
-              <NavLink href={`/portfolio/${nextCase.slug}`} label={nextCase.title} direction="next" />
-            )}
+      {(prevSlug || nextSlug) && (
+        <section className="py-16 md:py-20" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}>
+          <div className="container mx-auto">
+            <div className="flex flex-col md:flex-row gap-4">
+              {prevSlug && (
+                <NavLink href={`/portfolio/${prevSlug}`} label="Предыдущий" direction="prev" />
+              )}
+              {nextSlug && (
+                <NavLink href={`/portfolio/${nextSlug}`} label="Следующий" direction="next" />
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </article>
   );
 }

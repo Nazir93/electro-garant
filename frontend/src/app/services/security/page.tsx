@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { CITY, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { CITY, SITE_NAME } from "@/lib/constants";
+import { getPageMeta } from "@/lib/get-page-meta";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingShowcase } from "@/components/landing/landing-showcase";
 import { LandingPain } from "@/components/landing/landing-pain";
@@ -12,27 +12,14 @@ import { LandingServiceSchema } from "@/components/landing/landing-service-schem
 const SERVICE_NAME = `Видеонаблюдение и системы безопасности в ${CITY}`;
 const SERVICE_SLUG = "/services/security";
 
-export const metadata: Metadata = {
-  title: `${SERVICE_NAME} — установка под ключ | ${SITE_NAME}`,
-  description: `Монтаж IP-видеонаблюдения, контроля доступа и охранных систем в ${CITY}. Hikvision, Dahua. 4K-камеры, видеоаналитика, удалённый доступ с телефона. Гарантия 5 лет.`,
-  keywords: [
-    `видеонаблюдение ${CITY}`,
-    `установка камер ${CITY}`,
-    `IP камеры ${CITY}`,
-    "видеонаблюдение под ключ",
-    "СКУД контроль доступа",
-    "Hikvision",
-    "Dahua",
-    `${SITE_NAME}`,
-  ],
-  openGraph: {
-    title: `${SERVICE_NAME} | ${SITE_NAME}`,
-    description: `Монтаж IP-видеонаблюдения, контроля доступа в ${CITY}. Hikvision, Dahua. 4K, видеоаналитика. Гарантия 5 лет.`,
-    type: "website",
-    url: `${SITE_URL}${SERVICE_SLUG}`,
-  },
-  alternates: { canonical: SERVICE_SLUG },
-};
+export async function generateMetadata() {
+  return getPageMeta({
+    title: `${SERVICE_NAME} — установка под ключ | ${SITE_NAME}`,
+    description: `Монтаж IP-видеонаблюдения, контроля доступа и охранных систем в ${CITY}. Hikvision, Dahua. 4K-камеры, видеоаналитика. Гарантия 5 лет.`,
+    path: SERVICE_SLUG,
+    keywords: [`видеонаблюдение ${CITY}`, `установка камер ${CITY}`, "СКУД контроль доступа", "Hikvision", SITE_NAME],
+  });
+}
 
 export default function SecurityPage() {
   return (
