@@ -216,54 +216,11 @@ export function BannerSection() {
                   )}
                 </span>
               </h1>
-              {/* Как в footer: ширина = блоку ГАРАНТ / МОНТАЖ */}
-              <button
-                type="button"
-                onClick={openModal}
-                onMouseEnter={() => setBannerCtaHovered(true)}
-                onMouseLeave={() => setBannerCtaHovered(false)}
-                className="group relative w-[85%] flex items-center justify-between gap-2 px-4 py-2.5 mt-3 md:mt-4 overflow-hidden transition-colors duration-700 cursor-none"
-                style={{
-                  border: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}`,
-                  borderRadius: "14px",
-                  boxShadow: isDark
-                    ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
-                    : "2px 0 12px rgba(255,255,255,0.7), 4px 0 24px rgba(255,255,255,0.4)",
-                }}
-                aria-label="Обсудить проект"
-              >
-                <div
-                  className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
-                  style={{
-                    backgroundColor: isDark ? "#FFFFFF" : "#0A0A0A",
-                    transform: bannerCtaHovered ? "scaleX(1)" : "scaleX(0)",
-                  }}
-                />
-                <span
-                  className="relative z-10 font-heading text-[11px] lg:text-[13px] uppercase tracking-[0.14em] leading-tight text-left transition-colors duration-700 flex-1"
-                  style={{
-                    color: bannerCtaHovered
-                      ? (isDark ? "#0A0A0A" : "#FFFFFF")
-                      : (isDark ? "#FFFFFF" : "#0A0A0A"),
-                  }}
-                >
-                  Обсудить проект
-                </span>
-                <ArrowRight
-                  size={16}
-                  className="relative z-10 shrink-0 transition-colors duration-700"
-                  style={{
-                    color: bannerCtaHovered
-                      ? (isDark ? "#0A0A0A" : "#FFFFFF")
-                      : (isDark ? "#FFFFFF" : "#0A0A0A"),
-                  }}
-                />
-              </button>
             </div>
           </div>
         </div>
 
-        {/* ---- Mobile/Tablet: фото дома + кнопка ---- */}
+        {/* ---- Mobile/Tablet: фото дома ---- */}
         <div className="flex-1 md:hidden h-full flex flex-col items-center justify-center relative min-h-0 overflow-hidden">
           <div
             className="absolute left-0 top-1/2 -translate-y-1/2 w-[140%] h-[80%] transition-all duration-1000 delay-300"
@@ -282,35 +239,6 @@ export function BannerSection() {
             />
           </div>
 
-          {/* CTA button under the house image */}
-          <button
-            type="button"
-            onClick={openModal}
-            className="absolute bottom-28 sm:bottom-32 left-1/2 -translate-x-1/2 z-[8] flex items-center justify-between gap-3 px-6 py-3 overflow-hidden transition-all duration-700 cursor-pointer w-[70%] max-w-[280px]"
-            style={{
-              opacity: visible ? 1 : 0,
-              transitionDelay: "800ms",
-              border: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}`,
-              borderRadius: "14px",
-              backgroundColor: isDark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.85)",
-              boxShadow: isDark
-                ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
-                : "0 0 12px rgba(255,255,255,0.5)",
-            }}
-            aria-label="Обсудить проект"
-          >
-            <span
-              className="font-heading text-[12px] sm:text-[13px] uppercase tracking-[0.14em] flex-1 text-left"
-              style={{ color: isDark ? "#FFFFFF" : "#0A0A0A" }}
-            >
-              Обсудить проект
-            </span>
-            <ArrowRight
-              size={16}
-              className="shrink-0"
-              style={{ color: isDark ? "#FFFFFF" : "#0A0A0A" }}
-            />
-          </button>
         </div>
 
         {/* ---- House image + annotation dots + label cards (desktop only) ---- */}
@@ -436,16 +364,69 @@ export function BannerSection() {
 
       </div>
 
-      {/* ---- Лозунг снизу: просто текст на фоне баннера ---- */}
+      {/* ---- Кнопка на месте бывшего слогана (центр) ---- */}
       <div
-        className="absolute bottom-20 sm:bottom-24 md:bottom-16 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-1000 delay-[1000ms]"
+        className="absolute bottom-20 sm:bottom-24 md:bottom-16 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-1000 delay-[800ms]"
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(10px)",
+        }}
+      >
+        <button
+          type="button"
+          onClick={openModal}
+          onMouseEnter={() => setBannerCtaHovered(true)}
+          onMouseLeave={() => setBannerCtaHovered(false)}
+          className="group relative flex items-center justify-between gap-2 sm:gap-3 px-5 sm:px-7 py-2.5 sm:py-3 max-w-[min(92vw,520px)] w-full sm:w-auto overflow-hidden transition-colors duration-700 cursor-pointer md:cursor-none"
+          style={{
+            border: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}`,
+            borderRadius: "14px",
+            backgroundColor: isDark ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.92)",
+            boxShadow: isDark
+              ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
+              : "2px 0 12px rgba(255,255,255,0.7), 4px 0 24px rgba(255,255,255,0.4)",
+          }}
+          aria-label="Рассчитать стоимость работ"
+        >
+          <div
+            className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
+            style={{
+              backgroundColor: isDark ? "#FFFFFF" : "#0A0A0A",
+              transform: bannerCtaHovered ? "scaleX(1)" : "scaleX(0)",
+            }}
+          />
+          <span
+            className="relative z-10 font-heading text-[10px] sm:text-xs md:text-[13px] uppercase tracking-[0.1em] sm:tracking-[0.14em] leading-tight text-left transition-colors duration-700 flex-1"
+            style={{
+              color: bannerCtaHovered
+                ? (isDark ? "#0A0A0A" : "#FFFFFF")
+                : (isDark ? "#FFFFFF" : "#0A0A0A"),
+            }}
+          >
+            Рассчитать стоимость работ
+          </span>
+          <ArrowRight
+            size={16}
+            className="relative z-10 shrink-0 transition-colors duration-700"
+            style={{
+              color: bannerCtaHovered
+                ? (isDark ? "#0A0A0A" : "#FFFFFF")
+                : (isDark ? "#FFFFFF" : "#0A0A0A"),
+            }}
+          />
+        </button>
+      </div>
+
+      {/* ---- Лозунг ниже кнопки ---- */}
+      <div
+        className="absolute bottom-6 sm:bottom-8 md:bottom-7 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-1000 delay-[1000ms]"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(10px)",
         }}
       >
         <p
-          className="text-[15px] sm:text-[17px] md:text-[clamp(16px,1.8vw,24px)] font-light tracking-wide whitespace-nowrap"
+          className="text-[13px] sm:text-[15px] md:text-[clamp(14px,1.6vw,22px)] font-light tracking-wide text-center max-w-[95vw] sm:whitespace-nowrap"
           style={{ color: isDark ? "rgba(255,255,255,0.9)" : "rgba(10,10,10,0.9)" }}
         >
           Мы не создаём проблем — мы их решаем

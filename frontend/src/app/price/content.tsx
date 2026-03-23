@@ -8,7 +8,7 @@ import { PRICE_SECTIONS, type PriceSection, type PriceItem } from "./price-data"
 
 type Quantities = Record<number, number>;
 
-const VAT_RATE = 0.2;
+const VAT_RATE = 0.22;
 
 function formatPrice(n: number): string {
   return n.toLocaleString("ru-RU");
@@ -425,7 +425,7 @@ export function PricePageContent() {
                     }}
                   />
                 </div>
-                НДС 20%
+                НДС 22%
               </button>
 
               <div className="hidden sm:flex items-center gap-1.5">
