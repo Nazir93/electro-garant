@@ -18,6 +18,9 @@ export interface PortfolioCase {
   rightText2: string;
   showcaseLabel1: string;
   showcaseLabel2: string;
+  /** Фон больших полос на странице кейса (опционально) */
+  showcaseImage1?: string | null;
+  showcaseImage2?: string | null;
 }
 
 export const PORTFOLIO_CASES: PortfolioCase[] = [

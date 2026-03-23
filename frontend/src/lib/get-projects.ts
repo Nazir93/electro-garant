@@ -114,12 +114,14 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioCase | nu
         heroDescription: dbProject.description,
         features,
         goals: dbProject.goals || "",
-        leftText1: "",
-        rightText1: "",
-        leftText2: "",
-        rightText2: "",
-        showcaseLabel1: dbProject.images[0]?.alt || "Фото проекта",
-        showcaseLabel2: dbProject.images[1]?.alt || "Фото проекта",
+        leftText1: dbProject.leftText1 || "",
+        rightText1: dbProject.rightText1 || "",
+        leftText2: dbProject.leftText2 || "",
+        rightText2: dbProject.rightText2 || "",
+        showcaseLabel1: dbProject.showcaseLabel1 || dbProject.images[0]?.alt || "Фото проекта",
+        showcaseLabel2: dbProject.showcaseLabel2 || dbProject.images[1]?.alt || "Фото проекта",
+        showcaseImage1: dbProject.showcaseImage1 || dbProject.images[0]?.url || null,
+        showcaseImage2: dbProject.showcaseImage2 || dbProject.images[1]?.url || null,
       };
     }
   } catch {

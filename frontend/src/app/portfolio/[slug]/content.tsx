@@ -26,7 +26,15 @@ function useScrollVisible(threshold = 0.15) {
   return { ref, visible };
 }
 
-function ParallaxShowcase({ label, dark = true }: { label: string; dark?: boolean }) {
+function ParallaxShowcase({
+  label,
+  dark = true,
+  imageUrl,
+}: {
+  label: string;
+  dark?: boolean;
+  imageUrl?: string | null;
+}) {
   const ref = useRef<HTMLElement>(null);
   const [offset, setOffset] = useState(0);
 
@@ -54,13 +62,35 @@ function ParallaxShowcase({ label, dark = true }: { label: string; dark?: boolea
         maxHeight: "600px",
       }}
     >
+      {imageUrl ? (
+        <>
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-100"
+            style={{
+              transform: `translateY(${offset}px) scale(1.08)`,
+              backgroundImage: `url(${imageUrl})`,
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: dark
+                ? "linear-gradient(to bottom, rgba(10,10,10,0.55), rgba(10,10,10,0.75))"
+                : "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.5))",
+            }}
+          />
+        </>
+      ) : null}
       <div
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ transform: `translateY(${offset}px) scale(1.1)` }}
+        className="absolute inset-0 flex items-center justify-center z-[1]"
+        style={{ transform: imageUrl ? undefined : `translateY(${offset}px) scale(1.1)` }}
       >
         <span
-          className="text-[10px] uppercase tracking-[0.2em]"
-          style={{ color: dark ? "rgba(255,255,255,0.3)" : "var(--text-subtle)" }}
+          className="text-[10px] uppercase tracking-[0.2em] text-center px-6 max-w-xl"
+          style={{
+            color: imageUrl ? "rgba(255,255,255,0.92)" : dark ? "rgba(255,255,255,0.3)" : "var(--text-subtle)",
+            textShadow: imageUrl ? "0 1px 12px rgba(0,0,0,0.8)" : undefined,
+          }}
         >
           {label}
         </span>
@@ -320,16 +350,18 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
       </section>
 
       {/* Showcase 1 */}
-      <ParallaxShowcase label={project.showcaseLabel1} />
+      <ParallaxShowcase label={project.showcaseLabel1} imageUrl={project.showcaseImage1} />
 
-      {/* Text block 1 */}
-      <TextBlock leftText={project.leftText1} rightText={project.rightText1} />
+      {(project.leftText1.trim() || project.rightText1.trim()) ? (
+        <TextBlock leftText={project.leftText1} rightText={project.rightText1} />
+      ) : null}
 
       {/* Showcase 2 */}
-      <ParallaxShowcase label={project.showcaseLabel2} dark={false} />
+      <ParallaxShowcase label={project.showcaseLabel2} dark={false} imageUrl={project.showcaseImage2} />
 
-      {/* Text block 2 (accent) */}
-      <TextBlock leftText={project.leftText2} rightText={project.rightText2} accent />
+      {(project.leftText2.trim() || project.rightText2.trim()) ? (
+        <TextBlock leftText={project.leftText2} rightText={project.rightText2} accent />
+      ) : null}
 
       {(prevSlug || nextSlug) && (
         <section className="py-16 md:py-20" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}>

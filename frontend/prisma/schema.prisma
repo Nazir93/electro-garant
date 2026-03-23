@@ -46,6 +46,18 @@ model Project {
   projectType String?
   features    String?     @db.Text
   goals       String?     @db.Text
+  /// Две колонки текста под первой «витриной» на странице кейса
+  leftText1   String?     @db.Text
+  rightText1  String?     @db.Text
+  /// Две колонки текста под второй «витриной»
+  leftText2   String?     @db.Text
+  rightText2  String?     @db.Text
+  /// Подпись на полосе-витрине (если пусто — alt 1-й / 2-й фото галереи)
+  showcaseLabel1 String?
+  showcaseLabel2 String?
+  /// Фон витрины (если пусто — url 1-й / 2-й фото галереи)
+  showcaseImage1 String?
+  showcaseImage2 String?
   published   Boolean     @default(false)
   order       Int         @default(0)
   createdAt   DateTime    @default(now())
