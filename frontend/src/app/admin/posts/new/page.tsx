@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
+import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 
 const CATEGORIES = [
   "Электромонтаж",
@@ -24,6 +25,7 @@ export default function AdminNewPostPage() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [published, setPublished] = useState(false);
+  const [coverImage, setCoverImage] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,7 +36,7 @@ export default function AdminNewPostPage() {
       const res = await fetch("/api/admin/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, excerpt, content, category, published }),
+        body: JSON.stringify({ title, excerpt, content, category, published, coverImage: coverImage || null }),
       });
 
       if (!res.ok) {
@@ -86,6 +88,13 @@ export default function AdminNewPostPage() {
             ))}
           </select>
         </div>
+
+        <AdminMediaUpload
+          label="Обложка статьи"
+          accept="image"
+          value={coverImage}
+          onChange={setCoverImage}
+        />
 
         <div>
           <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Краткое описание</label>

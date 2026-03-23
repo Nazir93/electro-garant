@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Users, Eye, EyeOff, Trash2, X } from "lucide-react";
+import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 
 type PartnerItem = {
   id: string;
@@ -59,6 +60,10 @@ export default function AdminPartnersPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!logoUrl.trim()) {
+      setError("Загрузите логотип файлом");
+      return;
+    }
     setSaving(true);
 
     try {
@@ -122,20 +127,18 @@ export default function AdminPartnersPage() {
             <button onClick={resetForm} className="p-1.5 text-white/30 hover:text-white/60"><X size={16} /></button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Название</label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} required
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-                  placeholder="Название компании" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">URL логотипа</label>
-                <input type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} required
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-                  placeholder="/logo/company.png" />
-              </div>
+            <div>
+              <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Название</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} required
+                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+                placeholder="Название компании" />
             </div>
+            <AdminMediaUpload
+              label="Логотип"
+              accept="image"
+              value={logoUrl}
+              onChange={setLogoUrl}
+            />
             <div>
               <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Сайт (опционально)</label>
               <input type="url" value={website} onChange={(e) => setWebsite(e.target.value)}

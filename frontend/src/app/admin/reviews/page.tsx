@@ -11,6 +11,7 @@ import {
   X,
   MessageSquare,
 } from "lucide-react";
+import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 
 interface ReviewItem {
   id: string;
@@ -187,17 +188,19 @@ export default function AdminReviewsPage() {
               className="w-full px-3 py-2 rounded-lg bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
               placeholder="Отзыв клиента..." />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-white/40 mb-1">Фото автора (URL)</label>
-              <input type="text" value={form.authorPhoto} onChange={(e) => set("authorPhoto", e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
-            </div>
-            <div>
-              <label className="block text-xs text-white/40 mb-1">Видео URL</label>
-              <input type="text" value={form.videoUrl} onChange={(e) => set("videoUrl", e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AdminMediaUpload
+              label="Фото автора"
+              accept="image"
+              value={form.authorPhoto}
+              onChange={(url) => set("authorPhoto", url)}
+            />
+            <AdminMediaUpload
+              label="Видео к отзыву"
+              accept="video"
+              value={form.videoUrl}
+              onChange={(url) => set("videoUrl", url)}
+            />
           </div>
           <div className="flex items-center justify-between pt-2">
             <label className="flex items-center gap-2 text-sm text-white/60">

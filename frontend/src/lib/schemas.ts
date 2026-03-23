@@ -1,20 +1,29 @@
 import { z } from "zod";
 
+/** Нормализация телефона (неразрывные пробелы и т.п. из буфера обмена) */
+function normalizePhoneInput(v: unknown): unknown {
+  if (typeof v !== "string") return v;
+  return v.replace(/[\u00a0\u202f\u2007]/g, " ").trim();
+}
+
 export const leadFormSchema = z.object({
   name: z
     .string()
     .min(2, "Введите имя")
     .max(100, "Имя слишком длинное"),
-  phone: z
-    .string()
-    .min(10, "Введите корректный номер телефона")
-    .max(20, "Номер слишком длинный")
-    .regex(/^[\d\s\+\-\(\)]+$/, "Некорректный формат телефона"),
-  email: z
-    .string()
-    .email("Некорректный email")
-    .optional()
-    .or(z.literal("")),
+  phone: z.preprocess(
+    normalizePhoneInput,
+    z
+      .string()
+      .min(10, "Введите корректный номер телефона")
+      .max(30, "Номер слишком длинный")
+      .regex(/^[\d\s\+\-\(\)]+$/, "Некорректный формат телефона")
+  ),
+  /** Пустая строка / отсутствие поля — без email (форма выезда, калькулятор) */
+  email: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : v),
+    z.string().email("Некорректный email").optional()
+  ),
   service: z.string().optional(),
   message: z.string().max(1000).optional(),
   honeypot: z.string().max(0, "Bot detected").optional(),

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 
 const CATEGORIES = [
   "Электромонтаж",
@@ -27,6 +28,7 @@ export default function AdminEditPostPage() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [published, setPublished] = useState(false);
+  const [coverImage, setCoverImage] = useState("");
 
   useEffect(() => {
     fetch(`/api/admin/posts/${params.id}`)
@@ -41,6 +43,7 @@ export default function AdminEditPostPage() {
           setContent(data.content);
           setCategory(data.category);
           setPublished(data.published);
+          setCoverImage(data.coverImage || "");
         }
       })
       .catch(() => setError("Ошибка загрузки"))
@@ -56,7 +59,7 @@ export default function AdminEditPostPage() {
       const res = await fetch(`/api/admin/posts/${params.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, slug, excerpt, content, category, published }),
+        body: JSON.stringify({ title, slug, excerpt, content, category, published, coverImage: coverImage || null }),
       });
 
       if (!res.ok) throw new Error("Ошибка сохранения");
@@ -126,6 +129,13 @@ export default function AdminEditPostPage() {
             ))}
           </select>
         </div>
+
+        <AdminMediaUpload
+          label="Обложка статьи"
+          accept="image"
+          value={coverImage}
+          onChange={setCoverImage}
+        />
 
         <div>
           <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Краткое описание</label>

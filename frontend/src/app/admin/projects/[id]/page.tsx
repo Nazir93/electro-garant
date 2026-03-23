@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Save, ArrowLeft, Upload, Trash2, Plus, Image as ImageIcon } from "lucide-react";
+import { Save, ArrowLeft, Trash2, Plus, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
+import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
+import { uploadAdminMedia } from "@/lib/admin-upload";
 
 const CATEGORIES = [
   { value: "RESTAURANT", label: "Ресторан" },
@@ -35,7 +37,6 @@ export default function EditProjectPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [images, setImages] = useState<ProjectImage[]>([]);
   const [form, setForm] = useState({
@@ -91,28 +92,9 @@ export default function EditProjectPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  async function uploadFile(file: File): Promise<string | null> {
-    const fd = new FormData();
-    fd.append("file", file);
-    try {
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      return data.url || null;
-    } catch {
-      return null;
-    }
-  }
-
-  async function uploadCover(file: File) {
-    setUploading(true);
-    const url = await uploadFile(file);
-    if (url) set("coverImage", url);
-    setUploading(false);
-  }
-
   async function addGalleryImage(file: File) {
     setUploadingGallery(true);
-    const url = await uploadFile(file);
+    const { url } = await uploadAdminMedia(file);
     if (url) {
       const res = await fetch(`/api/admin/projects/${id}/images`, {
         method: "POST",
@@ -252,26 +234,19 @@ export default function EditProjectPage() {
             placeholder="Создание надёжной электрической инфраструктуры..." />
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-white/40 mb-1">Обложка</label>
-          <div className="flex items-center gap-3">
-            <input type="text" value={form.coverImage} onChange={(e) => set("coverImage", e.target.value)}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-              placeholder="URL или загрузите" />
-            <label className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-xs text-white/60 cursor-pointer transition-colors">
-              <Upload size={14} /> {uploading ? "..." : "Файл"}
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadCover(f); }} />
-            </label>
-          </div>
-          {form.coverImage && <img src={form.coverImage} alt="" className="mt-2 h-32 rounded-lg object-cover" />}
-        </div>
+        <AdminMediaUpload
+          label="Обложка проекта"
+          accept="image"
+          value={form.coverImage}
+          onChange={(url) => set("coverImage", url)}
+        />
 
-        <div>
-          <label className="block text-xs font-medium text-white/40 mb-1">Видео URL</label>
-          <input type="text" value={form.videoUrl} onChange={(e) => set("videoUrl", e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-            placeholder="https://youtube.com/watch?v=..." />
-        </div>
+        <AdminMediaUpload
+          label="Видео по проекту"
+          accept="video"
+          value={form.videoUrl}
+          onChange={(url) => set("videoUrl", url)}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <div>

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { sendTelegramNotification, formatLeadMessage } from "@/lib/telegram";
 
 const RATE_LIMIT_MAP = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_MAX = 15;
 const RATE_LIMIT_WINDOW = 10 * 60 * 1000;
 const CLEANUP_INTERVAL = 5 * 60 * 1000;
 let lastCleanup = Date.now();
@@ -64,34 +64,45 @@ export async function POST(request: NextRequest) {
     const token = uuidv4();
     const source = body.source || "unknown";
 
-    let lead;
+    let createdLead: { id: string };
     try {
-      lead = await prisma.lead.create({
-        data: {
-          name: parsed.data.name,
-          phone: parsed.data.phone,
-          email: parsed.data.email || null,
-          service: parsed.data.service || null,
-          pageUrl: body.pageUrl || null,
-          source,
-          utmSource: body.utmSource || null,
-          utmMedium: body.utmMedium || null,
-          utmCampaign: body.utmCampaign || null,
-          utmTerm: body.utmTerm || null,
-          calcData: body.calcData || null,
-        },
-      });
+      createdLead = await prisma.$transaction(async (tx) => {
+        const l = await tx.lead.create({
+          data: {
+            name: parsed.data.name,
+            phone: parsed.data.phone,
+            email: parsed.data.email || null,
+            service: parsed.data.service || null,
+            pageUrl: body.pageUrl || null,
+            source,
+            utmSource: body.utmSource || null,
+            utmMedium: body.utmMedium || null,
+            utmCampaign: body.utmCampaign || null,
+            utmTerm: body.utmTerm || null,
+            calcData: body.calcData || null,
+          },
+        });
 
-      await prisma.thankYouToken.create({
-        data: {
-          token,
-          leadName: parsed.data.name,
-          source,
-          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-        },
+        await tx.thankYouToken.create({
+          data: {
+            token,
+            leadName: parsed.data.name,
+            source,
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+          },
+        });
+
+        return l;
       });
     } catch (dbError) {
       console.error("[LEAD DB ERROR]", dbError);
+      return NextResponse.json(
+        {
+          error:
+            "Не удалось сохранить заявку. Проверьте подключение к базе данных на сервере или позвоните нам.",
+        },
+        { status: 503 }
+      );
     }
 
     sendTelegramNotification(
@@ -106,7 +117,7 @@ export async function POST(request: NextRequest) {
     );
 
     console.log("[LEAD]", {
-      id: lead?.id,
+      id: createdLead.id,
       name: parsed.data.name,
       phone: parsed.data.phone,
       source,

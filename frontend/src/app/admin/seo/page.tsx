@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Save, Plus, Trash2, AlertCircle, Search, ChevronDown, ChevronRight } from "lucide-react";
+import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 
 interface PageMetaItem {
   id: string;
@@ -187,7 +188,6 @@ function MetaTab() {
                   { field: "keywords", label: "Keywords", placeholder: "ключевое, слово, через, запятую" },
                   { field: "ogTitle", label: "OG Title", placeholder: "Заголовок для соцсетей" },
                   { field: "ogDescription", label: "OG Description", placeholder: "Описание для соцсетей", multiline: true },
-                  { field: "ogImage", label: "OG Image URL", placeholder: "/uploads/og-image.webp" },
                 ].map(({ field, label: fLabel, placeholder, multiline }) => (
                   <div key={field} className={multiline ? "md:col-span-2" : ""}>
                     <label className="block text-xs text-white/40 mb-1">{fLabel}</label>
@@ -210,6 +210,14 @@ function MetaTab() {
                     )}
                   </div>
                 ))}
+                <div className="md:col-span-2">
+                  <AdminMediaUpload
+                    label="OG изображение (превью в соцсетях)"
+                    accept="image"
+                    value={getField(path, "ogImage")}
+                    onChange={(url) => updateDraft(path, "ogImage", url)}
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-between pt-2">

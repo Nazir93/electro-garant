@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
+import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 
 const SERVICE_TYPES = [
   { value: "ELECTRICAL", label: "Электромонтаж" },
@@ -103,22 +104,19 @@ export default function AdminNewServicePage() {
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Изображение (URL)</label>
-          <input type="text" value={coverImage} onChange={(e) => setCoverImage(e.target.value)} placeholder="https://... или /uploads/image.jpg"
-            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors placeholder:text-white/20" />
-          {coverImage && (
-            <div className="mt-2 rounded-lg overflow-hidden border border-white/[0.08] max-w-xs">
-              <img src={coverImage} alt="Preview" className="w-full h-32 object-cover" />
-            </div>
-          )}
-        </div>
+        <AdminMediaUpload
+          label="Изображение услуги"
+          accept="image"
+          value={coverImage}
+          onChange={setCoverImage}
+        />
 
-        <div>
-          <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Видео (URL)</label>
-          <input type="text" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/... или /uploads/video.mp4"
-            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors placeholder:text-white/20" />
-        </div>
+        <AdminMediaUpload
+          label="Видео для карточки (фон)"
+          accept="video"
+          value={videoUrl}
+          onChange={setVideoUrl}
+        />
 
         <div>
           <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Краткое описание</label>

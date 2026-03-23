@@ -8,9 +8,9 @@ import {
   EyeOff,
   Save,
   X,
-  Upload,
   UserCircle,
 } from "lucide-react";
+import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 
 interface TeamItem {
   id: string;
@@ -30,7 +30,6 @@ export default function AdminTeamPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
   const load = useCallback(() => {
@@ -56,18 +55,6 @@ export default function AdminTeamPage() {
     setEditId(null);
     setForm(emptyForm);
     setShowForm(true);
-  }
-
-  async function uploadPhoto(file: File) {
-    setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    try {
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (data.url) set("photoUrl", data.url);
-    } catch { /* */ }
-    setUploading(false);
   }
 
   async function handleSave() {
@@ -139,19 +126,12 @@ export default function AdminTeamPage() {
                 placeholder="Главный инженер" />
             </div>
           </div>
-          <div>
-            <label className="block text-xs text-white/40 mb-1">Фото</label>
-            <div className="flex items-center gap-3">
-              <input type="text" value={form.photoUrl} onChange={(e) => set("photoUrl", e.target.value)}
-                className="flex-1 px-3 py-2 rounded-lg bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-                placeholder="URL или загрузите файл" />
-              <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-xs text-white/60 cursor-pointer transition-colors">
-                <Upload size={14} /> {uploading ? "..." : "Файл"}
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); }} />
-              </label>
-            </div>
-            {form.photoUrl && <img src={form.photoUrl} alt="" className="mt-2 w-20 h-20 rounded-full object-cover" />}
-          </div>
+          <AdminMediaUpload
+            label="Фото"
+            accept="image"
+            value={form.photoUrl}
+            onChange={(url) => set("photoUrl", url)}
+          />
           <div>
             <label className="block text-xs text-white/40 mb-1">Описание</label>
             <textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={2}

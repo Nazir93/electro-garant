@@ -250,8 +250,21 @@ function Question2({ onAnswer, onBack }: { onAnswer: (answer: "yes" | "no" | "un
 
 /* ───── Form: Project (existing) ───── */
 
+async function readLeadError(response: Response): Promise<string> {
+  try {
+    const data = (await response.json()) as { error?: string; details?: unknown };
+    if (data.error) return data.error;
+  } catch {
+    /* */
+  }
+  if (response.status === 429) return "Слишком много отправок. Подождите несколько минут.";
+  if (response.status >= 500) return "Сервер временно недоступен. Позвоните нам.";
+  return "Не удалось отправить заявку. Проверьте поля или позвоните нам.";
+}
+
 function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProjectFormData>({
     resolver: zodResolver(projectFormSchema),
@@ -259,6 +272,7 @@ function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
 
   const onSubmit = async (data: ProjectFormData) => {
     if (data.honeypot) return;
+    setSubmitError(null);
     setLoading(true);
     try {
       const params = new URLSearchParams(window.location.search);
@@ -269,14 +283,23 @@ function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
           name: data.name, phone: data.phone, email: data.email,
           source: "project-form", pageUrl: window.location.href,
           utmSource: params.get("utm_source"), utmMedium: params.get("utm_medium"), utmCampaign: params.get("utm_campaign"),
+          calcData: {
+            company: data.company || null,
+            budget: data.budget || null,
+            description: data.description,
+          },
         }),
       });
       if (response.ok) {
         const result = await response.json();
         if (result.redirectUrl) { window.location.href = result.redirectUrl; }
         else { reset(); onSuccess(); }
+      } else {
+        setSubmitError(await readLeadError(response));
       }
-    } catch { alert("Произошла ошибка. Позвоните нам: " + PHONE); }
+    } catch {
+      setSubmitError("Нет связи с сервером. Позвоните нам: " + PHONE);
+    }
     finally { setLoading(false); }
   };
 
@@ -342,6 +365,11 @@ function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
             <div className="absolute opacity-0 h-0 overflow-hidden" aria-hidden="true">
               <input tabIndex={-1} autoComplete="off" {...register("honeypot")} />
             </div>
+            {submitError && (
+              <p className="px-5 py-3 text-sm text-red-400 rounded-xl bg-red-500/10 border border-red-500/20 mb-3">
+                {submitError}
+              </p>
+            )}
             <FillButton type="submit" disabled={loading}>
               {loading ? "Отправка..." : "Отправить заявку"}
             </FillButton>
@@ -356,12 +384,14 @@ function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
 
 function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<InspectionFormData>({
     resolver: zodResolver(inspectionFormSchema),
   });
 
   const onSubmit = async (data: InspectionFormData) => {
     if (data.honeypot) return;
+    setSubmitError(null);
     setLoading(true);
     try {
       const params = new URLSearchParams(window.location.search);
@@ -370,18 +400,27 @@ function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name, phone: data.phone, source: "inspection-request",
-          objectType: data.objectType, address: data.address, area: data.area,
-          description: data.description, preferredTime: data.preferredTime,
           pageUrl: window.location.href,
           utmSource: params.get("utm_source"), utmMedium: params.get("utm_medium"), utmCampaign: params.get("utm_campaign"),
+          calcData: {
+            objectType: data.objectType,
+            address: data.address,
+            area: data.area || null,
+            description: data.description || null,
+            preferredTime: data.preferredTime || null,
+          },
         }),
       });
       if (response.ok) {
         const result = await response.json();
         if (result.redirectUrl) { window.location.href = result.redirectUrl; }
         else { reset(); onSuccess(); }
+      } else {
+        setSubmitError(await readLeadError(response));
       }
-    } catch { alert("Произошла ошибка. Позвоните нам: " + PHONE); }
+    } catch {
+      setSubmitError("Нет связи с сервером. Позвоните нам: " + PHONE);
+    }
     finally { setLoading(false); }
   };
 
@@ -444,6 +483,11 @@ function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
             <div className="absolute opacity-0 h-0 overflow-hidden" aria-hidden="true">
               <input tabIndex={-1} autoComplete="off" {...register("honeypot")} />
             </div>
+            {submitError && (
+              <p className="text-sm text-red-400 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3">
+                {submitError}
+              </p>
+            )}
             <FillButton type="submit" disabled={loading}>
               {loading ? "Отправка..." : "Заказать выезд инженера"}
             </FillButton>
@@ -458,6 +502,7 @@ function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
 
 function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<number | null>(null);
   const [withEquipment, setWithEquipment] = useState(false);
   const { register, handleSubmit, formState: { errors }, watch, reset, setValue } = useForm<CalculatorFormData>({
@@ -513,6 +558,7 @@ function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
 
   const onSubmit = async (data: CalculatorFormData) => {
     if (data.honeypot) return;
+    setSubmitError(null);
     setLoading(true);
     try {
       const services = [...data.services];
@@ -525,20 +571,31 @@ function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name, phone: data.phone, source: "calculator",
-          objectType: data.objectType, area: data.area, rooms: data.rooms,
-          floors: data.floors, services, estimate,
-          tier: data.tier, withMaterials: data.withMaterials,
-          withEquipment: hasAcoustics ? withEquipment : undefined,
           pageUrl: window.location.href,
           utmSource: params.get("utm_source"), utmMedium: params.get("utm_medium"), utmCampaign: params.get("utm_campaign"),
+          calcData: {
+            objectType: data.objectType,
+            area: data.area,
+            rooms: data.rooms || null,
+            floors: data.floors || null,
+            services,
+            estimate: estimate ?? null,
+            tier: data.tier,
+            withMaterials: data.withMaterials,
+            withEquipment: hasAcoustics ? withEquipment : null,
+          },
         }),
       });
       if (response.ok) {
         const result = await response.json();
         if (result.redirectUrl) { window.location.href = result.redirectUrl; }
         else { reset(); onSuccess(); }
+      } else {
+        setSubmitError(await readLeadError(response));
       }
-    } catch { alert("Произошла ошибка. Позвоните нам: " + PHONE); }
+    } catch {
+      setSubmitError("Нет связи с сервером. Позвоните нам: " + PHONE);
+    }
     finally { setLoading(false); }
   };
 
@@ -779,6 +836,11 @@ function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
             <div className="absolute opacity-0 h-0 overflow-hidden" aria-hidden="true">
               <input tabIndex={-1} autoComplete="off" {...register("honeypot")} />
             </div>
+            {submitError && (
+              <p className="text-sm text-red-400 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3">
+                {submitError}
+              </p>
+            )}
             <FillButton type="submit" disabled={loading}>
               {loading ? "Отправка..." : "Получить точный расчёт"}
             </FillButton>

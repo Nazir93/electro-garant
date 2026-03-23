@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, ArrowLeft, Upload } from "lucide-react";
+import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 
 const CATEGORIES = [
   { value: "RESTAURANT", label: "Ресторан" },
@@ -24,7 +25,6 @@ const SERVICES = [
 export default function NewProjectPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: "",
     category: "OTHER",
@@ -44,18 +44,6 @@ export default function NewProjectPage() {
 
   function set(field: string, value: string | boolean) {
     setForm((prev) => ({ ...prev, [field]: value }));
-  }
-
-  async function uploadCover(file: File) {
-    setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    try {
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (data.url) set("coverImage", data.url);
-    } catch { /* */ }
-    setUploading(false);
   }
 
   async function handleSave() {
@@ -222,45 +210,19 @@ export default function NewProjectPage() {
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-white/40 mb-1">Обложка</label>
-          <div className="flex items-center gap-3">
-            <input
-              type="text"
-              value={form.coverImage}
-              onChange={(e) => set("coverImage", e.target.value)}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-              placeholder="URL или загрузите файл"
-            />
-            <label className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-xs text-white/60 cursor-pointer transition-colors">
-              <Upload size={14} />
-              {uploading ? "..." : "Загрузить"}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) uploadCover(file);
-                }}
-              />
-            </label>
-          </div>
-          {form.coverImage && (
-            <img src={form.coverImage} alt="" className="mt-2 h-32 rounded-lg object-cover" />
-          )}
-        </div>
+        <AdminMediaUpload
+          label="Обложка проекта"
+          accept="image"
+          value={form.coverImage}
+          onChange={(url) => set("coverImage", url)}
+        />
 
-        <div>
-          <label className="block text-xs font-medium text-white/40 mb-1">Видео URL</label>
-          <input
-            type="text"
-            value={form.videoUrl}
-            onChange={(e) => set("videoUrl", e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-            placeholder="https://youtube.com/watch?v=..."
-          />
-        </div>
+        <AdminMediaUpload
+          label="Видео по проекту"
+          accept="video"
+          value={form.videoUrl}
+          onChange={(url) => set("videoUrl", url)}
+        />
 
         <label className="flex items-center gap-2 text-sm text-white/60">
           <input
