@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import type { ServiceType } from "@prisma/client";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
+import { getDefaultServiceLandingDocument } from "@/lib/service-landing-defaults";
 
 const SERVICE_TYPES = [
   { value: "ELECTRICAL", label: "Электромонтаж" },
@@ -32,6 +34,7 @@ export default function AdminEditServicePage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [published, setPublished] = useState(true);
   const [order, setOrder] = useState(0);
+  const [landingJsonText, setLandingJsonText] = useState("");
 
   useEffect(() => {
     fetch(`/api/admin/services/${params.id}`)
@@ -49,6 +52,9 @@ export default function AdminEditServicePage() {
           setVideoUrl(data.videoUrl || "");
           setPublished(data.published);
           setOrder(data.order);
+          setLandingJsonText(
+            data.landingJson != null ? JSON.stringify(data.landingJson, null, 2) : ""
+          );
         }
       })
       .catch(() => setError("Ошибка загрузки"))
@@ -61,10 +67,33 @@ export default function AdminEditServicePage() {
     setError("");
 
     try {
+      const trimmed = landingJsonText.trim();
+      let landingJson: unknown = null;
+      if (trimmed) {
+        try {
+          landingJson = JSON.parse(trimmed) as unknown;
+        } catch {
+          setError("Некорректный JSON в поле «Лендинг услуги»");
+          setSaving(false);
+          return;
+        }
+      }
+
       const res = await fetch(`/api/admin/services/${params.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, slug, shortDescription, serviceType, icon, coverImage: coverImage || null, videoUrl: videoUrl || null, published, order }),
+        body: JSON.stringify({
+          title,
+          slug,
+          shortDescription,
+          serviceType,
+          icon,
+          coverImage: coverImage || null,
+          videoUrl: videoUrl || null,
+          published,
+          order,
+          landingJson,
+        }),
       });
       if (!res.ok) throw new Error("Ошибка сохранения");
       router.push("/admin/services");
@@ -160,6 +189,50 @@ export default function AdminEditServicePage() {
           <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Краткое описание</label>
           <textarea value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} required rows={3}
             className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+        </div>
+
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label className="block text-xs font-medium text-white/50 uppercase tracking-wider">
+              Лендинг услуги (JSON)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!serviceType) return;
+                  const doc = getDefaultServiceLandingDocument(serviceType as ServiceType);
+                  setLandingJsonText(JSON.stringify(doc, null, 2));
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-white/15 text-white/70 hover:border-[#C9A84C]/40 hover:text-white transition-colors"
+              >
+                Подставить шаблон
+              </button>
+              <button
+                type="button"
+                onClick={() => setLandingJsonText("")}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-white/15 text-white/70 hover:border-red-400/40 hover:text-red-300 transition-colors"
+              >
+                Очистить (как в коде)
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-white/40 leading-relaxed">
+            Корень: <code className="text-white/50">{"{ \"sections\": [ ... ] }"}</code>. Типы блоков:{" "}
+            <code className="text-white/50">schema</code>, <code className="text-white/50">hero</code>,{" "}
+            <code className="text-white/50">showcase</code>, <code className="text-white/50">textBlock</code>,{" "}
+            <code className="text-white/50">pain</code>, <code className="text-white/50">advantages</code>,{" "}
+            <code className="text-white/50">steps</code>, <code className="text-white/50">faq</code>. Пустое поле — на
+            сайте показывается встроенный шаблон.
+          </p>
+          <textarea
+            value={landingJsonText}
+            onChange={(e) => setLandingJsonText(e.target.value)}
+            rows={16}
+            spellCheck={false}
+            placeholder='{ "sections": [ ... ] }'
+            className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/[0.08] text-xs font-mono text-white/90 resize-y min-h-[200px] focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+          />
         </div>
 
         <div className="flex items-center gap-3">

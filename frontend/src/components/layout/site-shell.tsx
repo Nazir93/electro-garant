@@ -11,6 +11,7 @@ import { PageTransition } from "./page-transition";
 import { CustomCursor } from "../ui/custom-cursor";
 import { ContactModal } from "../ui/contact-modal";
 import { CookieBanner } from "../ui/cookie-banner";
+import { SmartCaptchaGate } from "../smartcaptcha-provider";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -21,6 +22,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
+    <SmartCaptchaGate>
     <>
       <SmoothScroll />
       <CustomCursor />
@@ -36,5 +38,6 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <CookieBanner />
       <div className="h-14 lg:hidden" />
     </>
+    </SmartCaptchaGate>
   );
 }

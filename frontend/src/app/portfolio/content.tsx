@@ -58,6 +58,7 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
               fill
               className="object-cover"
               sizes="160px"
+              unoptimized={project.coverImage.startsWith("/uploads/")}
             />
           ) : (
             <span className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>

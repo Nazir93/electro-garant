@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
 import { PHONE, PHONE_RAW, PHONE2, PHONE2_RAW } from "@/lib/constants";
+import { useSmartCaptchaToken } from "@/components/smartcaptcha-provider";
 
 type WizardStep =
   | "q1"
@@ -262,7 +263,7 @@ async function readLeadError(response: Response): Promise<string> {
   return "Не удалось отправить заявку. Проверьте поля или позвоните нам.";
 }
 
-function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () => void }) {
+function ProjectForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => void; onSuccess: () => void; getRecaptchaToken?: (action: string) => Promise<string> }) {
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -275,6 +276,7 @@ function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
     setSubmitError(null);
     setLoading(true);
     try {
+      const recaptchaToken = getRecaptchaToken ? await getRecaptchaToken("submit") : "";
       const params = new URLSearchParams(window.location.search);
       const response = await fetch("/api/leads", {
         method: "POST",
@@ -282,6 +284,8 @@ function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
         body: JSON.stringify({
           name: data.name, phone: data.phone, email: data.email,
           source: "project-form", pageUrl: window.location.href,
+          honeypot: data.honeypot || "",
+          recaptchaToken: recaptchaToken || undefined,
           utmSource: params.get("utm_source"), utmMedium: params.get("utm_medium"), utmCampaign: params.get("utm_campaign"),
           calcData: {
             company: data.company || null,
@@ -382,7 +386,7 @@ function ProjectForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
 
 /* ───── Form: Inspection (site visit) ───── */
 
-function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () => void }) {
+function InspectionForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => void; onSuccess: () => void; getRecaptchaToken?: (action: string) => Promise<string> }) {
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<InspectionFormData>({
@@ -394,6 +398,7 @@ function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
     setSubmitError(null);
     setLoading(true);
     try {
+      const recaptchaToken = getRecaptchaToken ? await getRecaptchaToken("submit") : "";
       const params = new URLSearchParams(window.location.search);
       const response = await fetch("/api/leads", {
         method: "POST",
@@ -401,6 +406,8 @@ function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
         body: JSON.stringify({
           name: data.name, phone: data.phone, source: "inspection-request",
           pageUrl: window.location.href,
+          honeypot: data.honeypot || "",
+          recaptchaToken: recaptchaToken || undefined,
           utmSource: params.get("utm_source"), utmMedium: params.get("utm_medium"), utmCampaign: params.get("utm_campaign"),
           calcData: {
             objectType: data.objectType,
@@ -500,7 +507,7 @@ function InspectionForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
 
 /* ───── Form: Calculator ───── */
 
-function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: () => void }) {
+function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => void; onSuccess: () => void; getRecaptchaToken?: (action: string) => Promise<string> }) {
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<number | null>(null);
@@ -561,6 +568,7 @@ function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
     setSubmitError(null);
     setLoading(true);
     try {
+      const recaptchaToken = getRecaptchaToken ? await getRecaptchaToken("submit") : "";
       const services = [...data.services];
       if (services.includes("smart-home") && !services.includes("design")) {
         services.push("design");
@@ -572,6 +580,8 @@ function CalculatorForm({ onBack, onSuccess }: { onBack: () => void; onSuccess: 
         body: JSON.stringify({
           name: data.name, phone: data.phone, source: "calculator",
           pageUrl: window.location.href,
+          honeypot: data.honeypot || "",
+          recaptchaToken: recaptchaToken || undefined,
           utmSource: params.get("utm_source"), utmMedium: params.get("utm_medium"), utmCampaign: params.get("utm_campaign"),
           calcData: {
             objectType: data.objectType,
@@ -881,6 +891,7 @@ export function ContactModal() {
   const { isOpen, closeModal } = useModal();
   const [step, setStep] = useState<WizardStep>("q1");
   const router = useRouter();
+  const getSmartCaptchaToken = useSmartCaptchaToken();
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -946,9 +957,9 @@ export function ContactModal() {
 
       {step === "q1" && <Question1 onAnswer={handleQ1} />}
       {step === "q2" && <Question2 onAnswer={handleQ2} onBack={() => setStep("q1")} />}
-      {step === "form-project" && <ProjectForm onBack={() => setStep("q1")} onSuccess={() => setStep("success")} />}
-      {step === "form-inspection" && <InspectionForm onBack={() => setStep("q2")} onSuccess={() => setStep("success")} />}
-      {step === "form-calculator" && <CalculatorForm onBack={() => setStep("q2")} onSuccess={() => setStep("success")} />}
+      {step === "form-project" && <ProjectForm onBack={() => setStep("q1")} onSuccess={() => setStep("success")} getRecaptchaToken={getSmartCaptchaToken} />}
+      {step === "form-inspection" && <InspectionForm onBack={() => setStep("q2")} onSuccess={() => setStep("success")} getRecaptchaToken={getSmartCaptchaToken} />}
+      {step === "form-calculator" && <CalculatorForm onBack={() => setStep("q2")} onSuccess={() => setStep("success")} getRecaptchaToken={getSmartCaptchaToken} />}
       {step === "success" && <SuccessScreen onClose={handleClose} />}
     </div>
   );

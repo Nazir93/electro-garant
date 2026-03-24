@@ -27,6 +27,7 @@ export const leadFormSchema = z.object({
   service: z.string().optional(),
   message: z.string().max(1000).optional(),
   honeypot: z.string().max(0, "Bot detected").optional(),
+  recaptchaToken: z.string().optional(),
 });
 
 export type LeadFormData = z.infer<typeof leadFormSchema>;

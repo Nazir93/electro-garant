@@ -349,6 +349,21 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
         </div>
       </section>
 
+      {project.videoUrl ? (
+        <section className="py-8 md:py-12" style={{ backgroundColor: "var(--bg-secondary)" }}>
+          <div className="container mx-auto">
+            <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+              <video
+                src={project.videoUrl}
+                controls
+                playsInline
+                className="w-full aspect-video bg-black"
+              />
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {/* Showcase 1 */}
       <ParallaxShowcase label={project.showcaseLabel1} imageUrl={project.showcaseImage1} />
 

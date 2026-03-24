@@ -63,13 +63,20 @@ export async function POST(request: NextRequest) {
     if (useSharp) {
       const webpName = `${fileName}.webp`;
       const webpPath = path.join(uploadsDir, webpName);
-
-      await sharp(buffer)
-        .resize({ width: 1920, height: 1920, fit: "inside", withoutEnlargement: true })
-        .webp({ quality: 82 })
-        .toFile(webpPath);
-
-      savedPath = `/uploads/${webpName}`;
+      try {
+        await sharp(buffer)
+          .resize({ width: 1920, height: 1920, fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toFile(webpPath);
+        savedPath = `/uploads/${webpName}`;
+      } catch (sharpError) {
+        // Sharp может падать на некоторых серверах (musl, Alpine) — сохраняем оригинал
+        console.warn("[UPLOAD] Sharp failed, saving original:", sharpError);
+        const finalName = `${fileName}.${ext}`;
+        const filePath = path.join(uploadsDir, finalName);
+        await writeFile(filePath, buffer);
+        savedPath = `/uploads/${finalName}`;
+      }
     } else {
       const finalName = `${fileName}.${ext}`;
       const filePath = path.join(uploadsDir, finalName);

@@ -142,6 +142,7 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
+                  unoptimized={project.coverImage.startsWith("/uploads/")}
                 />
               ) : (
                 <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>

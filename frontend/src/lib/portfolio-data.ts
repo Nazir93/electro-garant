@@ -21,6 +21,7 @@ export interface PortfolioCase {
   /** Фон больших полос на странице кейса (опционально) */
   showcaseImage1?: string | null;
   showcaseImage2?: string | null;
+  videoUrl?: string | null;
 }
 
 export const PORTFOLIO_CASES: PortfolioCase[] = [

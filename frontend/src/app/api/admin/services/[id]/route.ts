@@ -33,6 +33,7 @@ export async function PUT(
         ...(body.videoUrl !== undefined && { videoUrl: body.videoUrl }),
         ...(body.published !== undefined && { published: body.published }),
         ...(body.order !== undefined && { order: body.order }),
+        ...(body.landingJson !== undefined && { landingJson: body.landingJson }),
       },
     });
     return NextResponse.json(service);

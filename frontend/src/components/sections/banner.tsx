@@ -7,7 +7,23 @@ import { ArrowRight } from "lucide-react";
 import { useModal } from "@/lib/modal-context";
 import { useTheme } from "@/lib/theme-context";
 
-const ANNOTATIONS = [
+type AnnotationItem = {
+  id: string;
+  label: string;
+  desc: string;
+  href: string;
+  dotX: number;
+  dotY: number;
+  labelX: number;
+  labelY: number;
+  align: "left" | "right";
+  icon: string;
+  /** Конец линии (центр чипа); иначе x2/y2 = labelX/labelY. Для align:right — правый край у labelX, центр левее (меньше lineEndX). */
+  lineEndX?: number;
+  lineEndY?: number;
+};
+
+const ANNOTATIONS: AnnotationItem[] = [
   {
     id: "security",
     label: "Видеонаблюдение",
@@ -15,8 +31,10 @@ const ANNOTATIONS = [
     href: "/services/security",
     dotX: 33, dotY: 33,
     labelX: 15, labelY: 24,
-    align: "left" as const,
+    align: "left",
     icon: "eye",
+    lineEndX: 23,
+    lineEndY: 24,
   },
   {
     id: "acoustics",
@@ -25,7 +43,7 @@ const ANNOTATIONS = [
     href: "/services/acoustics",
     dotX: 37, dotY: 50,
     labelX: 8, labelY: 28,
-    align: "right" as const,
+    align: "right",
     icon: "speaker",
   },
   {
@@ -34,8 +52,8 @@ const ANNOTATIONS = [
     desc: "Силовые сети, освещение",
     href: "/services/electrical",
     dotX: 53, dotY: 46,
-    labelX: 20, labelY: 65,
-    align: "right" as const,
+    labelX: 20, labelY: 63,
+    align: "right",
     icon: "zap",
   },
   {
@@ -45,7 +63,7 @@ const ANNOTATIONS = [
     href: "/services/smart-home",
     dotX: 58, dotY: 60,
     labelX: 23, labelY: 68,
-    align: "left" as const,
+    align: "left",
     icon: "home",
   },
   {
@@ -53,10 +71,12 @@ const ANNOTATIONS = [
     label: "Слаботочные системы",
     desc: "СКС, интернет, телефония",
     href: "/services/structured-cabling",
-    dotX: 28, dotY: 60,
-    labelX: 8, labelY: 59,
-    align: "right" as const,
+    dotX: 72, dotY: 59,
+    labelX: 90, labelY: 68,
+    align: "right",
     icon: "network",
+    lineEndX: 75,
+    lineEndY: 68,
   },
   {
     id: "lighting",
@@ -65,8 +85,10 @@ const ANNOTATIONS = [
     href: "/services/electrical",
     dotX: 55, dotY: 34,
     labelX: 40, labelY: 25,
-    align: "left" as const,
+    align: "left",
     icon: "light",
+    lineEndX: 53,
+    lineEndY: 25,
   },
 ];
 
@@ -117,6 +139,65 @@ const ICONS: Record<string, React.ReactNode> = {
   ),
 };
 
+function BannerCalcCtaButton({
+  isDark,
+  openModal,
+  bannerCtaHovered,
+  setBannerCtaHovered,
+  className,
+}: {
+  isDark: boolean;
+  openModal: () => void;
+  bannerCtaHovered: boolean;
+  setBannerCtaHovered: (v: boolean) => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={openModal}
+      onMouseEnter={() => setBannerCtaHovered(true)}
+      onMouseLeave={() => setBannerCtaHovered(false)}
+      className={
+        "group relative flex min-h-[44px] sm:min-h-[48px] min-w-0 items-center justify-center overflow-hidden px-6 py-2 transition-colors duration-700 sm:px-8 md:px-10 sm:py-2.5 cursor-pointer md:cursor-none " +
+        (className ?? "")
+      }
+      style={{
+        border: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}`,
+        borderRadius: "14px",
+        backgroundColor: isDark ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.92)",
+        boxShadow: isDark
+          ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
+          : "2px 0 12px rgba(255,255,255,0.7), 4px 0 24px rgba(255,255,255,0.4)",
+      }}
+      aria-label="Рассчитать стоимость работ"
+    >
+      <div
+        className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
+        style={{
+          backgroundColor: "rgba(201,168,76,0.98)",
+          transform: bannerCtaHovered ? "scaleX(1)" : "scaleX(0)",
+        }}
+      />
+      <span
+        className="relative z-10 block w-full min-w-0 pl-2 pr-10 text-center font-heading text-xs uppercase leading-tight tracking-[0.08em] transition-colors duration-700 sm:pr-11 sm:text-sm sm:tracking-[0.1em] md:pr-12 md:text-[clamp(13px,1.05vw,15px)] lg:text-base"
+        style={{
+          color: bannerCtaHovered ? "#0A0A0A" : isDark ? "#FFFFFF" : "#0A0A0A",
+        }}
+      >
+        Рассчитать стоимость работ
+      </span>
+      <ArrowRight
+        size={18}
+        className="pointer-events-none absolute right-3 top-1/2 z-10 shrink-0 -translate-y-1/2 transition-colors duration-700 sm:right-4 md:right-5"
+        style={{
+          color: bannerCtaHovered ? "#0A0A0A" : isDark ? "#FFFFFF" : "#0A0A0A",
+        }}
+      />
+    </button>
+  );
+}
+
 export function BannerSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
@@ -126,8 +207,14 @@ export function BannerSection() {
   const { isDark } = useTheme();
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 400);
-    return () => clearTimeout(t);
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setVisible(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
   }, []);
 
   return (
@@ -143,10 +230,10 @@ export function BannerSection() {
     >
       {/* ============== Mobile + Tablet: title at top (чуть ниже) ============== */}
       <div
-        className="absolute md:hidden top-20 sm:top-24 left-0 right-0 z-[6] flex justify-center transition-all duration-1000"
+        className="absolute md:hidden top-20 sm:top-24 left-0 right-0 z-[6] flex justify-center transition-all duration-[750ms] ease-out"
         style={{
           opacity: visible ? 1 : 0,
-          transform: visible ? "translateY(0)" : "translateY(30px)",
+          transform: visible ? "translateY(1.25rem)" : "translateY(30px)",
         }}
       >
         <h1 className="font-heading font-bold leading-[0.92] tracking-tight text-center">
@@ -178,44 +265,62 @@ export function BannerSection() {
       </div>
 
       {/* ============== LAYOUT: left text (desktop) + house ============== */}
-      <div className="relative z-[2] h-full flex items-center md:flex-row">
+      <div className="relative z-[2] h-full flex items-center md:flex-row md:gap-10 lg:gap-14 xl:gap-20">
 
         {/* ---- LEFT: Title (desktop only) ---- */}
-        <div className="hidden md:flex flex-shrink-0 w-[25%] lg:w-[32%] h-full flex-col items-start justify-end pl-[12%] lg:pl-[16%] pr-4 pb-[16%] lg:pb-[18%] z-[5]">
-          <div
-            className="transition-all duration-1000"
-            style={{
-              opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : "translateY(30px)",
-            }}
-          >
-            <div className="w-fit max-w-full">
-              <h1 className="font-heading font-bold leading-[0.92] tracking-tight">
-                <span
-                  className="block text-[clamp(36px,7vw,90px)]"
-                  style={{ color: "rgba(201,168,76,1)" }}
-                >
-                  ГАРАНТ
-                </span>
-                <span className="block text-[clamp(36px,7vw,90px)]">
-                  {isDark ? (
-                    <span style={{ color: "#fff" }}>МОНТАЖ</span>
-                  ) : (
-                    <>
-                      <span style={{ color: "#0A0A0A" }}>МОНТА</span>
-                      <span
-                        style={{
-                          color: "#0A0A0A",
-                          textShadow:
-                            "0 0 10px #fff, 0 0 20px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.3)",
-                        }}
-                      >
-                        Ж
-                      </span>
-                    </>
-                  )}
-                </span>
-              </h1>
+        <div className="z-[5] hidden h-full w-[25%] flex-shrink-0 flex-col items-start justify-end overflow-visible pl-[12%] pr-6 pb-[7%] md:flex lg:w-[32%] lg:pl-[16%] lg:pr-10 lg:pb-[9%]">
+          <div className="flex w-full min-w-0 translate-y-1 flex-col items-start gap-5 md:translate-y-2 lg:translate-y-3 lg:gap-6">
+            <div
+              className="transition-all duration-[750ms] ease-out"
+              style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? "translateY(1.25rem)" : "translateY(30px)",
+              }}
+            >
+              <div className="w-fit max-w-full">
+                <h1 className="font-heading font-bold leading-[0.92] tracking-tight">
+                  <span
+                    className="block text-[clamp(36px,7vw,90px)]"
+                    style={{ color: "rgba(201,168,76,1)" }}
+                  >
+                    ГАРАНТ
+                  </span>
+                  <span className="block text-[clamp(36px,7vw,90px)]">
+                    {isDark ? (
+                      <span style={{ color: "#fff" }}>МОНТАЖ</span>
+                    ) : (
+                      <>
+                        <span style={{ color: "#0A0A0A" }}>МОНТА</span>
+                        <span
+                          style={{
+                            color: "#0A0A0A",
+                            textShadow:
+                              "0 0 10px #fff, 0 0 20px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.3)",
+                          }}
+                        >
+                          Ж
+                        </span>
+                      </>
+                    )}
+                  </span>
+                </h1>
+              </div>
+            </div>
+            {/* Под «МОНТАЖ»: левый край как у заголовка; справа короче (+запас от дома); ниже — отступ сверху */}
+            <div
+              className="relative z-[8] mt-16 w-[calc(100vw-29vw)] max-w-none shrink-0 transition-all delay-100 duration-[750ms] ease-out md:mt-20 lg:mt-24 lg:w-[calc(100vw-27.12vw)] xl:mt-28 xl:w-[calc(100vw-25.12vw)]"
+              style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? "translateY(1.5rem)" : "translateY(16px)",
+              }}
+            >
+              <BannerCalcCtaButton
+                isDark={isDark}
+                openModal={openModal}
+                bannerCtaHovered={bannerCtaHovered}
+                setBannerCtaHovered={setBannerCtaHovered}
+                className="w-full"
+              />
             </div>
           </div>
         </div>
@@ -223,7 +328,7 @@ export function BannerSection() {
         {/* ---- Mobile/Tablet: фото дома ---- */}
         <div className="flex-1 md:hidden h-full flex flex-col items-center justify-center relative min-h-0 overflow-hidden">
           <div
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-[140%] h-[80%] transition-all duration-1000 delay-300"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-[140%] h-[80%] transition-all duration-[750ms] ease-out delay-100"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? "translateY(-50%) scale(1)" : "translateY(-50%) scale(0.92)",
@@ -244,7 +349,7 @@ export function BannerSection() {
         {/* ---- House image + annotation dots + label cards (desktop only) ---- */}
         <div className="hidden md:flex flex-1 h-full items-center justify-center relative px-0">
           <div
-            className="relative w-[85%] sm:w-[70%] max-w-[500px] md:max-w-none md:w-[105%] lg:w-[100%] aspect-square transition-all duration-1000 delay-300"
+            className="relative w-[85%] sm:w-[70%] max-w-[500px] md:max-w-none md:w-[105%] lg:w-[100%] aspect-square transition-all duration-[750ms] ease-out delay-100"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? "scale(1)" : "scale(0.92)",
@@ -260,7 +365,7 @@ export function BannerSection() {
               sizes="(max-width: 768px) 0vw, 60vw"
             />
 
-            {/* ---- SVG: dots + connecting lines ---- */}
+            {/* ---- SVG: линии дом — метки (без кружков на концах) ---- */}
             <svg
               className="absolute inset-0 w-full h-full pointer-events-none hidden md:block"
               viewBox="0 0 100 100"
@@ -275,33 +380,15 @@ export function BannerSection() {
                     className="transition-opacity duration-500"
                     style={{ opacity: visible ? 1 : 0 }}
                   >
-                    {/* Line from dot to label */}
                     <line
                       x1={a.dotX}
                       y1={a.dotY}
-                      x2={a.labelX}
-                      y2={a.labelY}
+                      x2={a.lineEndX ?? a.labelX}
+                      y2={a.lineEndY ?? a.labelY}
                       stroke={isHov ? "rgba(201,168,76,0.7)" : "rgba(201,168,76,0.25)"}
                       strokeWidth="0.2"
                       strokeDasharray="0.8 0.6"
                       className="transition-all duration-300"
-                    />
-
-                    {/* Center dot */}
-                    <circle
-                      cx={a.dotX}
-                      cy={a.dotY}
-                      r={isHov ? 1.2 : 0.8}
-                      fill={isHov ? "rgba(201,168,76,1)" : "rgba(201,168,76,0.8)"}
-                      className="transition-all duration-300"
-                    />
-
-                    {/* Label endpoint dot */}
-                    <circle
-                      cx={a.labelX}
-                      cy={a.labelY}
-                      r="0.5"
-                      fill="rgba(201,168,76,0.6)"
                     />
                   </g>
                 );
@@ -315,24 +402,25 @@ export function BannerSection() {
               return (
                 <div
                   key={a.id}
-                  className="absolute hidden md:flex items-center gap-1.5 z-[3] transition-all duration-500 cursor-none"
+                  className="absolute hidden md:flex cursor-none items-center gap-1.5 z-[3] transition-all duration-[550ms] ease-out"
                   style={{
                     top: `${a.labelY}%`,
                     left: isLeft ? `${a.labelX}%` : undefined,
                     right: !isLeft ? `${100 - a.labelX}%` : undefined,
                     opacity: visible ? 1 : 0,
-                    transitionDelay: `${700 + i * 120}ms`,
+                    transform: visible ? "translateY(-50%)" : "translateY(calc(-50% + 6px))",
+                    transitionDelay: `${220 + i * 45}ms`,
                   }}
                   onMouseEnter={() => setHoveredId(a.id)}
                   onMouseLeave={() => setHoveredId(null)}
                 >
                   <Link
                     href={a.href}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all duration-300 cursor-none"
+                    className="flex cursor-none items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all duration-300"
                     style={{
                       backgroundColor: isDark
-                        ? (isHov ? "rgba(201,168,76,0.15)" : "rgba(0,0,0,0.75)")
-                        : (isHov ? "rgba(201,168,76,0.2)" : "rgba(255,255,255,0.95)"),
+                        ? (isHov ? "rgba(30,26,15,1)" : "rgba(0,0,0,1)")
+                        : (isHov ? "rgba(255,248,230,1)" : "rgba(255,255,255,1)"),
                       border: isDark
                         ? `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.1)"}`
                         : `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(0,0,0,0.12)"}`,
@@ -364,69 +452,33 @@ export function BannerSection() {
 
       </div>
 
-      {/* ---- Кнопка на месте бывшего слогана (центр) ---- */}
+      {/* ---- Кнопка mobile / tablet (по центру) ---- */}
       <div
-        className="absolute bottom-20 sm:bottom-24 md:bottom-16 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-1000 delay-[800ms]"
+        className="absolute bottom-14 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-[700ms] ease-out delay-[260ms] sm:bottom-[4.5rem] md:hidden"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(10px)",
         }}
       >
-        <button
-          type="button"
-          onClick={openModal}
-          onMouseEnter={() => setBannerCtaHovered(true)}
-          onMouseLeave={() => setBannerCtaHovered(false)}
-          className="group relative flex items-center justify-between gap-2 sm:gap-3 px-5 sm:px-7 py-2.5 sm:py-3 max-w-[min(92vw,520px)] w-full sm:w-auto overflow-hidden transition-colors duration-700 cursor-pointer md:cursor-none"
-          style={{
-            border: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}`,
-            borderRadius: "14px",
-            backgroundColor: isDark ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.92)",
-            boxShadow: isDark
-              ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
-              : "2px 0 12px rgba(255,255,255,0.7), 4px 0 24px rgba(255,255,255,0.4)",
-          }}
-          aria-label="Рассчитать стоимость работ"
-        >
-          <div
-            className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
-            style={{
-              backgroundColor: isDark ? "#FFFFFF" : "#0A0A0A",
-              transform: bannerCtaHovered ? "scaleX(1)" : "scaleX(0)",
-            }}
-          />
-          <span
-            className="relative z-10 font-heading text-[10px] sm:text-xs md:text-[13px] uppercase tracking-[0.1em] sm:tracking-[0.14em] leading-tight text-left transition-colors duration-700 flex-1"
-            style={{
-              color: bannerCtaHovered
-                ? (isDark ? "#0A0A0A" : "#FFFFFF")
-                : (isDark ? "#FFFFFF" : "#0A0A0A"),
-            }}
-          >
-            Рассчитать стоимость работ
-          </span>
-          <ArrowRight
-            size={16}
-            className="relative z-10 shrink-0 transition-colors duration-700"
-            style={{
-              color: bannerCtaHovered
-                ? (isDark ? "#0A0A0A" : "#FFFFFF")
-                : (isDark ? "#FFFFFF" : "#0A0A0A"),
-            }}
-          />
-        </button>
+        <BannerCalcCtaButton
+          isDark={isDark}
+          openModal={openModal}
+          bannerCtaHovered={bannerCtaHovered}
+          setBannerCtaHovered={setBannerCtaHovered}
+          className="w-full max-w-[min(94vw,920px)]"
+        />
       </div>
 
       {/* ---- Лозунг ниже кнопки ---- */}
       <div
-        className="absolute bottom-6 sm:bottom-8 md:bottom-7 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-1000 delay-[1000ms]"
+        className="absolute bottom-6 sm:bottom-8 md:bottom-7 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-[700ms] ease-out delay-[400ms]"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(10px)",
         }}
       >
         <p
-          className="text-[13px] sm:text-[15px] md:text-[clamp(14px,1.6vw,22px)] font-light tracking-wide text-center max-w-[95vw] sm:whitespace-nowrap"
+          className="text-[12px] sm:text-[14px] md:text-[clamp(13px,1.45vw,19px)] font-light tracking-wide text-center max-w-[95vw] sm:whitespace-nowrap"
           style={{ color: isDark ? "rgba(255,255,255,0.9)" : "rgba(10,10,10,0.9)" }}
         >
           Мы не создаём проблем — мы их решаем

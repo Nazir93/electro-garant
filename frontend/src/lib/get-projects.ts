@@ -122,6 +122,7 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioCase | nu
         showcaseLabel2: dbProject.showcaseLabel2 || dbProject.images[1]?.alt || "Фото проекта",
         showcaseImage1: dbProject.showcaseImage1 || dbProject.images[0]?.url || null,
         showcaseImage2: dbProject.showcaseImage2 || dbProject.images[1]?.url || null,
+        videoUrl: dbProject.videoUrl || null,
       };
     }
   } catch {

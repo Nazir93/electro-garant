@@ -190,6 +190,8 @@ model Service {
   icon             String      @default("zap")
   coverImage       String?
   videoUrl         String?
+  /// Блоки лендинга услуги (hero, тексты, FAQ и т.д.). null = шаблон из кода.
+  landingJson      Json?
   published        Boolean     @default(true)
   order            Int         @default(0)
   createdAt        DateTime    @default(now())

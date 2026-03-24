@@ -61,6 +61,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, redirectUrl: "/" });
     }
 
+    const smartCaptchaSecret = process.env.YANDEX_SMARTCAPTCHA_SERVER_KEY?.trim();
+    if (smartCaptchaSecret && parsed.data.recaptchaToken) {
+      try {
+        const verifyRes = await fetch("https://smartcaptcha.yandexcloud.net/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            secret: smartCaptchaSecret,
+            token: parsed.data.recaptchaToken,
+            ip,
+          }).toString(),
+        });
+        const verify = (await verifyRes.json()) as { status?: string };
+        if (verify.status !== "ok") {
+          return NextResponse.json(
+            { error: "Проверка не пройдена. Обновите страницу и попробуйте снова." },
+            { status: 400 }
+          );
+        }
+      } catch (e) {
+        console.error("[LEAD] SmartCaptcha verify error:", e);
+        return NextResponse.json(
+          { error: "Ошибка проверки. Попробуйте позже или позвоните нам." },
+          { status: 400 }
+        );
+      }
+    } else if (smartCaptchaSecret && !parsed.data.recaptchaToken) {
+      return NextResponse.json(
+        { error: "Проверка не пройдена. Обновите страницу и попробуйте снова." },
+        { status: 400 }
+      );
+    }
+
     const token = uuidv4();
     const source = body.source || "unknown";
 
