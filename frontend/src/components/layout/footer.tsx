@@ -140,28 +140,22 @@ export function Footer() {
         className="border-t"
         style={{ borderColor: "var(--border)" }}
       >
-        <div className="container mx-auto py-3 pr-5 lg:pr-[80px] flex items-center justify-center safe-bottom">
+        <div className="container mx-auto px-5 sm:px-6 lg:pr-[80px] py-4 sm:py-5 safe-bottom flex justify-center">
           <p
-            className="text-[9px] sm:text-[10px] tracking-[0.1em]"
-            style={{ color: "var(--text-subtle)" }}
+            className="max-w-3xl text-center text-[10px] sm:text-xs leading-relaxed tracking-wide"
+            style={{ color: "var(--text-muted)" }}
           >
-            <a
-              href="tel:+79177041893"
-              className="transition-colors duration-200 hover:text-[var(--accent)]"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Проект разработан
-            </a>
-            {" "}
+            Визуальная концепция, интерфейс и техническая реализация этого сайта выполнены{" "}
             <a
               href="https://www.code1618.ru"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-colors duration-200 hover:text-[var(--accent)]"
-              style={{ color: "var(--text-muted)" }}
+              className="font-heading font-semibold transition-colors duration-300 hover:text-[var(--accent)]"
+              style={{ color: "var(--text)" }}
             >
               студией CODE1618
             </a>
+            .
           </p>
         </div>
       </div>

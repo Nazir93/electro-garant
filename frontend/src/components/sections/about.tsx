@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useModal } from "@/lib/modal-context";
@@ -76,7 +76,33 @@ const SLIDES: Slide[] = [
   },
 ];
 
-function ImagePanel({ activeIndex, scrollProgress }: { activeIndex: number; scrollProgress: number }) {
+const VIDEO_ABOUT_DESKTOP = "/panel-assembly-seek.mp4";
+const VIDEO_ABOUT_MOBILE = "/panel-assembly-mobile.mp4";
+const VIDEO_ABOUT_POSTER = "/panel-assembly-poster.jpg";
+
+function subscribeMin768(cb: () => void) {
+  const mq = window.matchMedia("(min-width: 768px)");
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+
+function useIsDesktop() {
+  return useSyncExternalStore(
+    subscribeMin768,
+    () => window.matchMedia("(min-width: 768px)").matches,
+    () => false
+  );
+}
+
+function ImagePanel({
+  activeIndex,
+  scrollProgress,
+  videoReady,
+}: {
+  activeIndex: number;
+  scrollProgress: number;
+  videoReady: boolean;
+}) {
   const { openModal } = useModal();
   const stripY = scrollProgress * 100;
 
@@ -109,10 +135,11 @@ function ImagePanel({ activeIndex, scrollProgress }: { activeIndex: number; scro
       <div className="relative w-full h-full" style={{ paddingLeft: "40px" }}>
         <video
           id="about-video-desktop"
-          src="/panel-assembly-seek.mp4"
+          src={videoReady ? VIDEO_ABOUT_DESKTOP : undefined}
+          poster={VIDEO_ABOUT_POSTER}
           muted
           playsInline
-          preload="auto"
+          preload={videoReady ? "auto" : "none"}
           className="h-full w-full object-cover"
           style={{ pointerEvents: "none" }}
         />
@@ -193,40 +220,69 @@ export function AboutSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [videoReady, setVideoReady] = useState(false);
+  const isDesktop = useIsDesktop();
 
-  useEffect(() => {
+  const syncScrollToVideos = useCallback(() => {
     const section = sectionRef.current;
     if (!section) return;
 
     const desktopVideo = document.getElementById("about-video-desktop") as HTMLVideoElement | null;
     const mobileVideo = document.getElementById("about-video-mobile") as HTMLVideoElement | null;
 
-    const onScroll = () => {
-      const rect = section.getBoundingClientRect();
-      const sectionHeight = section.offsetHeight;
-      const viewportH = window.innerHeight;
-      const scrolled = -rect.top;
-      const scrollRange = sectionHeight - viewportH;
-      if (scrollRange <= 0) return;
+    const rect = section.getBoundingClientRect();
+    const sectionHeight = section.offsetHeight;
+    const viewportH = window.innerHeight;
+    const scrolled = -rect.top;
+    const scrollRange = sectionHeight - viewportH;
+    if (scrollRange <= 0) return;
 
-      const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
+    const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
 
-      const seekVideo = (v: HTMLVideoElement | null) => {
-        if (!v || !v.duration || Number.isNaN(v.duration)) return;
-        v.currentTime = progress * v.duration;
-      };
-      seekVideo(desktopVideo);
-      seekVideo(mobileVideo);
-
-      setScrollProgress(progress);
-      const idx = Math.min(Math.floor(progress * SLIDES.length), SLIDES.length - 1);
-      setActiveIndex(idx);
+    const seekVideo = (v: HTMLVideoElement | null) => {
+      if (!v || !v.duration || Number.isNaN(v.duration)) return;
+      v.currentTime = progress * v.duration;
     };
+    seekVideo(desktopVideo);
+    seekVideo(mobileVideo);
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    setScrollProgress(progress);
+    const idx = Math.min(Math.floor(progress * SLIDES.length), SLIDES.length - 1);
+    setActiveIndex(idx);
   }, []);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) setVideoReady(true);
+      },
+      { rootMargin: "40% 0px", threshold: 0 }
+    );
+    io.observe(section);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("scroll", syncScrollToVideos, { passive: true });
+    syncScrollToVideos();
+    return () => window.removeEventListener("scroll", syncScrollToVideos);
+  }, [syncScrollToVideos]);
+
+  useEffect(() => {
+    if (!videoReady) return;
+    const desktop = document.getElementById("about-video-desktop") as HTMLVideoElement | null;
+    const mobile = document.getElementById("about-video-mobile") as HTMLVideoElement | null;
+    const onMeta = () => syncScrollToVideos();
+    desktop?.addEventListener("loadedmetadata", onMeta);
+    mobile?.addEventListener("loadedmetadata", onMeta);
+    syncScrollToVideos();
+    return () => {
+      desktop?.removeEventListener("loadedmetadata", onMeta);
+      mobile?.removeEventListener("loadedmetadata", onMeta);
+    };
+  }, [videoReady, isDesktop, syncScrollToVideos]);
 
   return (
     <section
@@ -243,32 +299,35 @@ export function AboutSection() {
         <div className="h-full flex flex-col md:flex-row">
 
           <div className="flex-1 md:w-[42%] md:flex-none h-full flex flex-col relative z-10">
-            {/* Mobile video */}
-            <div className="md:hidden relative w-full pt-20" style={{ height: "35dvh", minHeight: "200px" }}>
-              <video
-                id="about-video-mobile"
-                src="/panel-assembly-seek.mp4"
-                muted
-                playsInline
-                preload="auto"
-                className="h-full w-full object-cover"
-                style={{ pointerEvents: "none" }}
-              />
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-full px-3 py-1.5 backdrop-blur-md"
-                style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-              >
-                {SLIDES.map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-[3px] rounded-full transition-all duration-500"
-                    style={{
-                      width: i === activeIndex ? "14px" : "5px",
-                      backgroundColor: i <= activeIndex ? "rgba(201,168,76,0.9)" : "rgba(255,255,255,0.25)",
-                    }}
-                  />
-                ))}
+            {/* Мобильное видео только при ширине < md — не монтируем на десктопе, чтобы не качать лишний файл */}
+            {!isDesktop && (
+              <div className="relative w-full pt-20" style={{ height: "35dvh", minHeight: "200px" }}>
+                <video
+                  id="about-video-mobile"
+                  src={videoReady ? VIDEO_ABOUT_MOBILE : undefined}
+                  poster={VIDEO_ABOUT_POSTER}
+                  muted
+                  playsInline
+                  preload={videoReady ? "auto" : "none"}
+                  className="h-full w-full object-cover"
+                  style={{ pointerEvents: "none" }}
+                />
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-full px-3 py-1.5 backdrop-blur-md"
+                  style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+                >
+                  {SLIDES.map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-[3px] rounded-full transition-all duration-500"
+                      style={{
+                        width: i === activeIndex ? "14px" : "5px",
+                        backgroundColor: i <= activeIndex ? "rgba(201,168,76,0.9)" : "rgba(255,255,255,0.25)",
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Mobile progress dots */}
             <div className="md:hidden flex items-center gap-2 px-5 sm:px-6 pt-4">
@@ -382,10 +441,12 @@ export function AboutSection() {
             </div>
           </div>
 
-          {/* Right: video panel */}
-          <div className="hidden md:block md:w-[58%] h-full relative">
-            <ImagePanel activeIndex={activeIndex} scrollProgress={scrollProgress} />
-          </div>
+          {/* Right: video panel — только на десктопе, чтобы на мобиле не качать тяжёлый ролик */}
+          {isDesktop && (
+            <div className="hidden md:block md:w-[58%] h-full relative">
+              <ImagePanel activeIndex={activeIndex} scrollProgress={scrollProgress} videoReady={videoReady} />
+            </div>
+          )}
         </div>
       </div>
     </section>

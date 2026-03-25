@@ -2,50 +2,12 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUp, MessageCircle, Sun, Moon } from "lucide-react";
+import { ArrowRight, ArrowUp, MessageCircle, Sun, Moon, ChevronRight } from "lucide-react";
 import { SOCIAL_LINKS, PHONE2, PHONE2_RAW } from "@/lib/constants";
+import { NAV_SECTIONS, isNavGroup } from "@/lib/nav-sections";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
 import { useThrottledScroll } from "@/lib/use-throttled-scroll";
-
-const NAV_SECTIONS = [
-  {
-    label: "О компании",
-    items: [
-      { href: "/contacts", label: "Контакты" },
-      { href: "/portfolio", label: "Портфолио" },
-      { href: "/technology", label: "Технология монтажа" },
-      { href: "/blog", label: "Блог" },
-    ],
-  },
-  {
-    label: "Услуги",
-    items: [
-      { href: "/services", label: "Все услуги" },
-      { href: "/services/electrical", label: "Электромонтаж" },
-      { href: "/services/acoustics", label: "Акустика" },
-      { href: "/services/smart-home", label: "Умный дом" },
-      { href: "/services/security", label: "Безопасность" },
-      { href: "/services/structured-cabling", label: "Слаботочные" },
-    ],
-  },
-  {
-    label: "Заказчикам",
-    items: [
-      { href: "/price", label: "Прайс-листы" },
-      { href: "#calc", label: "Рассчитать стоимость", action: "openModal" as const },
-      { href: "/privacy", label: "Политика" },
-    ],
-  },
-  {
-    label: "Партнёрам",
-    items: [
-      { href: "/vacancies", label: "Вакансии" },
-      { href: "/partners", label: "Стать партнёром" },
-      { href: "/support", label: "Поддержка" },
-    ],
-  },
-];
 
 export function DesktopSideNav() {
   const [visible, setVisible] = useState(false);
@@ -167,11 +129,79 @@ export function DesktopSideNav() {
                         }}
                       >
                         {section.items.map((item) =>
-                          item.action === "openModal" ? (
+                          isNavGroup(item) ? (
+                            <div key={item.label} className="relative group/sub">
+                              <div
+                                className="flex w-full cursor-default items-center justify-between gap-2 px-5 py-2.5 text-left text-xs uppercase tracking-[0.08em]"
+                                style={{ color: "var(--text-muted)" }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.color = "var(--text)";
+                                  e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.color = "var(--text-muted)";
+                                  e.currentTarget.style.backgroundColor = "transparent";
+                                }}
+                              >
+                                {item.label}
+                                <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" aria-hidden />
+                              </div>
+                              <div className="absolute left-full top-0 z-50 hidden min-w-[240px] -ml-2 pl-2 group-hover/sub:block">
+                                <div
+                                  className="py-2 shadow-lg"
+                                  style={{
+                                    backgroundColor: isDark ? "rgba(20,20,20,0.98)" : "rgba(255,255,255,0.98)",
+                                    border: "1px solid var(--border)",
+                                    borderRadius: "12px",
+                                  }}
+                                >
+                                  {item.children.map((child) =>
+                                    "action" in child && child.action === "openModal" ? (
+                                      <button
+                                        key={child.label}
+                                        type="button"
+                                        onClick={() => { setOpenSection(null); openModal(); }}
+                                        className="w-full px-5 py-2.5 text-left text-xs uppercase tracking-[0.08em] transition-colors duration-200"
+                                        style={{ color: "var(--text-muted)" }}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.color = "var(--accent)";
+                                          e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.color = "var(--text-muted)";
+                                          e.currentTarget.style.backgroundColor = "transparent";
+                                        }}
+                                      >
+                                        {child.label}
+                                      </button>
+                                    ) : "href" in child ? (
+                                      <Link
+                                        key={child.href}
+                                        href={child.href}
+                                        className="block px-5 py-2.5 text-xs uppercase tracking-[0.08em] transition-colors duration-200"
+                                        style={{ color: "var(--text-muted)" }}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.color = "var(--text)";
+                                          e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.color = "var(--text-muted)";
+                                          e.currentTarget.style.backgroundColor = "transparent";
+                                        }}
+                                      >
+                                        {child.label}
+                                      </Link>
+                                    ) : null
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ) : "action" in item && item.action === "openModal" ? (
                             <button
                               key={item.label}
+                              type="button"
                               onClick={() => { setOpenSection(null); openModal(); }}
-                              className="w-full text-left px-5 py-2.5 transition-colors duration-200 text-xs uppercase tracking-[0.08em]"
+                              className="w-full px-5 py-2.5 text-left text-xs uppercase tracking-[0.08em] transition-colors duration-200"
                               style={{ color: "var(--text-muted)" }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.color = "var(--accent)";
@@ -184,11 +214,11 @@ export function DesktopSideNav() {
                             >
                               {item.label}
                             </button>
-                          ) : (
+                          ) : "href" in item ? (
                             <Link
                               key={item.href}
                               href={item.href}
-                              className="block px-5 py-2.5 transition-colors duration-200 text-xs uppercase tracking-[0.08em]"
+                              className="block px-5 py-2.5 text-xs uppercase tracking-[0.08em] transition-colors duration-200"
                               style={{ color: "var(--text-muted)" }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.color = "var(--text)";
@@ -201,7 +231,7 @@ export function DesktopSideNav() {
                             >
                               {item.label}
                             </Link>
-                          )
+                          ) : null
                         )}
                       </div>
                     </div>

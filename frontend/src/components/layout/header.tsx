@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { X, Sun, Moon, MessageCircle } from "lucide-react";
+import { X, Sun, Moon, MessageCircle, ChevronRight } from "lucide-react";
 import { PHONE2, PHONE2_RAW, SITE_NAME, SOCIAL_LINKS } from "@/lib/constants";
+import { NAV_SECTIONS, isNavGroup } from "@/lib/nav-sections";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
 
@@ -150,45 +151,6 @@ function CircuitGrid() {
   );
 }
 
-const NAV_SECTIONS = [
-  {
-    label: "О компании",
-    items: [
-      { href: "/contacts", label: "Контакты" },
-      { href: "/portfolio", label: "Портфолио" },
-      { href: "/technology", label: "Технология монтажа" },
-      { href: "/blog", label: "Блог" },
-    ],
-  },
-  {
-    label: "Услуги",
-    items: [
-      { href: "/services", label: "Все услуги" },
-      { href: "/services/electrical", label: "Электромонтаж" },
-      { href: "/services/acoustics", label: "Акустика" },
-      { href: "/services/smart-home", label: "Умный дом" },
-      { href: "/services/security", label: "Безопасность" },
-      { href: "/services/structured-cabling", label: "Слаботочные" },
-    ],
-  },
-  {
-    label: "Заказчикам",
-    items: [
-      { href: "/price", label: "Прайс-листы" },
-      { href: "#calc", label: "Рассчитать стоимость", action: "openModal" as const },
-      { href: "/privacy", label: "Политика" },
-    ],
-  },
-  {
-    label: "Партнёрам",
-    items: [
-      { href: "/vacancies", label: "Вакансии" },
-      { href: "/partners", label: "Стать партнёром" },
-      { href: "/support", label: "Поддержка" },
-    ],
-  },
-];
-
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [hideFloating, setHideFloating] = useState(false);
@@ -294,10 +256,8 @@ export function Header() {
       {/* Fullscreen menu overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[60] overflow-hidden"
+          className="fixed inset-0 z-[60] flex flex-col overflow-hidden"
           style={{ backgroundColor: "var(--bg)" }}
-          onWheel={(e) => e.stopPropagation()}
-          onTouchMove={(e) => e.stopPropagation()}
         >
           {/* Blueprint background */}
           <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
@@ -375,7 +335,7 @@ export function Header() {
             <Link
               href="/"
               onClick={() => setIsOpen(false)}
-              className="font-heading text-[11px] tracking-[0.12em] uppercase select-none"
+              className="font-heading text-[11px] tracking-[0.12em] uppercase select-none md:text-xs lg:text-sm"
               style={{ color: "var(--text)" }}
             >
               Гарант Монтаж
@@ -400,59 +360,94 @@ export function Header() {
             </div>
           </div>
 
-          {/* Main content: sections + right sidebar */}
-          <div className="relative z-10 h-full flex">
+          {/* Один экран: без внутреннего скролла, контент уплотнён под viewport */}
+          <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex min-h-0 w-full flex-1 flex-row items-stretch">
             {/* Nav area */}
-            <nav className="flex-1 flex flex-col justify-center px-5 sm:px-8 md:px-10 lg:px-16 pt-12 pb-4">
-              <div className="flex-1 flex flex-col justify-center">
+            <nav className="flex min-h-0 w-full min-w-0 flex-1 flex-col justify-between px-4 sm:px-8 md:px-10 lg:px-16 pt-14 sm:pt-16 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+              <div className="grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-5 sm:gap-y-6 md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-3 [@media(max-height:700px)]:gap-x-3">
                 {NAV_SECTIONS.map((section, si) => (
                   <div
                     key={section.label}
-                    className="border-b py-3 sm:py-3.5 md:py-4 menu-stagger"
+                    className="flex min-h-0 min-w-0 flex-col border-b border-[var(--border)] pb-3 sm:border-0 sm:pb-0 menu-stagger [@media(max-height:700px)]:pb-2"
                     style={{
-                      borderColor: "var(--border)",
                       animation: `menuFadeIn 0.6s ease-out ${si * 0.08}s both`,
                     }}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3
-                          className="font-heading text-xl sm:text-2xl md:text-3xl tracking-tight mb-1.5 sm:mb-2"
-                          style={{ color: "var(--text)" }}
-                        >
-                          {section.label}
-                        </h3>
-                        <div className="flex flex-wrap gap-x-4 sm:gap-x-5 gap-y-0.5">
+                    <div className="grid min-w-0 grid-cols-[auto_1fr] gap-x-2 sm:gap-x-3">
+                      <span
+                        className="shrink-0 pt-0.5 font-heading text-[9px] tabular-nums tracking-[0.15em] sm:text-[10px] md:text-xs lg:text-sm"
+                        style={{ color: "var(--text-subtle)" }}
+                        aria-hidden
+                      >
+                        {String(si + 1).padStart(2, "0")}
+                      </span>
+                      <h3
+                        className="min-w-0 font-heading text-xs leading-tight tracking-tight sm:text-sm md:text-xl lg:text-2xl xl:text-3xl [@media(max-height:700px)]:max-lg:text-[10px]"
+                        style={{ color: "var(--text)" }}
+                      >
+                        {section.label}
+                      </h3>
+                      <div className="col-start-2 flex min-w-0 flex-col gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-3 [@media(max-height:700px)]:max-lg:gap-1">
                           {section.items.map((item) =>
-                            item.action === "openModal" ? (
+                            isNavGroup(item) ? (
+                              <div key={item.label} className="w-full">
+                                <span
+                                  className="mb-1 block text-[10px] uppercase tracking-[0.12em] sm:text-[11px] md:text-xs lg:text-sm"
+                                  style={{ color: "var(--text-subtle)" }}
+                                >
+                                  {item.label}
+                                </span>
+                                <div
+                                  className="flex flex-col gap-0.5 border-l pl-2 sm:gap-1 md:gap-1.5"
+                                  style={{ borderColor: "var(--border)" }}
+                                >
+                                  {item.children.map((child) =>
+                                    "action" in child && child.action === "openModal" ? (
+                                      <button
+                                        key={child.label}
+                                        onClick={() => { setIsOpen(false); openModal(); }}
+                                        className="py-0.5 text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-[15px]"
+                                        style={{ color: "var(--text-muted)" }}
+                                      >
+                                        {child.label}
+                                      </button>
+                                    ) : "href" in child ? (
+                                      <Link
+                                        key={child.href}
+                                        href={child.href}
+                                        onClick={() => setIsOpen(false)}
+                                        className="py-0.5 text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-[15px]"
+                                        style={{ color: "var(--text-muted)" }}
+                                      >
+                                        {child.label}
+                                      </Link>
+                                    ) : null
+                                  )}
+                                </div>
+                              </div>
+                            ) : "action" in item && item.action === "openModal" ? (
                               <button
                                 key={item.label}
                                 onClick={() => { setIsOpen(false); openModal(); }}
-                                className="text-[11px] sm:text-xs transition-colors duration-300 hover:text-[var(--accent)] py-0.5"
+                                className="py-0.5 text-left text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-[15px]"
                                 style={{ color: "var(--text-muted)" }}
                               >
                                 {item.label}
                               </button>
-                            ) : (
+                            ) : "href" in item ? (
                               <Link
                                 key={item.href}
                                 href={item.href}
                                 onClick={() => setIsOpen(false)}
-                                className="text-[11px] sm:text-xs transition-colors duration-300 hover:text-[var(--accent)] py-0.5"
+                                className="py-0.5 text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-[15px]"
                                 style={{ color: "var(--text-muted)" }}
                               >
                                 {item.label}
                               </Link>
-                            )
+                            ) : null
                           )}
-                        </div>
                       </div>
-                      <span
-                        className="text-[9px] font-heading tracking-[0.2em] mt-1 shrink-0"
-                        style={{ color: "var(--text-subtle)" }}
-                      >
-                        {String(si + 1).padStart(2, "0")}
-                      </span>
                     </div>
                   </div>
                 ))}
@@ -460,13 +455,13 @@ export function Header() {
 
               {/* Bottom: contacts + CTA */}
               <div
-                className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                className="shrink-0 pt-2 sm:pt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 [@media(max-height:700px)]:pt-1 [@media(max-height:700px)]:gap-1.5"
                 style={{ animation: "menuFadeIn 0.6s ease-out 0.4s both" }}
               >
-                <div className="flex items-center gap-3 sm:gap-5 flex-wrap">
+                <div className="flex items-center gap-2 sm:gap-5 flex-wrap">
                   <a
                     href={`tel:${PHONE2_RAW}`}
-                    className="text-xs transition-colors duration-300 hover:text-[var(--accent)]"
+                    className="text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-base"
                     style={{ color: "var(--text-muted)" }}
                   >
                     {PHONE2}
@@ -474,7 +469,7 @@ export function Header() {
                 </div>
                 <button
                   onClick={() => { setIsOpen(false); openModal(); }}
-                  className="px-7 py-2.5 text-xs font-heading uppercase tracking-[0.1em] rounded-full transition-all duration-500 hover:scale-105"
+                  className="rounded-full px-5 py-2 font-heading uppercase tracking-[0.1em] transition-all duration-500 hover:scale-105 text-[10px] sm:text-xs md:text-sm lg:text-base sm:px-7 sm:py-2.5 [@media(max-height:700px)]:max-lg:py-1.5 [@media(max-height:700px)]:max-lg:px-4"
                   style={{ backgroundColor: "var(--accent)", color: "#0A0A0A" }}
                 >
                   Обсудить проект
@@ -546,6 +541,7 @@ export function Header() {
                 className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: "var(--accent)", opacity: 0.5 }}
               />
+            </div>
             </div>
           </div>
         </div>
@@ -636,11 +632,79 @@ export function NavBar() {
                     }}
                   >
                     {section.items.map((item) =>
-                      item.action === "openModal" ? (
+                      isNavGroup(item) ? (
+                        <div key={item.label} className="relative group/sub">
+                          <div
+                            className="flex w-full cursor-default items-center justify-between gap-2 px-5 py-2.5 text-left text-xs uppercase tracking-[0.08em]"
+                            style={{ color: "var(--text-muted)" }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = "var(--text)";
+                              e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "var(--text-muted)";
+                              e.currentTarget.style.backgroundColor = "transparent";
+                            }}
+                          >
+                            {item.label}
+                            <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" aria-hidden />
+                          </div>
+                          <div className="absolute left-full top-0 z-50 hidden min-w-[240px] -ml-2 pl-2 group-hover/sub:block">
+                            <div
+                              className="py-2 shadow-lg"
+                              style={{
+                                backgroundColor: isDark ? "rgba(20,20,20,0.98)" : "rgba(255,255,255,0.98)",
+                                border: "1px solid var(--border)",
+                                borderRadius: "12px",
+                              }}
+                            >
+                              {item.children.map((child) =>
+                                "action" in child && child.action === "openModal" ? (
+                                  <button
+                                    key={child.label}
+                                    type="button"
+                                    onClick={() => { setOpenSection(null); openModal(); }}
+                                    className="w-full px-5 py-2.5 text-left text-xs uppercase tracking-[0.08em] transition-colors duration-200"
+                                    style={{ color: "var(--text-muted)" }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.color = "var(--accent)";
+                                      e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.color = "var(--text-muted)";
+                                      e.currentTarget.style.backgroundColor = "transparent";
+                                    }}
+                                  >
+                                    {child.label}
+                                  </button>
+                                ) : "href" in child ? (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    className="block px-5 py-2.5 text-xs uppercase tracking-[0.08em] transition-colors duration-200"
+                                    style={{ color: "var(--text-muted)" }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.color = "var(--text)";
+                                      e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.color = "var(--text-muted)";
+                                      e.currentTarget.style.backgroundColor = "transparent";
+                                    }}
+                                  >
+                                    {child.label}
+                                  </Link>
+                                ) : null
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ) : "action" in item && item.action === "openModal" ? (
                         <button
                           key={item.label}
+                          type="button"
                           onClick={() => { setOpenSection(null); openModal(); }}
-                          className="w-full text-left px-5 py-2.5 transition-colors duration-200 text-xs uppercase tracking-[0.08em]"
+                          className="w-full px-5 py-2.5 text-left text-xs uppercase tracking-[0.08em] transition-colors duration-200"
                           style={{ color: "var(--text-muted)" }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.color = "var(--accent)";
@@ -653,11 +717,11 @@ export function NavBar() {
                         >
                           {item.label}
                         </button>
-                      ) : (
+                      ) : "href" in item ? (
                         <Link
                           key={item.href}
                           href={item.href}
-                          className="block px-5 py-2.5 transition-colors duration-200 text-xs uppercase tracking-[0.08em]"
+                          className="block px-5 py-2.5 text-xs uppercase tracking-[0.08em] transition-colors duration-200"
                           style={{ color: "var(--text-muted)" }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.color = "var(--text)";
@@ -670,7 +734,7 @@ export function NavBar() {
                         >
                           {item.label}
                         </Link>
-                      )
+                      ) : null
                     )}
                   </div>
                 </div>

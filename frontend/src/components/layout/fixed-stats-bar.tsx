@@ -84,12 +84,31 @@ export function FixedStatsBar() {
       <div className="container mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 py-2 sm:py-2.5 md:py-3 gap-y-2 sm:gap-y-2.5">
           {STATS.map((stat) => (
-            <div key={stat.label} className="px-2 sm:px-3 md:px-4">
+            <div
+              key={stat.label}
+              className={`group relative px-2 sm:px-3 md:px-4 ${stat.detail ? "cursor-default" : ""}`}
+            >
+              {stat.detail ? (
+                <div
+                  className="pointer-events-none absolute bottom-full left-1/2 z-[50] mb-2 w-[min(100vw-2rem,18rem)] -translate-x-1/2 rounded-lg border px-3 py-2 opacity-0 shadow-lg transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1"
+                  style={{
+                    backgroundColor: "var(--bg-secondary)",
+                    borderColor: "var(--border)",
+                  }}
+                >
+                  <p
+                    className="text-center text-[10px] leading-snug normal-case tracking-normal"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {stat.detail}
+                  </p>
+                </div>
+              ) : null}
               <div className="font-heading text-lg sm:text-xl md:text-2xl lg:text-3xl mb-0.5">
                 <AnimatedCounter value={stat.value} suffix={stat.suffix} />
               </div>
               <p
-                className="text-[7px] sm:text-[8px] md:text-[9px] uppercase tracking-[0.1em] sm:tracking-[0.15em]"
+                className="text-[8px] sm:text-[9px] md:text-[10px] leading-tight tracking-wide"
                 style={{ color: "var(--text-muted)" }}
               >
                 {stat.label}

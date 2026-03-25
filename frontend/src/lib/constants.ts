@@ -83,9 +83,32 @@ export const SERVICES = [
   },
 ];
 
+/** Нижняя панель статистики (fixed-stats-bar): число + подпись, при наведении — detail */
 export const STATS = [
-  { value: 13, label: "лет на рынке Сочи", suffix: "" },
-  { value: 280, label: "объектов сдано", suffix: "+" },
-  { value: 15000, label: "м² обслуживаемая площадь", suffix: "+" },
-  { value: 2, label: "года гарантия на работы", suffix: "" },
+  {
+    value: 13,
+    label: "лет на рынке",
+    suffix: "",
+    detail:
+      "Мы работаем с FG Group, Роза Хутор, Горки Город, MR. Food и др.",
+  },
+  {
+    value: 250,
+    label: "объектов сдано",
+    suffix: "+",
+    detail:
+      "26 баров и 2 гостиницы, 1 завод и 200+ частных заказов",
+  },
+  {
+    value: 145000,
+    label: "кабеля протянуто в 2025 году",
+    suffix: "+",
+    detail: "",
+  },
+  {
+    value: 3,
+    label: "Работаем в 3-х регионах",
+    suffix: "",
+    detail: "Краснодарский край, Ростовская область, Москва",
+  },
 ] as const;
