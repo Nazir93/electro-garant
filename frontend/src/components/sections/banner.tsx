@@ -264,180 +264,176 @@ export function BannerSection() {
         </h1>
       </div>
 
-      {/* ============== LAYOUT: left text (desktop) + house ============== */}
-      <div className="relative z-[2] h-full flex items-center md:flex-row md:gap-10 lg:gap-14 xl:gap-20">
-
-        {/* ---- LEFT: Title (desktop only) — vertically centred, stable across viewports ---- */}
-        <div className="z-[5] hidden h-full w-[25%] flex-shrink-0 flex-col items-start justify-center overflow-visible pl-[12%] pr-6 md:flex lg:w-[32%] lg:pl-[16%] lg:pr-10">
-          <div
-            className="transition-all duration-[750ms] ease-out"
-            style={{
-              opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : "translateY(30px)",
-            }}
-          >
-            <div className="w-fit max-w-full">
-              <h1 className="font-heading font-bold leading-[0.92] tracking-tight">
-                <span
-                  className="block text-[clamp(36px,7vw,90px)]"
-                  style={{ color: "rgba(201,168,76,1)" }}
-                >
-                  ГАРАНТ
-                </span>
-                <span className="block text-[clamp(36px,7vw,90px)]">
-                  {isDark ? (
-                    <span style={{ color: "#fff" }}>МОНТАЖ</span>
-                  ) : (
-                    <>
-                      <span style={{ color: "#0A0A0A" }}>МОНТА</span>
-                      <span
-                        style={{
-                          color: "#0A0A0A",
-                          textShadow:
-                            "0 0 10px #fff, 0 0 20px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.3)",
-                        }}
-                      >
-                        Ж
-                      </span>
-                    </>
-                  )}
-                </span>
-              </h1>
-            </div>
-          </div>
+      {/* ============ Mobile/Tablet: дом ============ */}
+      <div className="md:hidden absolute inset-0 z-[2] overflow-hidden">
+        <div
+          className="absolute left-0 top-1/2 w-[140%] h-[80%] transition-all duration-[750ms] ease-out delay-100"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(-50%) scale(1)" : "translateY(-50%) scale(0.92)",
+          }}
+        >
+          <Image
+            src={isDark ? "/IMG_0980.PNG" : "/logo/photo_2026-03-20_15-02-09.jpg"}
+            alt="Гарант Монтаж"
+            fill
+            className="object-contain object-left"
+            priority
+            sizes="140vw"
+          />
         </div>
-
-        {/* ---- Mobile/Tablet: фото дома ---- */}
-        <div className="flex-1 md:hidden h-full flex flex-col items-center justify-center relative min-h-0 overflow-hidden">
-          <div
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-[140%] h-[80%] transition-all duration-[750ms] ease-out delay-100"
-            style={{
-              opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(-50%) scale(1)" : "translateY(-50%) scale(0.92)",
-            }}
-          >
-            <Image
-              src={isDark ? "/IMG_0980.PNG" : "/logo/photo_2026-03-20_15-02-09.jpg"}
-              alt="Гарант Монтаж"
-              fill
-              className="object-contain object-left"
-              priority
-              sizes="140vw"
-            />
-          </div>
-
-        </div>
-
-        {/* ---- House image + annotation dots + label cards (desktop only) ---- */}
-        <div className="hidden md:flex flex-1 h-full items-center justify-center relative px-0">
-          <div
-            className="relative w-[85%] sm:w-[70%] max-w-[500px] md:max-w-none md:w-[105%] lg:w-[100%] aspect-square transition-all duration-[750ms] ease-out delay-100"
-            style={{
-              opacity: visible ? 1 : 0,
-              transform: visible ? "scale(1)" : "scale(0.92)",
-            }}
-          >
-            {/* House image: дневной вариант — белый дом с тенью, ночной — тёмный */}
-            <Image
-              src={isDark ? "/IMG_0980.PNG" : "/logo/photo_2026-03-20_15-02-09.jpg"}
-              alt="Гарант Монтаж — полный цикл электромонтажных работ"
-              fill
-              className="object-contain"
-              priority
-              sizes="(max-width: 768px) 0vw, 60vw"
-            />
-
-            {/* ---- SVG: линии дом — метки (без кружков на концах) ---- */}
-            <svg
-              className="absolute inset-0 w-full h-full pointer-events-none hidden md:block"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="xMidYMid meet"
-              style={{ zIndex: 2 }}
-            >
-              {ANNOTATIONS.map((a) => {
-                const isHov = hoveredId === a.id;
-                return (
-                  <g
-                    key={a.id}
-                    className="transition-opacity duration-500"
-                    style={{ opacity: visible ? 1 : 0 }}
-                  >
-                    <line
-                      x1={a.dotX}
-                      y1={a.dotY}
-                      x2={a.lineEndX ?? a.labelX}
-                      y2={a.lineEndY ?? a.labelY}
-                      stroke={isHov ? "rgba(201,168,76,0.7)" : "rgba(201,168,76,0.25)"}
-                      strokeWidth="0.2"
-                      strokeDasharray="0.8 0.6"
-                      className="transition-all duration-300"
-                    />
-                  </g>
-                );
-              })}
-            </svg>
-
-            {/* ---- Floating label cards around the house (desktop) ---- */}
-            {ANNOTATIONS.map((a, i) => {
-              const isHov = hoveredId === a.id;
-              const isLeft = a.align === "left";
-              return (
-                <div
-                  key={a.id}
-                  className="absolute hidden md:flex cursor-none items-center gap-1.5 z-[3] transition-all duration-[550ms] ease-out"
-                  style={{
-                    top: `${a.labelY}%`,
-                    left: isLeft ? `${a.labelX}%` : undefined,
-                    right: !isLeft ? `${100 - a.labelX}%` : undefined,
-                    opacity: visible ? 1 : 0,
-                    transform: visible ? "translateY(-50%)" : "translateY(calc(-50% + 6px))",
-                    transitionDelay: `${220 + i * 45}ms`,
-                  }}
-                  onMouseEnter={() => setHoveredId(a.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  <Link
-                    href={a.href}
-                    className="flex cursor-none items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all duration-300"
-                    style={{
-                      backgroundColor: isDark
-                        ? (isHov ? "rgba(30,26,15,1)" : "rgba(0,0,0,1)")
-                        : (isHov ? "rgba(255,248,230,1)" : "rgba(255,255,255,1)"),
-                      border: isDark
-                        ? `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.1)"}`
-                        : `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(0,0,0,0.12)"}`,
-                    }}
-                  >
-                    <span
-                      className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-300"
-                      style={{
-                        backgroundColor: isDark ? (isHov ? "rgba(201,168,76,0.25)" : "rgba(201,168,76,0.1)") : (isHov ? "rgba(201,168,76,0.3)" : "rgba(201,168,76,0.12)"),
-                        color: isDark ? (isHov ? "rgba(201,168,76,1)" : "rgba(255,255,255,0.5)") : (isHov ? "rgba(201,168,76,1)" : "rgba(0,0,0,0.6)"),
-                      }}
-                    >
-                      {ICONS[a.icon]}
-                    </span>
-                    <span
-                      className="text-[9px] lg:text-[10px] tracking-wide uppercase whitespace-nowrap transition-colors duration-300 pr-1"
-                      style={{
-                        color: isDark ? (isHov ? "rgba(201,168,76,1)" : "rgba(255,255,255,0.7)") : (isHov ? "rgba(201,168,76,1)" : "rgba(0,0,0,0.75)"),
-                      }}
-                    >
-                      {a.label}
-                    </span>
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
       </div>
 
-      {/* ---- Desktop CTA button (pinned to bottom, does not shift with viewport height) ---- */}
+      {/* ============ Desktop: ЗАГОЛОВОК — position:absolute, vw-шрифт, % позиция ============ */}
+      {/* top:44% + translateY(-50%) = визуально центр чуть выше середины, одинаково на любом мониторе */}
       <div
-        className="hidden md:flex absolute bottom-20 lg:bottom-24 left-[12%] lg:left-[16%] right-[3%] z-[8] transition-all delay-100 duration-[750ms] ease-out"
+        className="hidden md:block absolute z-[5] transition-all duration-[750ms] ease-out"
         style={{
+          top: "44%",
+          left: "7%",
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(-50%)" : "translateY(calc(-50% + 28px))",
+        }}
+      >
+        <h1
+          className="font-heading font-bold leading-[0.92] tracking-tight"
+          style={{ fontSize: "8.2vw" }}
+        >
+          <span className="block" style={{ color: "rgba(201,168,76,1)" }}>
+            ГАРАНТ
+          </span>
+          <span className="block">
+            {isDark ? (
+              <span style={{ color: "#fff" }}>МОНТАЖ</span>
+            ) : (
+              <>
+                <span style={{ color: "#0A0A0A" }}>МОНТА</span>
+                <span
+                  style={{
+                    color: "#0A0A0A",
+                    textShadow:
+                      "0 0 10px #fff, 0 0 20px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.3)",
+                  }}
+                >
+                  Ж
+                </span>
+              </>
+            )}
+          </span>
+        </h1>
+      </div>
+
+      {/* ============ Desktop: ДОМ — квадрат, высота 80dvh, прижат к правому краю, по вертикали центр ============ */}
+      <div
+        className="hidden md:block absolute z-[2] transition-all duration-[750ms] ease-out delay-100"
+        style={{
+          top: "50%",
+          right: 0,
+          height: "min(140%, 140dvh)",
+          aspectRatio: "1 / 1",
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(-50%) scale(1)" : "translateY(-50%) scale(0.92)",
+        }}
+      >
+        <div className="relative h-full w-full">
+          <Image
+            src={isDark ? "/IMG_0980.PNG" : "/logo/photo_2026-03-20_15-02-09.jpg"}
+            alt="Гарант Монтаж — полный цикл электромонтажных работ"
+            fill
+            className="object-contain"
+            priority
+            sizes="80dvh"
+          />
+
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="xMidYMid meet"
+            style={{ zIndex: 2 }}
+          >
+            {ANNOTATIONS.map((a) => {
+              const isHov = hoveredId === a.id;
+              return (
+                <g
+                  key={a.id}
+                  className="transition-opacity duration-500"
+                  style={{ opacity: visible ? 1 : 0 }}
+                >
+                  <line
+                    x1={a.dotX} y1={a.dotY}
+                    x2={a.lineEndX ?? a.labelX}
+                    y2={a.lineEndY ?? a.labelY}
+                    stroke={isHov ? "rgba(201,168,76,0.7)" : "rgba(201,168,76,0.25)"}
+                    strokeWidth="0.2"
+                    strokeDasharray="0.8 0.6"
+                    className="transition-all duration-300"
+                  />
+                </g>
+              );
+            })}
+          </svg>
+
+          {ANNOTATIONS.map((a, i) => {
+            const isHov = hoveredId === a.id;
+            const isLeft = a.align === "left";
+            return (
+              <div
+                key={a.id}
+                className="absolute z-[3] flex cursor-none items-center gap-1.5 transition-all duration-[550ms] ease-out"
+                style={{
+                  top: `${a.labelY}%`,
+                  left: isLeft ? `${a.labelX}%` : undefined,
+                  right: !isLeft ? `${100 - a.labelX}%` : undefined,
+                  opacity: visible ? 1 : 0,
+                  transform: visible ? "translateY(-50%)" : "translateY(calc(-50% + 6px))",
+                  transitionDelay: `${220 + i * 45}ms`,
+                }}
+                onMouseEnter={() => setHoveredId(a.id)}
+                onMouseLeave={() => setHoveredId(null)}
+              >
+                <Link
+                  href={a.href}
+                  className="flex cursor-none items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-all duration-300"
+                  style={{
+                    backgroundColor: isDark
+                      ? (isHov ? "rgba(30,26,15,1)" : "rgba(0,0,0,1)")
+                      : (isHov ? "rgba(255,248,230,1)" : "rgba(255,255,255,1)"),
+                    border: isDark
+                      ? `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.1)"}`
+                      : `1px solid ${isHov ? "rgba(201,168,76,0.5)" : "rgba(0,0,0,0.12)"}`,
+                  }}
+                >
+                  <span
+                    className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full transition-colors duration-300"
+                    style={{
+                      backgroundColor: isDark ? (isHov ? "rgba(201,168,76,0.25)" : "rgba(201,168,76,0.1)") : (isHov ? "rgba(201,168,76,0.3)" : "rgba(201,168,76,0.12)"),
+                      color: isDark ? (isHov ? "rgba(201,168,76,1)" : "rgba(255,255,255,0.5)") : (isHov ? "rgba(201,168,76,1)" : "rgba(0,0,0,0.6)"),
+                    }}
+                  >
+                    {ICONS[a.icon]}
+                  </span>
+                  <span
+                    className="whitespace-nowrap pr-1 text-[10px] uppercase tracking-wide transition-colors duration-300"
+                    style={{
+                      color: isDark ? (isHov ? "rgba(201,168,76,1)" : "rgba(255,255,255,0.7)") : (isHov ? "rgba(201,168,76,1)" : "rgba(0,0,0,0.75)"),
+                    }}
+                  >
+                    {a.label}
+                  </span>
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ============ Desktop: КНОПКА — % от низа, % от краёв ============ */}
+      <div
+        className="hidden md:flex absolute z-[8] transition-all delay-100 duration-[750ms] ease-out"
+        style={{
+          bottom: "9%",
+          left: "7%",
+          right: "3%",
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(16px)",
         }}
@@ -451,7 +447,23 @@ export function BannerSection() {
         />
       </div>
 
-      {/* ---- Кнопка mobile / tablet (по центру) ---- */}
+      {/* ============ Desktop: СЛОГАН — % от низа ============ */}
+      <p
+        className="hidden md:block absolute z-[7] text-center font-light tracking-wide transition-all duration-[700ms] ease-out delay-[400ms]"
+        style={{
+          bottom: "3%",
+          left: 0,
+          right: 0,
+          fontSize: "1.3vw",
+          color: isDark ? "rgba(255,255,255,0.9)" : "rgba(10,10,10,0.9)",
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(10px)",
+        }}
+      >
+        Мы не создаём проблем — мы их решаем
+      </p>
+
+      {/* ============ Mobile/Tablet: КНОПКА ============ */}
       <div
         className="absolute bottom-14 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-[700ms] ease-out delay-[260ms] sm:bottom-[4.5rem] md:hidden"
         style={{
@@ -468,16 +480,16 @@ export function BannerSection() {
         />
       </div>
 
-      {/* ---- Лозунг ниже кнопки ---- */}
+      {/* ============ Mobile/Tablet: СЛОГАН ============ */}
       <div
-        className="absolute bottom-6 sm:bottom-8 md:bottom-7 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-[700ms] ease-out delay-[400ms]"
+        className="absolute bottom-6 left-0 right-0 z-[7] flex items-center justify-center px-4 transition-all duration-[700ms] ease-out delay-[400ms] sm:bottom-8 md:hidden"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(10px)",
         }}
       >
         <p
-          className="text-[12px] sm:text-[14px] md:text-[clamp(13px,1.45vw,19px)] font-light tracking-wide text-center max-w-[95vw] sm:whitespace-nowrap"
+          className="text-[12px] sm:text-[14px] font-light tracking-wide text-center max-w-[95vw] sm:whitespace-nowrap"
           style={{ color: isDark ? "rgba(255,255,255,0.9)" : "rgba(10,10,10,0.9)" }}
         >
           Мы не создаём проблем — мы их решаем
