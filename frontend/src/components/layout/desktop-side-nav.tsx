@@ -303,26 +303,31 @@ export function DesktopSideNav() {
           </a>
         </div>
 
-        {/* Center: vertical text "Обсудить проект" */}
+        {/* Center: vertical text "Обсудить проект" — writing-mode только на тексте, без flex внутри (Safari/WebKit) */}
         <button
+          type="button"
           onClick={openModal}
           onMouseEnter={() => setBtnHovered(true)}
           onMouseLeave={() => setBtnHovered(false)}
-          className="relative flex items-center justify-center transition-all duration-300"
-          style={{
-            writingMode: "vertical-rl",
-            textOrientation: "mixed",
-          }}
+          className="relative inline-flex flex-col items-center justify-center gap-2 py-1 transition-all duration-300"
         >
           <span
-            className="text-[10px] uppercase tracking-[0.2em] font-heading transition-colors duration-300 flex items-center gap-2"
-            style={{ color: btnHovered ? "var(--accent)" : "var(--text-muted)" }}
+            className="block text-[10px] uppercase tracking-[0.2em] font-heading transition-colors duration-300"
+            style={{
+              color: btnHovered ? "var(--accent)" : "var(--text-muted)",
+              writingMode: "vertical-rl",
+              textOrientation: "mixed",
+            }}
           >
             Обсудить проект
+          </span>
+          <span className="flex shrink-0 items-center justify-center" aria-hidden>
             <ArrowRight
               size={12}
-              className="transition-transform duration-300 rotate-90"
-              style={{ transform: btnHovered ? "rotate(90deg) translateX(2px)" : "rotate(90deg)" }}
+              className="transition-transform duration-300"
+              style={{
+                transform: btnHovered ? "rotate(90deg) translateY(2px)" : "rotate(90deg)",
+              }}
             />
           </span>
         </button>
