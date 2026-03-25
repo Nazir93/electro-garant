@@ -267,60 +267,42 @@ export function BannerSection() {
       {/* ============== LAYOUT: left text (desktop) + house ============== */}
       <div className="relative z-[2] h-full flex items-center md:flex-row md:gap-10 lg:gap-14 xl:gap-20">
 
-        {/* ---- LEFT: Title (desktop only) ---- */}
-        <div className="z-[5] hidden h-full w-[25%] flex-shrink-0 flex-col items-start justify-end overflow-visible pl-[12%] pr-6 pb-[7%] md:flex lg:w-[32%] lg:pl-[16%] lg:pr-10 lg:pb-[9%]">
-          <div className="flex w-full min-w-0 translate-y-1 flex-col items-start gap-5 md:translate-y-2 lg:translate-y-3 lg:gap-6">
-            <div
-              className="transition-all duration-[750ms] ease-out"
-              style={{
-                opacity: visible ? 1 : 0,
-                transform: visible ? "translateY(1.25rem)" : "translateY(30px)",
-              }}
-            >
-              <div className="w-fit max-w-full">
-                <h1 className="font-heading font-bold leading-[0.92] tracking-tight">
-                  <span
-                    className="block text-[clamp(36px,7vw,90px)]"
-                    style={{ color: "rgba(201,168,76,1)" }}
-                  >
-                    ГАРАНТ
-                  </span>
-                  <span className="block text-[clamp(36px,7vw,90px)]">
-                    {isDark ? (
-                      <span style={{ color: "#fff" }}>МОНТАЖ</span>
-                    ) : (
-                      <>
-                        <span style={{ color: "#0A0A0A" }}>МОНТА</span>
-                        <span
-                          style={{
-                            color: "#0A0A0A",
-                            textShadow:
-                              "0 0 10px #fff, 0 0 20px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.3)",
-                          }}
-                        >
-                          Ж
-                        </span>
-                      </>
-                    )}
-                  </span>
-                </h1>
-              </div>
-            </div>
-            {/* Под «МОНТАЖ»: левый край как у заголовка; справа короче (+запас от дома); ниже — отступ сверху */}
-            <div
-              className="relative z-[8] mt-16 w-[calc(100vw-29vw)] max-w-none shrink-0 transition-all delay-100 duration-[750ms] ease-out md:mt-20 lg:mt-24 lg:w-[calc(100vw-27.12vw)] xl:mt-28 xl:w-[calc(100vw-25.12vw)]"
-              style={{
-                opacity: visible ? 1 : 0,
-                transform: visible ? "translateY(1.5rem)" : "translateY(16px)",
-              }}
-            >
-              <BannerCalcCtaButton
-                isDark={isDark}
-                openModal={openModal}
-                bannerCtaHovered={bannerCtaHovered}
-                setBannerCtaHovered={setBannerCtaHovered}
-                className="w-full"
-              />
+        {/* ---- LEFT: Title (desktop only) — vertically centred, stable across viewports ---- */}
+        <div className="z-[5] hidden h-full w-[25%] flex-shrink-0 flex-col items-start justify-center overflow-visible pl-[12%] pr-6 md:flex lg:w-[32%] lg:pl-[16%] lg:pr-10">
+          <div
+            className="transition-all duration-[750ms] ease-out"
+            style={{
+              opacity: visible ? 1 : 0,
+              transform: visible ? "translateY(0)" : "translateY(30px)",
+            }}
+          >
+            <div className="w-fit max-w-full">
+              <h1 className="font-heading font-bold leading-[0.92] tracking-tight">
+                <span
+                  className="block text-[clamp(36px,7vw,90px)]"
+                  style={{ color: "rgba(201,168,76,1)" }}
+                >
+                  ГАРАНТ
+                </span>
+                <span className="block text-[clamp(36px,7vw,90px)]">
+                  {isDark ? (
+                    <span style={{ color: "#fff" }}>МОНТАЖ</span>
+                  ) : (
+                    <>
+                      <span style={{ color: "#0A0A0A" }}>МОНТА</span>
+                      <span
+                        style={{
+                          color: "#0A0A0A",
+                          textShadow:
+                            "0 0 10px #fff, 0 0 20px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.3)",
+                        }}
+                      >
+                        Ж
+                      </span>
+                    </>
+                  )}
+                </span>
+              </h1>
             </div>
           </div>
         </div>
@@ -450,6 +432,23 @@ export function BannerSection() {
           </div>
         </div>
 
+      </div>
+
+      {/* ---- Desktop CTA button (pinned to bottom, does not shift with viewport height) ---- */}
+      <div
+        className="hidden md:flex absolute bottom-20 lg:bottom-24 left-[12%] lg:left-[16%] right-[3%] z-[8] transition-all delay-100 duration-[750ms] ease-out"
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(16px)",
+        }}
+      >
+        <BannerCalcCtaButton
+          isDark={isDark}
+          openModal={openModal}
+          bannerCtaHovered={bannerCtaHovered}
+          setBannerCtaHovered={setBannerCtaHovered}
+          className="w-full"
+        />
       </div>
 
       {/* ---- Кнопка mobile / tablet (по центру) ---- */}
