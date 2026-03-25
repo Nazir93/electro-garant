@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { X, Sun, Moon, MessageCircle } from "lucide-react";
-import { PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SITE_NAME, SOCIAL_LINKS } from "@/lib/constants";
+import { PHONE2, PHONE2_RAW, SITE_NAME, SOCIAL_LINKS } from "@/lib/constants";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
 
@@ -465,25 +465,11 @@ export function Header() {
               >
                 <div className="flex items-center gap-3 sm:gap-5 flex-wrap">
                   <a
-                    href={`tel:${PHONE_RAW}`}
-                    className="text-xs transition-colors duration-300 hover:text-[var(--accent)]"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {PHONE}
-                  </a>
-                  <a
                     href={`tel:${PHONE2_RAW}`}
                     className="text-xs transition-colors duration-300 hover:text-[var(--accent)]"
                     style={{ color: "var(--text-muted)" }}
                   >
                     {PHONE2}
-                  </a>
-                  <a
-                    href={`mailto:${EMAIL}`}
-                    className="text-xs transition-colors duration-300 hover:text-[var(--accent)]"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {EMAIL}
                   </a>
                 </div>
                 <button
@@ -597,7 +583,7 @@ export function NavBar() {
     >
       <div className="container mx-auto flex items-center justify-between py-2.5 sm:py-3 md:py-4">
         {/* Left: logo + contacts */}
-        <div className="flex items-center gap-4 sm:gap-6">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-3.5">
           <Link href="/" className="block shrink-0 min-h-[44px] flex items-center" aria-label="Гарант Монтаж">
             <span
               className="font-heading select-none leading-[1.05]"
@@ -612,12 +598,14 @@ export function NavBar() {
               {SITE_NAME.toUpperCase()}
             </span>
           </Link>
-          <div className="hidden md:flex items-center gap-3 text-[11px]" style={{ color: "var(--text-muted)" }}>
-            <a href={`tel:${PHONE_RAW}`} className="hover:opacity-100 transition-opacity">{PHONE}</a>
-            <span style={{ color: "var(--text-subtle)" }}>/</span>
-            <a href={`tel:${PHONE2_RAW}`} className="hover:opacity-100 transition-opacity">{PHONE2}</a>
-            <span style={{ color: "var(--text-subtle)" }}>/</span>
-            <a href={`mailto:${EMAIL}`} className="hover:opacity-100 transition-opacity">{EMAIL}</a>
+          <div className="hidden md:flex items-center">
+            <a
+              href={`tel:${PHONE2_RAW}`}
+              className="font-heading font-semibold tabular-nums tracking-tight transition-opacity hover:opacity-100 text-sm lg:text-[15px] xl:text-base"
+              style={{ color: "var(--text)" }}
+            >
+              {PHONE2}
+            </a>
           </div>
         </div>
 

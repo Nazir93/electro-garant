@@ -1,10 +1,9 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useModal } from "@/lib/modal-context";
-import { useThrottledScroll } from "@/lib/use-throttled-scroll";
 
 type SlideAction =
   | { type: "link"; href: string; label: string }
@@ -15,7 +14,6 @@ interface Slide {
   heading: string;
   highlight: string;
   description: string;
-  imageLabel: string;
   action: SlideAction;
 }
 
@@ -26,7 +24,6 @@ const SLIDES: Slide[] = [
     highlight: "Авторская методика, отточенная на 280+ объектах",
     description:
       "Мы разработали собственную технологию электромонтажа, которая сокращает сроки работ на 30% без потери качества. Каждый этап документирован и стандартизирован — от разметки трасс до пусконаладки.",
-    imageLabel: "Фото — процесс монтажа",
     action: { type: "link", href: "/technology", label: "Узнать подробнее" },
   },
   {
@@ -35,7 +32,6 @@ const SLIDES: Slide[] = [
     highlight: "Полное соответствие ГОСТ, ПУЭ и СНиП",
     description:
       "Каждый проект проходит многоступенчатую проверку на соответствие действующим нормативам. Исполнительная документация, акты скрытых работ и протоколы измерений — неотъемлемая часть нашей работы.",
-    imageLabel: "Фото — документация и проект",
     action: { type: "modal", label: "Рассчитать стоимость" },
   },
   {
@@ -44,7 +40,6 @@ const SLIDES: Slide[] = [
     highlight: "98% объектов сданы точно в срок",
     description:
       "Фиксированные сроки в договоре — не формальность, а принцип работы. Собственный штат инженеров и система управления проектами позволяют контролировать каждый этап без задержек.",
-    imageLabel: "Фото — координация на объекте",
     action: { type: "modal", label: "Рассчитать стоимость" },
   },
   {
@@ -53,7 +48,6 @@ const SLIDES: Slide[] = [
     highlight: "От слаботочных систем до силовых сетей",
     description:
       "Электромонтаж, коммерческая акустика, видеонаблюдение, умный дом, слаботочные системы — один подрядчик на все виды работ. Единая ответственность и слаженная команда.",
-    imageLabel: "Фото — щитовое оборудование",
     action: { type: "link", href: "/services", label: "Все услуги" },
   },
   {
@@ -62,7 +56,6 @@ const SLIDES: Slide[] = [
     highlight: "Нам доверяют Radisson, Роза Хутор, Papa John's",
     description:
       "За 13 лет мы выполнили проекты для крупнейших сетей и частных заказчиков по всему югу России. Каждый объект — подтверждение компетенции и надёжности нашей команды.",
-    imageLabel: "Фото — готовый объект",
     action: { type: "link", href: "/portfolio", label: "Портфолио" },
   },
   {
@@ -71,7 +64,6 @@ const SLIDES: Slide[] = [
     highlight: "Сочи • Новороссийск • Краснодар • Ростов • Москва",
     description:
       "География наших проектов охватывает весь юг России и столицу. Выезд инженера и обследование объекта — бесплатно в любом из городов присутствия.",
-    imageLabel: "Фото — география проектов",
     action: { type: "modal", label: "Рассчитать стоимость" },
   },
   {
@@ -80,30 +72,21 @@ const SLIDES: Slide[] = [
     highlight: "2 года гарантия + техническая поддержка 24/7",
     description:
       "Полная ответственность за каждый выполненный объект. Проектная документация по ГОСТ, сопровождение после сдачи — мы всегда на связи.",
-    imageLabel: "Фото — обслуживание",
     action: { type: "link", href: "/contacts", label: "Связаться с нами" },
   },
 ];
 
 function ImagePanel({ activeIndex, scrollProgress }: { activeIndex: number; scrollProgress: number }) {
   const { openModal } = useModal();
-
   const stripY = scrollProgress * 100;
 
   return (
     <div className="h-full relative overflow-hidden">
-      {/* Vertical strip with brand name sliding down */}
       <div
         className="absolute left-0 top-0 bottom-0 z-20 flex items-start"
         style={{ width: "40px" }}
       >
-        <div
-          className="absolute left-0 w-full flex items-center justify-center transition-transform duration-100 ease-linear"
-          style={{
-            height: "100%",
-            transform: `translateY(0)`,
-          }}
-        >
+        <div className="absolute left-0 w-full flex items-center justify-center" style={{ height: "100%" }}>
           <div
             className="whitespace-nowrap font-heading text-[10px] uppercase tracking-[0.3em] select-none"
             style={{
@@ -111,80 +94,96 @@ function ImagePanel({ activeIndex, scrollProgress }: { activeIndex: number; scro
               textOrientation: "mixed",
               color: "rgba(201,168,76,0.5)",
               transform: `translateY(${stripY - 50}%)`,
-              transition: "transform 0.3s ease-out",
             }}
           >
             ГАРАНТ МОНТАЖ • ЭЛЕКТРОМОНТАЖ ПРЕМИУМ-КЛАССА • ГАРАНТ МОНТАЖ • ЭЛЕКТРОМОНТАЖ ПРЕМИУМ-КЛАССА
           </div>
         </div>
         <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(180deg, var(--bg) 0%, transparent 15%, transparent 85%, var(--bg) 100%)",
-            pointerEvents: "none",
-          }}
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(180deg, var(--bg) 0%, transparent 15%, transparent 85%, var(--bg) 100%)" }}
         />
         <div className="absolute right-0 top-0 bottom-0 w-[1px]" style={{ backgroundColor: "var(--border)" }} />
       </div>
 
       <div className="relative w-full h-full" style={{ paddingLeft: "40px" }}>
-      {SLIDES.map((slide, i) => (
-        <div
-          key={slide.number}
-          className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-700"
-          style={{
-            opacity: i === activeIndex ? 1 : 0,
-            backgroundColor: "#0A0A0A",
-            pointerEvents: i === activeIndex ? "auto" : "none",
-          }}
-        >
-          <span
-            className="text-[10px] uppercase tracking-[0.2em] mb-8"
-            style={{ color: "rgba(255,255,255,0.25)" }}
+        <video
+          id="about-video-desktop"
+          src="/panel-assembly-seek.mp4"
+          muted
+          playsInline
+          preload="auto"
+          className="h-full w-full object-cover"
+          style={{ pointerEvents: "none" }}
+        />
+
+        {SLIDES.map((slide, i) => (
+          <div
+            key={slide.number}
+            className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-500"
+            style={{
+              opacity: i === activeIndex ? 1 : 0,
+              pointerEvents: i === activeIndex ? "auto" : "none",
+            }}
           >
-            {slide.imageLabel}
+            {slide.action.type === "link" ? (
+              <Link
+                href={slide.action.href}
+                className="group flex items-center gap-2 px-6 py-3 rounded-full border backdrop-blur-sm transition-all duration-500 hover:bg-[rgba(201,168,76,0.2)]"
+                style={{ borderColor: "rgba(201,168,76,0.5)", backgroundColor: "rgba(0,0,0,0.35)" }}
+              >
+                <span
+                  className="text-xs uppercase tracking-[0.12em] font-heading transition-colors duration-300 group-hover:text-[rgba(201,168,76,1)]"
+                  style={{ color: "rgba(255,255,255,0.85)" }}
+                >
+                  {slide.action.label}
+                </span>
+                <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" style={{ color: "rgba(201,168,76,0.9)" }} />
+              </Link>
+            ) : (
+              <button
+                onClick={openModal}
+                className="group flex items-center gap-2 px-6 py-3 rounded-full border backdrop-blur-sm transition-all duration-500 hover:bg-[rgba(201,168,76,0.2)]"
+                style={{ borderColor: "rgba(201,168,76,0.5)", backgroundColor: "rgba(0,0,0,0.35)" }}
+              >
+                <span
+                  className="text-xs uppercase tracking-[0.12em] font-heading transition-colors duration-300 group-hover:text-[rgba(201,168,76,1)]"
+                  style={{ color: "rgba(255,255,255,0.85)" }}
+                >
+                  {slide.action.label}
+                </span>
+                <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" style={{ color: "rgba(201,168,76,0.9)" }} />
+              </button>
+            )}
+          </div>
+        ))}
+
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 rounded-full px-4 py-2 backdrop-blur-md"
+          style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+        >
+          {SLIDES.map((_, i) => (
+            <div
+              key={i}
+              className="h-1 rounded-full transition-all duration-500"
+              style={{
+                width: i === activeIndex ? "18px" : "6px",
+                backgroundColor: i <= activeIndex ? "rgba(201,168,76,0.9)" : "rgba(255,255,255,0.25)",
+              }}
+            />
+          ))}
+          <span className="ml-2 text-[10px] font-heading tabular-nums tracking-wider" style={{ color: "rgba(255,255,255,0.6)" }}>
+            {String(activeIndex + 1).padStart(2, "0")}/{String(SLIDES.length).padStart(2, "0")}
           </span>
-
-          {slide.action.type === "link" ? (
-            <Link
-              href={slide.action.href}
-              className="group flex items-center gap-2 px-6 py-3 rounded-full border transition-all duration-500 hover:bg-[rgba(201,168,76,0.15)]"
-              style={{ borderColor: "rgba(201,168,76,0.4)" }}
-            >
-              <span
-                className="text-xs uppercase tracking-[0.12em] font-heading transition-colors duration-300 group-hover:text-[var(--accent)]"
-                style={{ color: "rgba(255,255,255,0.7)" }}
-              >
-                {slide.action.label}
-              </span>
-              <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" style={{ color: "rgba(201,168,76,0.8)" }} />
-            </Link>
-          ) : (
-            <button
-              onClick={openModal}
-              className="group flex items-center gap-2 px-6 py-3 rounded-full border transition-all duration-500 hover:bg-[rgba(201,168,76,0.15)]"
-              style={{ borderColor: "rgba(201,168,76,0.4)" }}
-            >
-              <span
-                className="text-xs uppercase tracking-[0.12em] font-heading transition-colors duration-300 group-hover:text-[var(--accent)]"
-                style={{ color: "rgba(255,255,255,0.7)" }}
-              >
-                {slide.action.label}
-              </span>
-              <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" style={{ color: "rgba(201,168,76,0.8)" }} />
-            </button>
-          )}
         </div>
-      ))}
 
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
       </div>
     </div>
   );
@@ -195,24 +194,39 @@ export function AboutSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  const handleScroll = useCallback(() => {
-    if (!sectionRef.current) return;
-    const rect = sectionRef.current.getBoundingClientRect();
-    const sectionHeight = sectionRef.current.offsetHeight;
-    const viewportH = window.innerHeight;
-    const scrolled = -rect.top;
-    const scrollRange = sectionHeight - viewportH;
-    if (scrollRange <= 0) return;
-    const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
-    setScrollProgress(progress);
-    const idx = Math.min(
-      Math.floor(progress * SLIDES.length),
-      SLIDES.length - 1
-    );
-    setActiveIndex(idx);
-  }, []);
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
 
-  useThrottledScroll(handleScroll, 32);
+    const desktopVideo = document.getElementById("about-video-desktop") as HTMLVideoElement | null;
+    const mobileVideo = document.getElementById("about-video-mobile") as HTMLVideoElement | null;
+
+    const onScroll = () => {
+      const rect = section.getBoundingClientRect();
+      const sectionHeight = section.offsetHeight;
+      const viewportH = window.innerHeight;
+      const scrolled = -rect.top;
+      const scrollRange = sectionHeight - viewportH;
+      if (scrollRange <= 0) return;
+
+      const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
+
+      const seekVideo = (v: HTMLVideoElement | null) => {
+        if (!v || !v.duration || Number.isNaN(v.duration)) return;
+        v.currentTime = progress * v.duration;
+      };
+      seekVideo(desktopVideo);
+      seekVideo(mobileVideo);
+
+      setScrollProgress(progress);
+      const idx = Math.min(Math.floor(progress * SLIDES.length), SLIDES.length - 1);
+      setActiveIndex(idx);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <section
@@ -228,10 +242,36 @@ export function AboutSection() {
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
         <div className="h-full flex flex-col md:flex-row">
 
-          {/* Left: text */}
           <div className="flex-1 md:w-[42%] md:flex-none h-full flex flex-col relative z-10">
+            {/* Mobile video */}
+            <div className="md:hidden relative w-full pt-20" style={{ height: "35dvh", minHeight: "200px" }}>
+              <video
+                id="about-video-mobile"
+                src="/panel-assembly-seek.mp4"
+                muted
+                playsInline
+                preload="auto"
+                className="h-full w-full object-cover"
+                style={{ pointerEvents: "none" }}
+              />
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-full px-3 py-1.5 backdrop-blur-md"
+                style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+              >
+                {SLIDES.map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-[3px] rounded-full transition-all duration-500"
+                    style={{
+                      width: i === activeIndex ? "14px" : "5px",
+                      backgroundColor: i <= activeIndex ? "rgba(201,168,76,0.9)" : "rgba(255,255,255,0.25)",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
             {/* Mobile progress dots */}
-            <div className="md:hidden flex items-center gap-2 px-5 sm:px-6 pt-28">
+            <div className="md:hidden flex items-center gap-2 px-5 sm:px-6 pt-4">
               {SLIDES.map((s, i) => (
                 <div key={s.number} className="flex items-center gap-1.5">
                   <div
@@ -342,7 +382,7 @@ export function AboutSection() {
             </div>
           </div>
 
-          {/* Right: image panel — rectangular border */}
+          {/* Right: video panel */}
           <div className="hidden md:block md:w-[58%] h-full relative">
             <ImagePanel activeIndex={activeIndex} scrollProgress={scrollProgress} />
           </div>

@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUp, MessageCircle, Sun, Moon } from "lucide-react";
-import { SOCIAL_LINKS, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL } from "@/lib/constants";
+import { SOCIAL_LINKS, PHONE2, PHONE2_RAW } from "@/lib/constants";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
 import { useThrottledScroll } from "@/lib/use-throttled-scroll";
@@ -96,25 +96,33 @@ export function DesktopSideNav() {
           }}
         >
           <div className="container mx-auto flex items-center justify-between py-2.5 lg:py-3 px-4 sm:px-6">
-            <Link href="/" className="shrink-0 flex items-center">
-              <span
-                className="font-heading select-none flex flex-col leading-[1.05]"
-                style={{
-                  color: "var(--text)",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                }}
+            <div className="flex min-w-0 items-center gap-2 sm:gap-2.5 lg:gap-3">
+              <Link href="/" className="shrink-0 flex items-center">
+                <span
+                  className="font-heading select-none flex flex-col leading-[1.05]"
+                  style={{
+                    color: "var(--text)",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  <span>ГАРАНТ</span>
+                  <span>МОНТАЖ</span>
+                </span>
+              </Link>
+              <a
+                href={`tel:${PHONE2_RAW}`}
+                className="shrink-0 font-heading font-semibold tabular-nums tracking-tight transition-opacity hover:opacity-100 text-[13px] sm:text-sm lg:text-[15px] xl:text-base whitespace-nowrap"
+                style={{ color: "var(--text)" }}
               >
-                <span>ГАРАНТ</span>
-                <span>МОНТАЖ</span>
-              </span>
-            </Link>
+                {PHONE2}
+              </a>
+            </div>
 
-            {/* Mobile: phone + theme + burger */}
-            <div className="flex items-center gap-3 lg:hidden">
-              <a href={`tel:${PHONE_RAW}`} className="text-[11px] transition-opacity hover:opacity-100" style={{ color: "var(--text-muted)" }}>{PHONE}</a>
+            {/* Mobile: theme + burger */}
+            <div className="flex items-center gap-2 lg:hidden">
               <button
                 onClick={toggleTheme}
                 className="w-8 h-8 rounded-full flex items-center justify-center border transition-colors"
@@ -131,15 +139,6 @@ export function DesktopSideNav() {
                 <span className="block w-4 h-[1.5px]" style={{ backgroundColor: "var(--text)" }} />
                 <span className="block w-4 h-[1.5px]" style={{ backgroundColor: "var(--text)" }} />
               </button>
-            </div>
-
-            {/* Desktop: contacts */}
-            <div className="hidden lg:flex items-center gap-3 text-[11px] whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
-              <a href={`tel:${PHONE_RAW}`} className="hover:opacity-100 transition-opacity whitespace-nowrap">{PHONE}</a>
-              <span style={{ color: "var(--text-subtle)" }}>/</span>
-              <a href={`tel:${PHONE2_RAW}`} className="hover:opacity-100 transition-opacity whitespace-nowrap">{PHONE2}</a>
-              <span style={{ color: "var(--text-subtle)" }}>/</span>
-              <a href={`mailto:${EMAIL}`} className="hover:opacity-100 transition-opacity whitespace-nowrap">{EMAIL}</a>
             </div>
 
             <nav className="hidden lg:flex items-center gap-6 xl:gap-8 whitespace-nowrap">
@@ -267,30 +266,6 @@ export function DesktopSideNav() {
             </a>
           )}
 
-          {/* Email */}
-          <a
-            href={`mailto:${EMAIL}`}
-            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110"
-            style={{ borderColor: "var(--border)" }}
-            aria-label="Email"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4" style={{ color: "var(--text-muted)" }}>
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <path d="M22 7l-10 7L2 7" />
-            </svg>
-          </a>
-
-          {/* Phones */}
-          <a
-            href={`tel:${PHONE_RAW}`}
-            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"
-            style={{ borderColor: "var(--border)" }}
-            aria-label={PHONE}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4" style={{ color: "var(--text-muted)" }}>
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-          </a>
           <a
             href={`tel:${PHONE2_RAW}`}
             className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"

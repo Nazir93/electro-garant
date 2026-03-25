@@ -1,14 +1,31 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { CITY, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SERVICES } from "@/lib/constants";
+import { CITY, PHONE2, EMAIL, SERVICES } from "@/lib/constants";
 import type { ServiceItem } from "@/lib/get-services";
+import { useTheme } from "@/lib/theme-context";
 
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
+}
+
+/** Один ряд: подбираем font-size, пока слово помещается в ширину контейнера. */
+function fitHeadingOneLine(box: HTMLElement, title: HTMLElement, maxPx: number, minPx: number) {
+  const w = box.clientWidth;
+  if (w <= 0) return;
+  title.style.whiteSpace = "nowrap";
+  let lo = minPx;
+  let hi = maxPx;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    title.style.fontSize = `${mid}px`;
+    if (title.scrollWidth <= w) lo = mid;
+    else hi = mid;
+  }
+  title.style.fontSize = `${lo}px`;
 }
 
 function ServiceCard({
@@ -114,7 +131,70 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [heroServicesCtaHovered, setHeroServicesCtaHovered] = useState(false);
   const rafRef = useRef<number>(0);
+  const { isDark } = useTheme();
+  const desktopTitleBoxRef = useRef<HTMLDivElement>(null);
+  const desktopTitleRef = useRef<HTMLHeadingElement>(null);
+  const mobileTitleBoxRef = useRef<HTMLDivElement>(null);
+  const mobileTitleRef = useRef<HTMLHeadingElement>(null);
+
+  const fitDesktopElectromontazh = useCallback(() => {
+    const box = desktopTitleBoxRef.current;
+    const title = desktopTitleRef.current;
+    if (!box || !title) return;
+    fitHeadingOneLine(box, title, 120, 14);
+  }, []);
+
+  const fitMobileElectromontazh = useCallback(() => {
+    const box = mobileTitleBoxRef.current;
+    const title = mobileTitleRef.current;
+    if (!box || !title) return;
+    fitHeadingOneLine(box, title, 60, 16);
+  }, []);
+
+  // Не зависеть от progress: иначе при каждом тике скролла пересоздаётся ResizeObserver → фризы.
+  useLayoutEffect(() => {
+    let raf = 0;
+    const scheduleFit = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        fitDesktopElectromontazh();
+      });
+    };
+    fitDesktopElectromontazh();
+    const el = desktopTitleBoxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(scheduleFit);
+    ro.observe(el);
+    void document.fonts.ready.then(scheduleFit);
+    return () => {
+      ro.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [fitDesktopElectromontazh]);
+
+  useLayoutEffect(() => {
+    let raf = 0;
+    const scheduleFit = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        fitMobileElectromontazh();
+      });
+    };
+    fitMobileElectromontazh();
+    const el = mobileTitleBoxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(scheduleFit);
+    ro.observe(el);
+    void document.fonts.ready.then(scheduleFit);
+    return () => {
+      ro.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [fitMobileElectromontazh]);
 
   const handleScroll = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -140,13 +220,24 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
   }, [handleScroll]);
 
   useEffect(() => {
+    let raf = 0;
+    let pending: { x: number; y: number } | null = null;
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 2;
-      const y = (e.clientY / window.innerHeight - 0.5) * 2;
-      setMouse({ x, y });
+      pending = {
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      };
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (pending) setMouse(pending);
+      });
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   const scale = 1 - progress * 0.15;
@@ -170,7 +261,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
             style={{ padding: `${gap}px`, gap: `${gap}px` }}
           >
             {/* Top row: service1 | HERO | service2 */}
-            <div className="flex flex-1 min-h-0" style={{ gap: `${gap}px` }}>
+            <div className="flex min-h-0 min-w-0 flex-1" style={{ gap: `${gap}px` }}>
               <div style={{ flex: `0 0 ${progress * 20}%` }}>
                 <ServiceCard
                   title={services[0].title}
@@ -187,7 +278,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
               {/* Center — main hero */}
               <Link
                 href="/services"
-                className="relative flex-1 overflow-hidden flex items-center justify-center cursor-pointer"
+                className="relative flex min-h-0 min-w-0 flex-1 cursor-pointer flex-col overflow-hidden"
                 style={{
                   borderRadius: `${borderRadius}px`,
                   transform: `scale(${scale})`,
@@ -197,7 +288,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
               >
                 {/* Ghost text */}
                 <div
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+                  className="pointer-events-none absolute inset-0 flex select-none items-center justify-center"
                   style={{
                     transform: `translate(${mouse.x * -15}px, ${mouse.y * -10}px) scale(${textScale})`,
                     transition: "transform 0.3s ease-out",
@@ -211,57 +302,94 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                   </h2>
                 </div>
 
-                {/* Main heading */}
-                <div
-                  className="relative z-10 container mx-auto"
-                  style={{
-                    transform: `translate(${mouse.x * 8}px, ${mouse.y * 5}px) scale(${textScale})`,
-                    transition: "transform 0.2s ease-out",
-                    transformOrigin: "center center",
-                  }}
-                >
-                  <h1 className="font-heading text-[clamp(36px,5.5vw,120px)] leading-[0.9] tracking-tight">
-                    <span style={{ color: "var(--text)" }}>ЭЛЕКТРОМОНТАЖ</span>
-                    <br />
-                    <span
-                      className="text-[clamp(12px,1.4vw,24px)] font-light tracking-[0.2em] uppercase block mt-2"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      полный цикл работ под ключ
-                    </span>
-                  </h1>
-                </div>
-
-                {/* Subtitle */}
-                <div
-                  className="absolute bottom-12 left-0 right-0 container mx-auto z-10"
-                  style={{ transform: `scale(${textScale})`, transformOrigin: "bottom left" }}
-                >
-                  <p className="text-xs uppercase tracking-[0.3em] max-w-md leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                    Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в {CITY}
-                  </p>
-                </div>
-
-                {/* Contacts */}
-                <div
-                  className="absolute bottom-8 lg:bottom-12 left-0 right-0 container mx-auto z-10 flex justify-end items-center gap-4 lg:gap-6 lg:pr-[76px]"
-                  style={{ transform: `scale(${textScale})`, transformOrigin: "bottom right" }}
-                >
-                  <div className="hidden lg:flex items-center gap-4 text-xs whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
-                    <span>{EMAIL}</span>
-                    <span style={{ color: "var(--text-subtle)" }}>/</span>
-                    <span>{PHONE}</span>
-                  </div>
-                  <span
-                    className="flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-2.5 rounded-full text-[10px] lg:text-xs uppercase tracking-[0.1em] transition-all duration-300 hover:scale-105 whitespace-nowrap"
+                {/* Текст по центру: сначала «под ключ», затем заголовок, затем проектирование… */}
+                <div className="relative z-10 flex min-h-0 min-w-0 flex-1 flex-col justify-center px-6 sm:px-10 lg:px-14">
+                  <div
+                    className="container mx-auto w-full min-w-0 max-w-5xl"
                     style={{
-                      border: "1px solid var(--accent)",
-                      color: "var(--accent)",
+                      containerType: "inline-size",
+                      transform: `translate(${mouse.x * 8}px, ${mouse.y * 5}px) scale(${textScale})`,
+                      transition: "transform 0.2s ease-out",
+                      transformOrigin: "center center",
                     }}
                   >
-                    Выбрать услугу
-                    <ArrowRight size={14} />
-                  </span>
+                    <p
+                      className="mb-3 max-w-full text-[clamp(11px,1.25vw,18px)] font-light uppercase tracking-[0.22em]"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      Полный цикл работ под ключ
+                    </p>
+                    <div ref={desktopTitleBoxRef} className="w-full min-w-0">
+                      <h1
+                        ref={desktopTitleRef}
+                        className="font-heading max-w-full whitespace-nowrap leading-[0.9] tracking-tight"
+                        style={{ color: "var(--text)" }}
+                      >
+                        ЭЛЕКТРОМОНТАЖ
+                      </h1>
+                    </div>
+                    <p
+                      className="mt-5 max-w-3xl text-[clamp(10px,1.05vw,14px)] uppercase leading-relaxed tracking-[0.28em]"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в {CITY}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Контакты + широкая кнопка «Услуги» как на баннере */}
+                <div
+                  className="relative z-10 flex w-full shrink-0 flex-col gap-4 px-[7%] pb-10 pt-2 lg:pb-12 lg:pr-[max(3%,5rem)]"
+                  style={{
+                    transform: `scale(${textScale})`,
+                    transformOrigin: "center bottom",
+                  }}
+                >
+                  <div
+                    className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-[11px] sm:text-xs"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    <span className="whitespace-nowrap">{EMAIL}</span>
+                    <span style={{ color: "var(--text-subtle)" }}>/</span>
+                    <span className="whitespace-nowrap">{PHONE2}</span>
+                  </div>
+
+                  <div
+                    className="relative flex min-h-[48px] w-full min-w-0 cursor-pointer items-center justify-center overflow-hidden px-6 py-2.5 transition-colors duration-700 sm:px-10 md:py-2.5"
+                    style={{
+                      border: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}`,
+                      borderRadius: "14px",
+                      backgroundColor: isDark ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.92)",
+                      boxShadow: isDark
+                        ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
+                        : "2px 0 12px rgba(255,255,255,0.7), 4px 0 24px rgba(255,255,255,0.4)",
+                    }}
+                    onMouseEnter={() => setHeroServicesCtaHovered(true)}
+                    onMouseLeave={() => setHeroServicesCtaHovered(false)}
+                  >
+                    <div
+                      className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
+                      style={{
+                        backgroundColor: "rgba(201,168,76,0.98)",
+                        transform: heroServicesCtaHovered ? "scaleX(1)" : "scaleX(0)",
+                      }}
+                    />
+                    <span
+                      className="relative z-10 block w-full min-w-0 pl-2 pr-10 text-center font-heading text-xs uppercase leading-tight tracking-[0.1em] transition-colors duration-700 sm:pr-12 sm:text-sm md:text-[clamp(13px,1.05vw,15px)]"
+                      style={{
+                        color: heroServicesCtaHovered ? "#0A0A0A" : isDark ? "#FFFFFF" : "#0A0A0A",
+                      }}
+                    >
+                      Услуги
+                    </span>
+                    <ArrowRight
+                      size={18}
+                      className="pointer-events-none absolute right-3 top-1/2 z-10 shrink-0 -translate-y-1/2 transition-colors duration-700 sm:right-4 md:right-5"
+                      style={{
+                        color: heroServicesCtaHovered ? "#0A0A0A" : isDark ? "#FFFFFF" : "#0A0A0A",
+                      }}
+                    />
+                  </div>
                 </div>
               </Link>
 
@@ -313,9 +441,9 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
         style={{ backgroundColor: "var(--bg)" }}
       >
         {/* Hero content */}
-        <div className="min-h-[70vh] flex flex-col justify-center px-5 sm:px-8 py-12">
+        <div className="flex min-h-[70vh] min-w-0 flex-col justify-center px-5 py-12 sm:px-8">
           {/* Ghost text */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+          <div className="pointer-events-none absolute inset-0 flex select-none items-center justify-center">
             <h2
               className="font-heading text-[28vw] leading-[0.85] text-center whitespace-nowrap opacity-[0.03]"
               style={{ color: "var(--text)" }}
@@ -324,35 +452,76 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
             </h2>
           </div>
 
-          <div className="relative z-10">
-            <Link href="/services">
-              <h1 className="font-heading text-[clamp(28px,9vw,60px)] leading-[0.92] tracking-tight mb-2">
-                <span style={{ color: "var(--text)" }}>ЭЛЕКТРОМОНТАЖ</span>
-              </h1>
+          <div className="relative z-10 w-full min-w-0" style={{ containerType: "inline-size" }}>
+            <Link href="/services" className="block min-w-0 max-w-full">
               <p
-                className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] mb-6"
+                className="mb-2 text-[10px] sm:text-[11px] uppercase tracking-[0.22em]"
+                style={{ color: "var(--accent)" }}
+              >
+                Полный цикл работ под ключ
+              </p>
+              <div ref={mobileTitleBoxRef} className="w-full min-w-0">
+                <h1
+                  ref={mobileTitleRef}
+                  className="font-heading max-w-full whitespace-nowrap leading-[0.92] tracking-tight"
+                  style={{ color: "var(--text)" }}
+                >
+                  ЭЛЕКТРОМОНТАЖ
+                </h1>
+              </div>
+              <p
+                className="mt-4 text-[10px] sm:text-[11px] uppercase tracking-[0.2em] leading-relaxed"
                 style={{ color: "var(--text-muted)" }}
               >
-                полный цикл работ под ключ
+                Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в {CITY}
               </p>
             </Link>
-            <p
-              className="text-[11px] uppercase tracking-[0.2em] max-w-xs leading-relaxed mb-6"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в {CITY}
-            </p>
-            <Link
-              href="/services"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.1em] transition-all duration-300 active:scale-95"
-              style={{
-                border: "1px solid var(--accent)",
-                color: "var(--accent)",
-              }}
-            >
-              Выбрать услугу
-              <ArrowRight size={14} />
-            </Link>
+            <div className="mt-8 flex flex-col gap-4">
+              <div
+                className="flex flex-col gap-1.5 text-[10px] sm:text-[11px]"
+                style={{ color: "var(--text-muted)" }}
+              >
+                <span className="break-all">{EMAIL}</span>
+                <span>{PHONE2}</span>
+              </div>
+              <Link
+                href="/services"
+                className="relative flex min-h-[48px] w-full items-center justify-center overflow-hidden px-6 py-2.5 transition-colors duration-700 active:scale-[0.99]"
+                style={{
+                  border: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.15)"}`,
+                  borderRadius: "14px",
+                  backgroundColor: isDark ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.92)",
+                  boxShadow: isDark
+                    ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
+                    : "2px 0 12px rgba(255,255,255,0.7), 4px 0 24px rgba(255,255,255,0.4)",
+                }}
+                onMouseEnter={() => setHeroServicesCtaHovered(true)}
+                onMouseLeave={() => setHeroServicesCtaHovered(false)}
+              >
+                <div
+                  className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
+                  style={{
+                    backgroundColor: "rgba(201,168,76,0.98)",
+                    transform: heroServicesCtaHovered ? "scaleX(1)" : "scaleX(0)",
+                  }}
+                />
+                <span
+                  className="relative z-10 block w-full min-w-0 pl-2 pr-10 text-center font-heading text-xs uppercase tracking-[0.1em]"
+                  style={{
+                    color: heroServicesCtaHovered ? "#0A0A0A" : isDark ? "#FFFFFF" : "#0A0A0A",
+                  }}
+                >
+                  Услуги
+                </span>
+                <ArrowRight
+                  size={18}
+                  className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2"
+                  style={{
+                    color: heroServicesCtaHovered ? "#0A0A0A" : isDark ? "#FFFFFF" : "#0A0A0A",
+                  }}
+                />
+              </Link>
+            </div>
           </div>
         </div>
 
