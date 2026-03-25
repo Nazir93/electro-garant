@@ -232,10 +232,9 @@ export function AboutSection() {
 
     const rect = section.getBoundingClientRect();
     const sectionHeight = section.offsetHeight;
-    const viewportH = window.innerHeight;
+    const viewportH = window.visualViewport?.height ?? window.innerHeight;
     const scrolled = -rect.top;
-    const scrollRange = sectionHeight - viewportH;
-    if (scrollRange <= 0) return;
+    const scrollRange = Math.max(sectionHeight - viewportH, 1);
 
     const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
 
@@ -265,9 +264,64 @@ export function AboutSection() {
   }, []);
 
   useEffect(() => {
-    window.addEventListener("scroll", syncScrollToVideos, { passive: true });
-    syncScrollToVideos();
-    return () => window.removeEventListener("scroll", syncScrollToVideos);
+    const onScroll = () => syncScrollToVideos();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.visualViewport?.addEventListener("resize", onScroll, { passive: true } as AddEventListenerOptions);
+
+    let offLenis: (() => void) | undefined;
+    const attachLenis = () => {
+      const L = typeof window !== "undefined" ? window.__lenis : undefined;
+      if (L && !offLenis) offLenis = L.on("scroll", onScroll);
+    };
+    attachLenis();
+    const poll = window.setInterval(() => {
+      attachLenis();
+      if (offLenis) window.clearInterval(poll);
+    }, 80);
+    const stopPoll = window.setTimeout(() => window.clearInterval(poll), 4000);
+
+    onScroll();
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.visualViewport?.removeEventListener("resize", onScroll);
+      offLenis?.();
+      window.clearInterval(poll);
+      window.clearTimeout(stopPoll);
+    };
+  }, [syncScrollToVideos]);
+
+  /** Пока секция в зоне видимости — кадр за кадром (iOS / Lenis) */
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    let raf = 0;
+    let active = false;
+    const tick = () => {
+      if (!active) return;
+      syncScrollToVideos();
+      raf = requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(
+      ([e]) => {
+        const next = e.isIntersecting;
+        if (next && !active) {
+          active = true;
+          syncScrollToVideos();
+          raf = requestAnimationFrame(tick);
+        } else if (!next && active) {
+          active = false;
+          cancelAnimationFrame(raf);
+          raf = 0;
+        }
+      },
+      { root: null, rootMargin: "60% 0px", threshold: 0 }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    };
   }, [syncScrollToVideos]);
 
   useEffect(() => {

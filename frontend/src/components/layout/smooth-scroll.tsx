@@ -14,12 +14,19 @@ export function SmoothScroll() {
   useEffect(() => {
     if (isLowPerfDevice()) return;
 
+    const coarsePointer =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(pointer: coarse)").matches;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 0.9,
       touchMultiplier: 1.5,
+      /** Тач-скролл через Lenis — иначе scroll-события и rAF-синхронизация секций (about, hero) на мобилке «теряются» */
+      syncTouch: coarsePointer,
+      syncTouchLerp: coarsePointer ? 0.12 : undefined,
     });
 
     window.__lenis = lenis;
