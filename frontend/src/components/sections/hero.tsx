@@ -65,6 +65,7 @@ function ServiceCard({
           loop
           muted
           playsInline
+          aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-500"
         />
       ) : coverImage ? (

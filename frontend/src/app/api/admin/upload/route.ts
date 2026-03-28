@@ -77,6 +77,18 @@ export async function POST(request: NextRequest) {
         await writeFile(filePath, buffer);
         savedPath = `/uploads/${finalName}`;
       }
+    } else if (ext === "svg") {
+      let svgText = buffer.toString("utf-8");
+      svgText = svgText
+        .replace(/<script[\s>][\s\S]*?<\/script>/gi, "")
+        .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, "")
+        .replace(/\son\w+\s*=\s*[^\s>]*/gi, "")
+        .replace(/javascript\s*:/gi, "blocked:")
+        .replace(/<\/?(foreignObject|iframe|embed|object|use[^r])[\s>][^>]*>/gi, "");
+      const finalName = `${fileName}.svg`;
+      const filePath = path.join(uploadsDir, finalName);
+      await writeFile(filePath, svgText, "utf-8");
+      savedPath = `/uploads/${finalName}`;
     } else {
       const finalName = `${fileName}.${ext}`;
       const filePath = path.join(uploadsDir, finalName);

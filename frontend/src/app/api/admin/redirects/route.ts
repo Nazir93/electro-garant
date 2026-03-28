@@ -13,11 +13,21 @@ export async function GET() {
   }
 }
 
+function isRelativePath(p: string): boolean {
+  if (/^[a-zA-Z]+:\/\//.test(p)) return false;
+  if (p.startsWith("//")) return false;
+  return true;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { fromPath, toPath, permanent } = await request.json();
     if (!fromPath || !toPath) {
       return NextResponse.json({ error: "fromPath and toPath required" }, { status: 400 });
+    }
+
+    if (!isRelativePath(fromPath) || !isRelativePath(toPath)) {
+      return NextResponse.json({ error: "Only relative paths allowed" }, { status: 400 });
     }
 
     const redirect = await prisma.redirect.create({

@@ -356,7 +356,7 @@ function ProjectForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => v
             <div className="flex items-center gap-2 px-5 py-5">
               <label className="flex items-center gap-2 cursor-pointer text-xs" style={{ color: "var(--text-muted)" }}>
                 <input type="checkbox" className="w-4 h-4 accent-[var(--accent)]" {...register("privacy")} />
-                <span>Я согласен с <a href="/privacy" className="underline" target="_blank">политикой конфиденциальности</a></span>
+                <span>Я согласен с <a href="/privacy" className="underline" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</a></span>
                 {errors.privacy && <span className="text-red-400 text-[10px] ml-1">*</span>}
               </label>
             </div>

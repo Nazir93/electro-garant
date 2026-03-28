@@ -95,8 +95,32 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
   );
 }
 
+const ALLOWED_TAGS = new Set([
+  "p", "br", "b", "i", "em", "strong", "a", "ul", "ol", "li",
+  "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "code",
+  "img", "figure", "figcaption", "table", "thead", "tbody", "tr", "th", "td",
+  "span", "div", "hr", "sub", "sup", "mark", "del", "ins",
+]);
+
+const ALLOWED_ATTRS: Record<string, Set<string>> = {
+  a: new Set(["href", "target", "rel", "title"]),
+  img: new Set(["src", "alt", "width", "height", "loading"]),
+  "*": new Set(["class", "style", "id"]),
+};
+
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<script[\s>][\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s>][\s\S]*?<\/style>/gi, "")
+    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, "")
+    .replace(/\son\w+\s*=\s*[^\s>]*/gi, "")
+    .replace(/javascript\s*:/gi, "blocked:")
+    .replace(/data\s*:\s*text\/html/gi, "blocked:")
+    .replace(/<\/?(iframe|object|embed|form|input|textarea|button|select|meta|link|base|applet)[\s>][^>]*>/gi, "");
+}
+
 function formatContent(raw: string): string {
-  if (raw.startsWith("<")) return raw;
+  if (raw.startsWith("<")) return sanitizeHtml(raw);
   return raw
     .split("\n\n")
     .filter(Boolean)

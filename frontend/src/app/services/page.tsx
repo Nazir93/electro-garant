@@ -1,6 +1,9 @@
 import { SITE_NAME, CITY } from "@/lib/constants";
 import { getPageMeta } from "@/lib/get-page-meta";
+import { getServicesList } from "@/lib/get-services";
 import { ServicesPageContent } from "./content";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   return getPageMeta({
@@ -11,6 +14,7 @@ export async function generateMetadata() {
   });
 }
 
-export default function ServicesPage() {
-  return <ServicesPageContent />;
+export default async function ServicesPage() {
+  const services = await getServicesList();
+  return <ServicesPageContent services={services} />;
 }

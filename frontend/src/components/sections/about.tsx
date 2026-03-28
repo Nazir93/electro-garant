@@ -76,6 +76,7 @@ const SLIDES: Slide[] = [
   },
 ];
 
+/** Скролл двигает currentTime — в MP4 должны быть частые keyframes (напр. ffmpeg -g 6), иначе щит визуально не «заполняется». */
 const VIDEO_ABOUT_DESKTOP = "/panel-assembly-seek.mp4";
 const VIDEO_ABOUT_MOBILE = "/panel-assembly-mobile.mp4";
 const VIDEO_ABOUT_POSTER = "/panel-assembly-poster.jpg";
@@ -142,12 +143,13 @@ function ImagePanel({
           preload={videoReady ? "auto" : "none"}
           className="h-full w-full object-cover"
           style={{ pointerEvents: "none" }}
+          aria-hidden="true"
         />
 
         {SLIDES.map((slide, i) => (
           <div
             key={slide.number}
-            className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-500"
+            className="absolute inset-0 flex flex-col items-start justify-center pl-12 sm:pl-14 md:pl-16 lg:pl-20 pr-4 transition-opacity duration-500"
             style={{
               opacity: i === activeIndex ? 1 : 0,
               pointerEvents: i === activeIndex ? "auto" : "none",
@@ -185,20 +187,21 @@ function ImagePanel({
           </div>
         ))}
 
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 rounded-full px-4 py-2 backdrop-blur-md"
+        <div
+          className="absolute left-2 top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-2 rounded-full px-2 py-3 backdrop-blur-md sm:left-3 sm:gap-2.5 sm:px-2.5 sm:py-4"
           style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
         >
           {SLIDES.map((_, i) => (
             <div
               key={i}
-              className="h-1 rounded-full transition-all duration-500"
+              className="w-1 rounded-full transition-all duration-500"
               style={{
-                width: i === activeIndex ? "18px" : "6px",
+                height: i === activeIndex ? "18px" : "6px",
                 backgroundColor: i <= activeIndex ? "rgba(201,168,76,0.9)" : "rgba(255,255,255,0.25)",
               }}
             />
           ))}
-          <span className="ml-2 text-[10px] font-heading tabular-nums tracking-wider" style={{ color: "rgba(255,255,255,0.6)" }}>
+          <span className="mt-0.5 text-[9px] font-heading tabular-nums tracking-wider" style={{ color: "rgba(255,255,255,0.6)" }}>
             {String(activeIndex + 1).padStart(2, "0")}/{String(SLIDES.length).padStart(2, "0")}
           </span>
         </div>
@@ -239,8 +242,14 @@ export function AboutSection() {
     const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
 
     const seekVideo = (v: HTMLVideoElement | null) => {
-      if (!v || !v.duration || Number.isNaN(v.duration)) return;
-      v.currentTime = progress * v.duration;
+      if (!v || !v.duration || Number.isNaN(v.duration) || !Number.isFinite(v.duration)) return;
+      const t = progress * v.duration;
+      try {
+        v.pause();
+        v.currentTime = t;
+      } catch {
+        /* ignore */
+      }
     };
     seekVideo(desktopVideo);
     seekVideo(mobileVideo);
@@ -365,6 +374,7 @@ export function AboutSection() {
                   preload={videoReady ? "auto" : "none"}
                   className="h-full w-full object-cover"
                   style={{ pointerEvents: "none" }}
+                  aria-hidden="true"
                 />
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-full px-3 py-1.5 backdrop-blur-md"
                   style={{ backgroundColor: "rgba(0,0,0,0.5)" }}

@@ -22,11 +22,18 @@ export async function POST(
   }
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const imageId = request.nextUrl.searchParams.get("imageId");
   if (!imageId) return NextResponse.json({ error: "imageId required" }, { status: 400 });
 
   try {
+    const image = await prisma.projectImage.findUnique({ where: { id: imageId } });
+    if (!image || image.projectId !== params.id) {
+      return NextResponse.json({ error: "Image not found" }, { status: 404 });
+    }
     await prisma.projectImage.delete({ where: { id: imageId } });
     return NextResponse.json({ success: true });
   } catch (error) {

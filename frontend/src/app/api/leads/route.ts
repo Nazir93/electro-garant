@@ -151,8 +151,6 @@ export async function POST(request: NextRequest) {
 
     console.log("[LEAD]", {
       id: createdLead.id,
-      name: parsed.data.name,
-      phone: parsed.data.phone,
       source,
       timestamp: new Date().toISOString(),
     });

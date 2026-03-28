@@ -4,14 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { SERVICES } from "@/lib/constants";
+import type { ServiceItem } from "@/lib/get-services";
 import { useModal } from "@/lib/modal-context";
 
 function ServiceCard({
   service,
   index,
 }: {
-  service: (typeof SERVICES)[number];
+  service: ServiceItem;
   index: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -43,7 +43,7 @@ function ServiceCard({
       }}
     >
       <Link
-        href={service.slug}
+        href={service.slug.startsWith("/") ? service.slug : `/services/${service.slug}`}
         className="group block relative overflow-hidden transition-transform duration-500 hover:scale-[0.98]"
         style={{
           border: "1px solid var(--border)",
@@ -149,7 +149,7 @@ function CostBanner() {
   );
 }
 
-export function ServicesPageContent() {
+export function ServicesPageContent({ services }: { services: ServiceItem[] }) {
   return (
     <section className="pt-32 pb-20 md:pt-40 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto">
@@ -167,9 +167,9 @@ export function ServicesPageContent() {
         {/* Cost banner */}
         <CostBanner />
 
-        {/* Grid */}
+        {/* Grid — те же данные, что и на главной: из БД (админка) или fallback из constants */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-          {SERVICES.map((service, i) => (
+          {services.map((service, i) => (
             <ServiceCard key={service.id} service={service} index={i} />
           ))}
         </div>
