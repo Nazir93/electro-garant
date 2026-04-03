@@ -201,7 +201,7 @@ export function PriceBannerSection() {
         >
           <button
             type="button"
-            onClick={openModal}
+            onClick={openModalToEstimate}
             className="group relative flex min-h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-full px-7 py-3.5 transition-all duration-300 hover:opacity-95 sm:px-9 sm:py-4"
             style={{
               backgroundColor: `rgba(${accentRGB},1)`,
