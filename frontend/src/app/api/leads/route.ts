@@ -146,6 +146,7 @@ export async function POST(request: NextRequest) {
         service: parsed.data.service,
         source,
         pageUrl: body.pageUrl,
+        calcData: body.calcData,
       })
     );
 

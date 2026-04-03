@@ -14,6 +14,8 @@ export default function ErrorPage({
     console.error(error);
   }, [error]);
 
+  const isDev = process.env.NODE_ENV === "development";
+
   return (
     <div
       className="min-h-screen flex items-center justify-center px-5"
@@ -24,6 +26,25 @@ export default function ErrorPage({
         <p className="text-sm mb-8" style={{ color: "var(--text-muted)" }}>
           Что-то пошло не так. Попробуйте обновить страницу.
         </p>
+        {isDev && (
+          <details
+            className="mb-6 text-left rounded-xl border p-3 text-xs"
+            style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
+          >
+            <summary className="cursor-pointer font-medium" style={{ color: "var(--text)" }}>
+              Технические детали (только в режиме разработки)
+            </summary>
+            <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono">
+              {error.message}
+              {error.digest ? `\n\ndigest: ${error.digest}` : ""}
+            </pre>
+          </details>
+        )}
+        {!isDev && error.digest ? (
+          <p className="mb-6 text-[11px]" style={{ color: "var(--text-subtle)" }}>
+            Код для поддержки: {error.digest}
+          </p>
+        ) : null}
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={reset}

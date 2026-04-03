@@ -4,12 +4,10 @@ import { getServicesList } from "@/lib/get-services";
 import { getProjectsList } from "@/lib/get-projects";
 import { BannerSection } from "@/components/sections/banner";
 import { NavBar } from "@/components/layout/header";
-import { DesktopSideNav } from "@/components/layout/desktop-side-nav";
 import { ViewAllServices } from "@/components/layout/view-all-services";
 import { HeroSection } from "@/components/sections/hero";
 import { PriceBannerSection } from "@/components/sections/price-banner";
 import { PortfolioSection } from "@/components/sections/portfolio";
-import { AboutSection } from "@/components/sections/about";
 import { PartnersSection } from "@/components/sections/partners";
 
 export const dynamic = "force-dynamic";
@@ -34,12 +32,10 @@ export default async function HomePage() {
       <BannerSection />
       <HeroSection services={services} />
       <ViewAllServices />
-      <DesktopSideNav />
       <div className="lg:hidden">
         <NavBar />
       </div>
       <PriceBannerSection />
-      <AboutSection />
       <PortfolioSection projects={projects} />
       <PartnersSection />
     </>

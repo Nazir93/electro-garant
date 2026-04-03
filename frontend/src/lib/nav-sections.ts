@@ -18,10 +18,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "О нас",
     items: [
-      { href: "/technology", label: "Технология монтажа" },
-      { href: "/#about", label: "Наша история" },
       { href: "/portfolio", label: "Портфолио" },
-      { href: "/contacts", label: "Приложение" },
       { href: "/contacts", label: "Контакты" },
     ],
   },
@@ -41,17 +38,16 @@ export const NAV_SECTIONS: NavSection[] = [
       },
       { href: "/price", label: "Прайслист" },
       { href: "/portfolio", label: "Референс лист" },
-      { href: "/technology", label: "Документация" },
-      { label: "Рассчитать стоимость", action: "openModal" },
+      { href: "/offer", label: "Рассчитать стоимость" },
     ],
   },
   {
     label: "Партнёрам",
     items: [
-      { href: "/#partners", label: "Стать поставщиком" },
-      { href: "/#partners", label: "Стать подрядчиком" },
-      { href: "/contacts", label: "Вакансии" },
-      { href: "/contacts", label: "Аренда и ремонт" },
+      { href: "/partners/supplier", label: "Стать поставщиком" },
+      { href: "/partners/partner", label: "Стать партнёром" },
+      { href: "/partners/vacancies", label: "Вакансии" },
+      { href: "/partners/rent-repair", label: "Аренда и ремонт" },
       { href: "/contacts", label: "Тех поддержка" },
     ],
   },

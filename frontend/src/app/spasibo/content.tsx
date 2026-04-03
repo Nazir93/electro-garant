@@ -3,19 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Phone, ArrowRight, Send, MessageCircle } from "lucide-react";
-import {
-  PHONE,
-  PHONE_RAW,
-  PHONE2,
-  PHONE2_RAW,
-  SOCIAL_LINKS,
-  SITE_NAME,
-} from "@/lib/constants";
+import { CheckCircle, Phone, ArrowRight, Send } from "lucide-react";
+import { MaxMessengerIcon } from "@/components/icons/max-messenger-icon";
+import { SITE_NAME } from "@/lib/constants";
+import { useContactConfig } from "@/lib/contact-config-context";
 import { isWorkingHours } from "@/lib/utils";
 import Link from "next/link";
 
 export function ThankYouContent() {
+  const contact = useContactConfig();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -82,33 +78,24 @@ export function ThankYouContent() {
             Если вопрос срочный — позвоните:
           </p>
           <a
-            href={`tel:${PHONE_RAW}`}
+            href={`tel:${contact.phoneRaw}`}
             className="flex items-center justify-center gap-3 text-brand-accent text-xl font-bold hover:text-white transition-colors"
           >
             <Phone size={22} />
-            {PHONE}
+            {contact.phone}
           </a>
           <a
-            href={`tel:${PHONE2_RAW}`}
+            href={`tel:${contact.phone2Raw}`}
             className="flex items-center justify-center gap-3 text-brand-accent text-lg font-bold hover:text-white transition-colors mt-2"
           >
             <Phone size={20} />
-            {PHONE2}
+            {contact.phone2}
           </a>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <a
-            href={SOCIAL_LINKS.whatsapp}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 text-gray-300 hover:bg-green-600 hover:text-white transition-all text-sm font-medium"
-          >
-            <MessageCircle size={18} />
-            Написать в WhatsApp
-          </a>
-          <a
-            href={SOCIAL_LINKS.telegram}
+            href={contact.social.telegram}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 text-gray-300 hover:bg-blue-500 hover:text-white transition-all text-sm font-medium"
@@ -116,6 +103,17 @@ export function ThankYouContent() {
             <Send size={18} />
             Написать в Telegram
           </a>
+          {contact.social.max && (
+            <a
+              href={contact.social.max}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 text-gray-300 hover:bg-violet-600 hover:text-white transition-all text-sm font-medium"
+            >
+              <MaxMessengerIcon className="h-[18px] w-[18px]" />
+              Написать в Max
+            </a>
+          )}
         </div>
 
         <div className="mb-8">

@@ -16,8 +16,14 @@ async function getAnalyticsIds() {
 
 export async function AnalyticsScripts() {
   const ids = await getAnalyticsIds();
-  const ymId = ids.yandex_metrika_id;
-  const gaId = ids.google_analytics_id;
+  const ymId =
+    ids.yandex_metrika_id?.trim() ||
+    process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID?.trim() ||
+    "";
+  const gaId =
+    ids.google_analytics_id?.trim() ||
+    process.env.NEXT_PUBLIC_GA_ID?.trim() ||
+    "";
 
   return (
     <>

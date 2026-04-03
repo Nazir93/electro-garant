@@ -79,7 +79,7 @@ export function MobileBottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 flex-1 min-w-0 transition-colors duration-200"
+              className="flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 flex-1 min-w-0 min-h-[52px] transition-colors duration-200 touch-manipulation"
               style={{
                 color: isActive ? "var(--accent)" : "var(--text-muted)",
               }}

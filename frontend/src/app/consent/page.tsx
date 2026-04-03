@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SITE_NAME, EMAIL, PHONE, PHONE2, SITE_URL, COMPANY, ADDRESS } from "@/lib/constants";
+import { SITE_NAME, SITE_URL, COMPANY } from "@/lib/constants";
+import { loadContactConfig } from "@/lib/load-contact-config";
 
 export const metadata: Metadata = {
   title: "Согласие на обработку персональных данных",
   robots: { index: false, follow: false },
 };
 
-export default function ConsentPage() {
+export default async function ConsentPage() {
+  const contact = await loadContactConfig();
   return (
     <section
       className="pt-32 pb-20 min-h-screen"
@@ -41,7 +43,7 @@ export default function ConsentPage() {
           <p>
             Действуя свободно, своей волей и в своём интересе, а также подтверждая свою
             дееспособность, пользователь даёт своё согласие {COMPANY.fullName} (ИНН: {COMPANY.inn},
-            ОГРНИП: {COMPANY.ogrnip}), адрес: {ADDRESS}, далее — «Оператор», на обработку
+            ОГРНИП: {COMPANY.ogrnip}), адрес: {COMPANY.postalAddress}, далее — «Оператор», на обработку
             своих персональных данных со следующими условиями:
           </p>
 
@@ -90,7 +92,7 @@ export default function ConsentPage() {
               Настоящее Согласие действует бессрочно до момента его отзыва пользователем.
               Отзыв Согласия может быть осуществлён путём направления письменного заявления
               на электронную почту Оператора:{" "}
-              <a href={`mailto:${EMAIL}`} className="underline" style={{ color: "var(--accent)" }}>{EMAIL}</a>.
+              <a href={`mailto:${contact.email}`} className="underline" style={{ color: "var(--accent)" }}>{contact.email}</a>.
             </p>
             <p className="mt-3">
               В случае отзыва Согласия Оператор вправе продолжить обработку персональных данных
@@ -134,13 +136,13 @@ export default function ConsentPage() {
             <div className="text-sm space-y-1" style={{ color: "var(--text-muted)" }}>
               <p>
                 Телефон:{" "}
-                <a href={`tel:${PHONE.replace(/\D/g, "")}`} className="underline" style={{ color: "var(--accent)" }}>{PHONE}</a>
+                <a href={`tel:${contact.phone.replace(/\D/g, "")}`} className="underline" style={{ color: "var(--accent)" }}>{contact.phone}</a>
                 {" / "}
-                <a href={`tel:${PHONE2.replace(/\D/g, "")}`} className="underline" style={{ color: "var(--accent)" }}>{PHONE2}</a>
+                <a href={`tel:${contact.phone2.replace(/\D/g, "")}`} className="underline" style={{ color: "var(--accent)" }}>{contact.phone2}</a>
               </p>
               <p>
                 Email:{" "}
-                <a href={`mailto:${EMAIL}`} className="underline" style={{ color: "var(--accent)" }}>{EMAIL}</a>
+                <a href={`mailto:${contact.email}`} className="underline" style={{ color: "var(--accent)" }}>{contact.email}</a>
               </p>
             </div>
           </div>

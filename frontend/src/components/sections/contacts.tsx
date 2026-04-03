@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { Section, SectionTitle } from "@/components/ui/section";
 import {
-  Phone, Mail, MapPin, Clock, Send, MessageCircle,
+  Phone, Mail, MapPin, Clock, Send,
   Building2, CreditCard, ChevronDown,
 } from "lucide-react";
-import { PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, ADDRESS, WORKING_HOURS, SOCIAL_LINKS, COMPANY } from "@/lib/constants";
+import { MaxMessengerIcon } from "@/components/icons/max-messenger-icon";
+import { COMPANY, getYandexOfficeMapEmbedUrl, getYandexOfficeMapLinkUrl } from "@/lib/constants";
+import { useContactConfig } from "@/lib/contact-config-context";
 
 function RequisitesBlock() {
   const [open, setOpen] = useState(false);
@@ -79,13 +81,18 @@ function RequisitesBlock() {
 }
 
 export function ContactsSection() {
+  const contact = useContactConfig();
+  /** Метка на карте — по координатам офиса (constants); поиск по text= в iframe часто без метки */
+  const mapExternalUrl = getYandexOfficeMapLinkUrl();
+  const mapIframeSrc = getYandexOfficeMapEmbedUrl();
+
   return (
     <Section id="contacts" dark className="!pt-8 md:!pt-12">
       <SectionTitle subtitle="Свяжитесь с нами любым удобным способом" className="!mb-8 md:!mb-12">
         Контакты
       </SectionTitle>
 
-      <div className="max-w-3xl">
+      <div className="max-w-3xl w-full">
         {/* Company badge */}
         <div
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
@@ -103,10 +110,19 @@ export function ContactsSection() {
         {/* Contact info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
           {[
-            { icon: Phone, label: "Телефон", value: `${PHONE} / ${PHONE2}`, href: `tel:${PHONE_RAW}` },
-            { icon: Mail, label: "Email", value: EMAIL, href: `mailto:${EMAIL}` },
-            { icon: MapPin, label: "Адрес", value: ADDRESS },
-            { icon: Clock, label: "Режим работы", value: WORKING_HOURS },
+            {
+              icon: Phone,
+              label: "Телефон",
+              value: `${contact.phone} / ${contact.phone2}`,
+              href: `tel:${contact.phoneRaw}`,
+            },
+            { icon: Mail, label: "Email", value: contact.email, href: `mailto:${contact.email}` },
+            {
+              icon: MapPin,
+              label: "Адрес",
+              value: contact.address,
+            },
+            { icon: Clock, label: "Режим работы", value: contact.workingHours },
           ].map(({ icon: Icon, label, value, href }) => {
             const Wrapper = href ? "a" : "div";
             return (
@@ -143,12 +159,45 @@ export function ContactsSection() {
           })}
         </div>
 
+        {/* Карта офиса */}
+        <div className="mb-8">
+          <p
+            className="text-[10px] uppercase tracking-[0.2em] mb-3"
+            style={{ color: "var(--text-subtle)" }}
+          >
+            Как добраться
+          </p>
+          <div
+            className="relative w-full rounded-2xl overflow-hidden border aspect-[16/10] max-h-[400px] sm:aspect-[21/9] sm:max-h-[360px]"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <iframe
+              title="Карта офиса"
+              src={mapIframeSrc}
+              className="absolute inset-0 w-full h-full border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+          <a
+            href={mapExternalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-3 text-xs uppercase tracking-[0.15em] underline underline-offset-4 transition-colors hover:opacity-90"
+            style={{ color: "var(--accent)" }}
+          >
+            Открыть в Яндекс.Картах
+          </a>
+        </div>
+
         {/* Messengers */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           {[
-            { href: SOCIAL_LINKS.telegram, icon: Send, label: "Telegram" },
-            { href: SOCIAL_LINKS.whatsapp, icon: MessageCircle, label: "WhatsApp" },
-          ].map(({ href, icon: Icon, label }) => (
+            { href: contact.social.telegram, label: "Telegram" as const, icon: <Send size={14} /> },
+            { href: contact.social.max, label: "Max" as const, icon: <MaxMessengerIcon className="h-3.5 w-3.5" /> },
+          ]
+            .filter((x) => x.href)
+            .map(({ href, label, icon }) => (
             <a
               key={label}
               href={href}
@@ -171,7 +220,7 @@ export function ContactsSection() {
                 e.currentTarget.style.borderColor = "var(--border)";
               }}
             >
-              <Icon size={14} />{label}
+              {icon}{label}
             </a>
           ))}
         </div>

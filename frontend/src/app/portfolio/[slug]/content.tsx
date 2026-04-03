@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { PortfolioCase } from "@/lib/portfolio-data";
+import { BackNavLink } from "@/components/ui/back-nav";
 
 function useScrollVisible(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -233,14 +234,9 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
               transform: heroVisible ? "translateY(0)" : "translateY(20px)",
             }}
           >
-            <Link
-              href="/portfolio"
-              className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] mb-10 transition-colors duration-200 hover:text-[var(--accent)]"
-              style={{ color: "var(--text-muted)" }}
-            >
-              <ArrowLeft size={14} />
-              Все проекты
-            </Link>
+            <div className="mb-10">
+              <BackNavLink href="/portfolio">Все проекты</BackNavLink>
+            </div>
           </div>
 
           {/* Title row */}

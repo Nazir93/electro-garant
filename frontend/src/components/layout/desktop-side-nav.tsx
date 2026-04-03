@@ -2,8 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUp, MessageCircle, Sun, Moon, ChevronRight } from "lucide-react";
-import { SOCIAL_LINKS, PHONE2, PHONE2_RAW } from "@/lib/constants";
+import { ArrowRight, ArrowUp, Sun, Moon, ChevronRight } from "lucide-react";
+import { useContactConfig } from "@/lib/contact-config-context";
 import { NAV_SECTIONS, isNavGroup } from "@/lib/nav-sections";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
@@ -16,6 +16,7 @@ export function DesktopSideNav() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { isDark, toggleTheme } = useTheme();
   const { openModal } = useModal();
+  const contact = useContactConfig();
 
   useEffect(() => {
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
@@ -43,7 +44,7 @@ export function DesktopSideNav() {
     <>
       {/* ═══ Top horizontal navbar ═══ */}
       <div
-        className="fixed top-0 left-0 right-0 lg:right-[60px] z-[45] transition-all duration-500"
+        className="fixed top-0 left-0 right-0 lg:right-[60px] z-[52] transition-all duration-500"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(-100%)",
@@ -75,11 +76,11 @@ export function DesktopSideNav() {
                 </span>
               </Link>
               <a
-                href={`tel:${PHONE2_RAW}`}
+                href={`tel:${contact.phone2Raw}`}
                 className="shrink-0 font-heading font-semibold tabular-nums tracking-tight transition-opacity hover:opacity-100 text-[13px] sm:text-sm lg:text-[15px] xl:text-base whitespace-nowrap"
                 style={{ color: "var(--text)" }}
               >
-                {PHONE2}
+                {contact.phone2}
               </a>
             </div>
 
@@ -258,7 +259,7 @@ export function DesktopSideNav() {
 
       {/* ═══ Right vertical sidebar (desktop only) ═══ */}
       <div
-        className="fixed top-0 right-0 bottom-0 z-[45] hidden lg:flex flex-col items-center justify-between w-[60px] py-6 transition-all duration-500"
+        className="fixed top-0 right-0 bottom-0 z-[52] hidden lg:flex flex-col items-center justify-between w-[60px] py-6 transition-all duration-500"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? "translateX(0)" : "translateX(100%)",
@@ -269,21 +270,31 @@ export function DesktopSideNav() {
       >
         {/* Top: messengers + contacts */}
         <div className="flex flex-col items-center gap-3">
-          {SOCIAL_LINKS.whatsapp && (
+          <a
+            href={`tel:${contact.phoneRaw}`}
+            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"
+            style={{ borderColor: "var(--border)" }}
+            aria-label={`Позвонить ${contact.phone}`}
+            title={contact.phone}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4" style={{ color: "var(--text-muted)" }}>
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+          </a>
+          <a
+            href={`tel:${contact.phone2Raw}`}
+            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"
+            style={{ borderColor: "var(--border)" }}
+            aria-label={`Позвонить ${contact.phone2}`}
+            title={contact.phone2}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4" style={{ color: "var(--text-muted)" }}>
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+          </a>
+          {contact.social.telegram && (
             <a
-              href={SOCIAL_LINKS.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[#25D366]"
-              style={{ borderColor: "var(--border)" }}
-              aria-label="WhatsApp"
-            >
-              <MessageCircle size={16} style={{ color: "var(--text-muted)" }} />
-            </a>
-          )}
-          {SOCIAL_LINKS.telegram && (
-            <a
-              href={SOCIAL_LINKS.telegram}
+              href={contact.social.telegram}
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[#0088cc]"
@@ -295,23 +306,11 @@ export function DesktopSideNav() {
               </svg>
             </a>
           )}
-
-          <a
-            href={`tel:${PHONE2_RAW}`}
-            className="w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"
-            style={{ borderColor: "var(--border)" }}
-            aria-label={PHONE2}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4" style={{ color: "var(--text-muted)" }}>
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-          </a>
         </div>
 
         {/* Center: vertical text "Обсудить проект" — writing-mode только на тексте, без flex внутри (Safari/WebKit) */}
-        <button
-          type="button"
-          onClick={openModal}
+        <Link
+          href="/offer"
           onMouseEnter={() => setBtnHovered(true)}
           onMouseLeave={() => setBtnHovered(false)}
           className="relative inline-flex flex-col items-center justify-center gap-2 py-1 transition-all duration-300"
@@ -335,7 +334,7 @@ export function DesktopSideNav() {
               }}
             />
           </span>
-        </button>
+        </Link>
 
         {/* Bottom: burger + scroll-to-top */}
         <div className="flex flex-col items-center gap-3">

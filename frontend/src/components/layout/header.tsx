@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { X, Sun, Moon, MessageCircle, ChevronRight } from "lucide-react";
-import { PHONE2, PHONE2_RAW, SITE_NAME, SOCIAL_LINKS } from "@/lib/constants";
+import { X, Sun, Moon, ChevronRight } from "lucide-react";
+import { SITE_NAME } from "@/lib/constants";
+import { useContactConfig } from "@/lib/contact-config-context";
+import { MaxMessengerIcon } from "@/components/icons/max-messenger-icon";
 import { NAV_SECTIONS, isNavGroup } from "@/lib/nav-sections";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
@@ -156,6 +158,7 @@ export function Header() {
   const [hideFloating, setHideFloating] = useState(false);
   const { toggleTheme, isDark } = useTheme();
   const { openModal } = useModal();
+  const contact = useContactConfig();
   const pathname = usePathname();
   const isHome = pathname === "/";
 
@@ -460,20 +463,21 @@ export function Header() {
               >
                 <div className="flex items-center gap-2 sm:gap-5 flex-wrap">
                   <a
-                    href={`tel:${PHONE2_RAW}`}
+                    href={`tel:${contact.phone2Raw}`}
                     className="text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-base"
                     style={{ color: "var(--text-muted)" }}
                   >
-                    {PHONE2}
+                    {contact.phone2}
                   </a>
                 </div>
-                <button
-                  onClick={() => { setIsOpen(false); openModal(); }}
+                <Link
+                  href="/offer"
+                  onClick={() => setIsOpen(false)}
                   className="rounded-full px-5 py-2 font-heading uppercase tracking-[0.1em] transition-all duration-500 hover:scale-105 text-[10px] sm:text-xs md:text-sm lg:text-base sm:px-7 sm:py-2.5 [@media(max-height:700px)]:max-lg:py-1.5 [@media(max-height:700px)]:max-lg:px-4"
                   style={{ backgroundColor: "var(--accent)", color: "#0A0A0A" }}
                 >
                   Обсудить проект
-                </button>
+                </Link>
               </div>
             </nav>
 
@@ -486,21 +490,9 @@ export function Header() {
               }}
             >
               <div className="flex flex-col items-center gap-3">
-                {SOCIAL_LINKS.whatsapp && (
+                {contact.social.telegram && (
                   <a
-                    href={SOCIAL_LINKS.whatsapp}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[#25D366]"
-                    style={{ borderColor: "var(--border)" }}
-                    aria-label="WhatsApp"
-                  >
-                    <MessageCircle size={13} style={{ color: "var(--text-muted)" }} />
-                  </a>
-                )}
-                {SOCIAL_LINKS.telegram && (
-                  <a
-                    href={SOCIAL_LINKS.telegram}
+                    href={contact.social.telegram}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[#0088cc]"
@@ -512,16 +504,16 @@ export function Header() {
                     </svg>
                   </a>
                 )}
-                {SOCIAL_LINKS.vk && (
+                {contact.social.max && (
                   <a
-                    href={SOCIAL_LINKS.vk}
+                    href={contact.social.max}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110"
                     style={{ borderColor: "var(--border)" }}
-                    aria-label="VK"
+                    aria-label="Max"
                   >
-                    <span className="text-[9px] font-bold" style={{ color: "var(--text-muted)" }}>VK</span>
+                    <MaxMessengerIcon className="w-4 h-4 text-[var(--text-muted)]" />
                   </a>
                 )}
               </div>
@@ -555,6 +547,7 @@ export function NavBar() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { isDark, toggleTheme } = useTheme();
   const { openModal } = useModal();
+  const contact = useContactConfig();
 
   useEffect(() => {
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
@@ -596,11 +589,11 @@ export function NavBar() {
           </Link>
           <div className="hidden md:flex items-center">
             <a
-              href={`tel:${PHONE2_RAW}`}
+              href={`tel:${contact.phone2Raw}`}
               className="font-heading font-semibold tabular-nums tracking-tight transition-opacity hover:opacity-100 text-sm lg:text-[15px] xl:text-base"
               style={{ color: "var(--text)" }}
             >
-              {PHONE2}
+              {contact.phone2}
             </a>
           </div>
         </div>
@@ -681,6 +674,7 @@ export function NavBar() {
                                   <Link
                                     key={child.href}
                                     href={child.href}
+                                    onClick={() => setOpenSection(null)}
                                     className="block px-5 py-2.5 text-xs uppercase tracking-[0.08em] transition-colors duration-200"
                                     style={{ color: "var(--text-muted)" }}
                                     onMouseEnter={(e) => {
@@ -721,6 +715,7 @@ export function NavBar() {
                         <Link
                           key={item.href}
                           href={item.href}
+                          onClick={() => setOpenSection(null)}
                           className="block px-5 py-2.5 text-xs uppercase tracking-[0.08em] transition-colors duration-200"
                           style={{ color: "var(--text-muted)" }}
                           onMouseEnter={(e) => {

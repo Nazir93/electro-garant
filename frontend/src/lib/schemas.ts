@@ -32,6 +32,28 @@ export const leadFormSchema = z.object({
 
 export type LeadFormData = z.infer<typeof leadFormSchema>;
 
+/** Форма «Партнёрам» (поставщик / партнёр) — клиентская валидация перед POST /api/leads */
+export const partnerFeedbackFormSchema = z.object({
+  name: z.string().min(2, "Введите имя").max(100, "Имя слишком длинное"),
+  phone: z.preprocess(
+    normalizePhoneInput,
+    z
+      .string()
+      .min(10, "Введите корректный номер телефона")
+      .max(30, "Номер слишком длинный")
+      .regex(/^[\d\s\+\-\(\)]+$/, "Некорректный формат телефона")
+  ),
+  email: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : v),
+    z.string().email("Некорректный email").optional()
+  ),
+  message: z.string().min(10, "Кратко опишите запрос (от 10 символов)").max(1000, "Слишком длинное сообщение"),
+  privacy: z.boolean().refine((v) => v === true, { message: "Необходимо согласие" }),
+  honeypot: z.string().max(0).optional(),
+});
+
+export type PartnerFeedbackFormData = z.infer<typeof partnerFeedbackFormSchema>;
+
 export const callbackFormSchema = z.object({
   name: z.string().min(2, "Введите имя").max(100),
   phone: z

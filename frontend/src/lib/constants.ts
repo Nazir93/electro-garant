@@ -2,13 +2,32 @@ export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Гарант Мо
 export const CITY = process.env.NEXT_PUBLIC_CITY || "Сочи";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-export const PHONE = "8 (928) 455-455-9";
+export const PHONE = "8 (928) 455-45-59";
 export const PHONE_RAW = "89284554559";
 export const PHONE2 = "8 (900) 233-66-39";
 export const PHONE2_RAW = "89002336639";
 export const EMAIL = "garantmontaj@gmail.com";
-export const ADDRESS = "Краснодарский край, г. Сочи, ул. Пасечная 61/2, кв. 48";
-export const WORKING_HOURS = "Пн–Пт 09:00–18:00, Сб по записи";
+/** Адрес офиса (для контактов и карты) */
+export const ADDRESS = "г. Сочи, ул. Авиационная, 15";
+export const WORKING_HOURS = "Пн–Пт 9:00–17:00";
+
+/** Координаты офиса (WGS84) для Яндекс.Карт: долгота, широта — метка pm2rdm на встроенной карте */
+export const OFFICE_GEO_LON = 39.9554;
+export const OFFICE_GEO_LAT = 43.4489;
+
+/** Виджет map-widget с меткой pm2rdm (параметр text= в iframe даёт карту без пина) */
+export function getYandexOfficeMapEmbedUrl(): string {
+  const lon = OFFICE_GEO_LON;
+  const lat = OFFICE_GEO_LAT;
+  return `https://yandex.ru/map-widget/v1/?ll=${lon}%2C${lat}&z=17&pt=${lon},${lat},pm2rdm`;
+}
+
+/** Полноэкранные Яндекс.Карты с той же точкой */
+export function getYandexOfficeMapLinkUrl(): string {
+  const lon = OFFICE_GEO_LON;
+  const lat = OFFICE_GEO_LAT;
+  return `https://yandex.ru/maps/?pt=${lon}%2C${lat}&z=17&l=map`;
+}
 
 export const COMPANY = {
   fullName: "Индивидуальный предприниматель Чернышева Елена Михайловна",
@@ -25,9 +44,11 @@ export const COMPANY = {
 };
 
 export const SOCIAL_LINKS = {
-  telegram: "https://t.me/garantmontazh",
-  whatsapp: "https://wa.me/89284554559",
-  vk: "https://vk.com/garantmontazh",
+  telegram: "https://t.me/Gmontaj",
+  /** Мессенджер Max — ссылка на чат или профиль (задать в .env) */
+  max:
+    process.env.NEXT_PUBLIC_MAX_CHAT_URL?.trim() ||
+    "https://max.ru/u/f9LHodD0cOICVt6F_SbXekYin0iKseqgg53Vo-E4sCJ1sXjkB0Bs18LxWUg",
 };
 
 export const SERVICES = [

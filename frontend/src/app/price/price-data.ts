@@ -11,6 +11,230 @@ export interface PriceSection {
   items: PriceItem[];
 }
 
+/* ─── Автозаполнение сметы по типу объекта и площади ─── */
+
+export interface AutoFillProfile {
+  label: string;
+  /** Расход кабеля (все марки) на 1 м² площади */
+  cablePerSqm: number;
+  /** Распределение общего расхода по позициям прайса (id → доля, сумма = 1) */
+  cableDistribution: { id: number; share: number }[];
+  /** Сопутствующие позиции: id → штук (или метров) на 1 м² */
+  extras: { id: number; perSqm: number }[];
+}
+
+export const AUTO_FILL_PROFILES: AutoFillProfile[] = [
+  {
+    label: "Квартира / Апартаменты",
+    cablePerSqm: 3.5,
+    cableDistribution: [
+      { id: 1, share: 0.50 },   // кабель 3×2,5 мм²
+      { id: 2, share: 0.18 },   // кабель 3×6 мм²
+      { id: 27, share: 0.15 },  // UTP / SAT / телефон
+      { id: 4, share: 0.07 },   // кабель 5×6 мм² (плита, духовка)
+      { id: 15, share: 0.05 },  // акустический
+      { id: 16, share: 0.05 },  // декоративный
+    ],
+    extras: [
+      { id: 53, perSqm: 3.0 },   // гофра ПВХ до 25 мм — ≈ длина кабеля × 0.85
+      { id: 51, perSqm: 3.0 },   // затяжка кабеля в гофру с протяжкой
+      { id: 78, perSqm: 1.8 },   // штробление в кирпиче (~50% от кабеля)
+      { id: 80, perSqm: 1.8 },   // штукатурка штроб
+      { id: 102, perSqm: 0.55 }, // подрозетник (кирпич/бетон)
+      { id: 97, perSqm: 0.55 },  // лунка в кирпиче
+      { id: 156, perSqm: 0.45 }, // розетка внутренняя (~1 на 2,2 м²)
+      { id: 165, perSqm: 0.12 }, // выключатель 1-кл (~1 на 8 м²)
+      { id: 195, perSqm: 0.30 }, // точечный светильник (~1 на 3,3 м²)
+      { id: 191, perSqm: 0.30 }, // отверстие под точечный светильник
+      { id: 103, perSqm: 0.15 }, // распаячная коробка (~1 на 7 м²)
+      { id: 104, perSqm: 0.45 }, // расключение WAGO (≈ кол-во розеток)
+      { id: 138, perSqm: 0.55 }, // модульная автоматика (≈ подрозетники)
+      { id: 135, perSqm: 0.55 }, // ввод кабеля в щит
+      { id: 84, perSqm: 0.08 },  // сквозное сверление в кирпиче
+      { id: 145, perSqm: 0.55 }, // наконечники НШВИ
+    ],
+  },
+  {
+    label: "Частный дом",
+    cablePerSqm: 4.0,
+    cableDistribution: [
+      { id: 1, share: 0.42 },
+      { id: 2, share: 0.18 },
+      { id: 27, share: 0.15 },
+      { id: 4, share: 0.10 },
+      { id: 5, share: 0.05 },   // 5×10 мм²
+      { id: 15, share: 0.05 },
+      { id: 16, share: 0.05 },
+    ],
+    extras: [
+      { id: 53, perSqm: 3.4 },
+      { id: 51, perSqm: 3.4 },
+      { id: 78, perSqm: 2.0 },
+      { id: 80, perSqm: 2.0 },
+      { id: 102, perSqm: 0.55 },
+      { id: 97, perSqm: 0.55 },
+      { id: 156, perSqm: 0.45 },
+      { id: 165, perSqm: 0.12 },
+      { id: 195, perSqm: 0.28 },
+      { id: 191, perSqm: 0.28 },
+      { id: 103, perSqm: 0.15 },
+      { id: 104, perSqm: 0.50 },
+      { id: 138, perSqm: 0.60 },
+      { id: 135, perSqm: 0.60 },
+      { id: 84, perSqm: 0.10 },
+      { id: 145, perSqm: 0.60 },
+    ],
+  },
+  {
+    label: "Офис / Административное здание",
+    cablePerSqm: 6.5,
+    cableDistribution: [
+      { id: 1, share: 0.35 },
+      { id: 2, share: 0.12 },
+      { id: 27, share: 0.30 },  // UTP — много в офисе
+      { id: 4, share: 0.08 },
+      { id: 3, share: 0.05 },   // 3×10 мм²
+      { id: 5, share: 0.05 },
+      { id: 15, share: 0.05 },
+    ],
+    extras: [
+      { id: 60, perSqm: 1.2 },   // кабель-канал до 25×16
+      { id: 61, perSqm: 0.6 },   // кабель-канал до 60×40
+      { id: 65, perSqm: 0.25 },  // лоток до 100 мм
+      { id: 156, perSqm: 0.55 }, // розетка (~1 на 1.8 м²)
+      { id: 165, perSqm: 0.10 },
+      { id: 193, perSqm: 0.20 }, // светильник ARS (Армстронг)
+      { id: 103, perSqm: 0.12 },
+      { id: 104, perSqm: 0.55 },
+      { id: 138, perSqm: 0.65 },
+      { id: 135, perSqm: 0.65 },
+      { id: 32, perSqm: 0.30 },  // обжимка RJ45
+      { id: 145, perSqm: 0.65 },
+      { id: 84, perSqm: 0.06 },
+    ],
+  },
+  {
+    label: "Ресторан / Кафе / Общепит",
+    cablePerSqm: 8.0,
+    cableDistribution: [
+      { id: 1, share: 0.30 },
+      { id: 2, share: 0.18 },
+      { id: 4, share: 0.15 },
+      { id: 27, share: 0.12 },
+      { id: 5, share: 0.10 },
+      { id: 6, share: 0.05 },   // 5×16 мм² (мощное кухонное оборудование)
+      { id: 15, share: 0.05 },
+      { id: 16, share: 0.05 },
+    ],
+    extras: [
+      { id: 53, perSqm: 4.5 },
+      { id: 51, perSqm: 4.5 },
+      { id: 65, perSqm: 0.30 },
+      { id: 66, perSqm: 0.15 },  // лоток 200–400 мм
+      { id: 156, perSqm: 0.50 },
+      { id: 160, perSqm: 0.04 }, // силовой разъём накладной
+      { id: 165, perSqm: 0.10 },
+      { id: 195, perSqm: 0.25 },
+      { id: 191, perSqm: 0.25 },
+      { id: 103, perSqm: 0.14 },
+      { id: 104, perSqm: 0.50 },
+      { id: 138, perSqm: 0.60 },
+      { id: 135, perSqm: 0.60 },
+      { id: 85, perSqm: 0.06 },  // сверление в бетоне
+      { id: 145, perSqm: 0.60 },
+    ],
+  },
+  {
+    label: "Торговый центр / Магазин",
+    cablePerSqm: 8.0,
+    cableDistribution: [
+      { id: 1, share: 0.28 },
+      { id: 2, share: 0.15 },
+      { id: 27, share: 0.20 },
+      { id: 4, share: 0.12 },
+      { id: 5, share: 0.10 },
+      { id: 6, share: 0.05 },
+      { id: 3, share: 0.05 },
+      { id: 15, share: 0.05 },
+    ],
+    extras: [
+      { id: 65, perSqm: 0.40 },
+      { id: 66, perSqm: 0.20 },
+      { id: 72, perSqm: 0.20 },  // консоли для лотка
+      { id: 155, perSqm: 0.35 }, // розетка наружная
+      { id: 156, perSqm: 0.20 },
+      { id: 165, perSqm: 0.08 },
+      { id: 193, perSqm: 0.18 },
+      { id: 103, perSqm: 0.10 },
+      { id: 104, perSqm: 0.45 },
+      { id: 138, perSqm: 0.55 },
+      { id: 135, perSqm: 0.55 },
+      { id: 85, perSqm: 0.05 },
+      { id: 145, perSqm: 0.55 },
+    ],
+  },
+  {
+    label: "Производство / Склад / Цех",
+    cablePerSqm: 4.5,
+    cableDistribution: [
+      { id: 1, share: 0.15 },
+      { id: 2, share: 0.15 },
+      { id: 4, share: 0.15 },
+      { id: 5, share: 0.15 },
+      { id: 6, share: 0.10 },
+      { id: 7, share: 0.10 },   // 5×35 мм²
+      { id: 27, share: 0.10 },
+      { id: 3, share: 0.10 },
+    ],
+    extras: [
+      { id: 66, perSqm: 0.30 },  // лоток 200–400 мм
+      { id: 67, perSqm: 0.10 },  // лоток 500–600 мм
+      { id: 72, perSqm: 0.20 },
+      { id: 155, perSqm: 0.15 }, // розетка наружная
+      { id: 161, perSqm: 0.03 }, // силовой 3-фаз навесной
+      { id: 167, perSqm: 0.05 }, // выключатель наружный
+      { id: 194, perSqm: 0.08 }, // светильник потолочный
+      { id: 103, perSqm: 0.08 },
+      { id: 138, perSqm: 0.40 },
+      { id: 135, perSqm: 0.40 },
+      { id: 86, perSqm: 0.04 },  // сверление в металле
+      { id: 145, perSqm: 0.40 },
+    ],
+  },
+  {
+    label: "Гостиница",
+    cablePerSqm: 5.5,
+    cableDistribution: [
+      { id: 1, share: 0.40 },
+      { id: 2, share: 0.15 },
+      { id: 27, share: 0.20 },
+      { id: 4, share: 0.08 },
+      { id: 15, share: 0.07 },
+      { id: 16, share: 0.05 },
+      { id: 3, share: 0.05 },
+    ],
+    extras: [
+      { id: 53, perSqm: 4.5 },
+      { id: 51, perSqm: 4.5 },
+      { id: 78, perSqm: 2.5 },
+      { id: 80, perSqm: 2.5 },
+      { id: 102, perSqm: 0.60 },
+      { id: 97, perSqm: 0.60 },
+      { id: 156, perSqm: 0.50 },
+      { id: 165, perSqm: 0.15 },
+      { id: 166, perSqm: 0.06 }, // проходной выключатель
+      { id: 195, perSqm: 0.30 },
+      { id: 191, perSqm: 0.30 },
+      { id: 192, perSqm: 0.10 }, // бра
+      { id: 103, perSqm: 0.14 },
+      { id: 104, perSqm: 0.55 },
+      { id: 138, perSqm: 0.65 },
+      { id: 135, perSqm: 0.65 },
+      { id: 145, perSqm: 0.65 },
+    ],
+  },
+];
+
 export const PRICE_SECTIONS: PriceSection[] = [
   {
     id: "cable",

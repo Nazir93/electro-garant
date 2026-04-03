@@ -1,12 +1,6 @@
-import {
-  SITE_NAME,
-  CITY,
-  SITE_URL,
-  PHONE_RAW,
-  PHONE2_RAW,
-  EMAIL,
-  ADDRESS,
-} from "@/lib/constants";
+import { SITE_NAME, CITY, SITE_URL } from "@/lib/constants";
+import { OFFICE_OPENING_HOURS_JSON_LD } from "@/lib/contact-config";
+import { loadContactConfig } from "@/lib/load-contact-config";
 import { prisma } from "@/lib/db";
 
 async function getDbData() {
@@ -23,6 +17,7 @@ async function getDbData() {
 
 export async function JsonLd() {
   const { reviews, faqs } = await getDbData();
+  const contact = await loadContactConfig();
 
   const organization = {
     "@context": "https://schema.org",
@@ -30,29 +25,16 @@ export async function JsonLd() {
     name: SITE_NAME,
     description: `Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в ${CITY}. 280+ объектов. Гарантия 5 лет.`,
     url: SITE_URL,
-    telephone: [PHONE_RAW, PHONE2_RAW],
-    email: EMAIL,
+    telephone: [contact.phoneRaw, contact.phone2Raw],
+    email: contact.email,
     address: {
       "@type": "PostalAddress",
       addressLocality: CITY,
       addressCountry: "RU",
-      streetAddress: ADDRESS,
+      streetAddress: contact.address,
     },
     areaServed: { "@type": "City", name: CITY },
-    openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        opens: "09:00",
-        closes: "18:00",
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: "Saturday",
-        opens: "10:00",
-        closes: "16:00",
-      },
-    ],
+    openingHoursSpecification: [OFFICE_OPENING_HOURS_JSON_LD],
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "Услуги электромонтажа",

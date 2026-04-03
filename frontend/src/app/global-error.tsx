@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 export default function GlobalError({
   error,
   reset,
@@ -7,6 +9,12 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  const isDev = process.env.NODE_ENV === "development";
+
   return (
     <html lang="ru">
       <body
@@ -26,6 +34,26 @@ export default function GlobalError({
           <p style={{ fontSize: 14, color: "#9C9A94", marginBottom: 24 }}>
             Что-то пошло не так. Попробуйте обновить страницу.
           </p>
+          {isDev && (
+            <pre
+              style={{
+                textAlign: "left",
+                fontSize: 11,
+                color: "#7a786f",
+                marginBottom: 20,
+                maxHeight: 160,
+                overflow: "auto",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              {error.message}
+              {error.digest ? `\n\ndigest: ${error.digest}` : ""}
+            </pre>
+          )}
+          {!isDev && error.digest ? (
+            <p style={{ fontSize: 12, color: "#7a786f", marginBottom: 20 }}>Код: {error.digest}</p>
+          ) : null}
           <button
             onClick={reset}
             style={{

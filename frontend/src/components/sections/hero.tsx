@@ -4,9 +4,37 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { CITY, PHONE2, EMAIL, SERVICES } from "@/lib/constants";
+import { CITY, SERVICES } from "@/lib/constants";
+import { useContactConfig } from "@/lib/contact-config-context";
 import type { ServiceItem } from "@/lib/get-services";
 import { useTheme } from "@/lib/theme-context";
+
+/**
+ * Фото для карточек hero по разделу услуги (как на макетах):
+ * 01 — акустика, 02 — умный дом, 03 — электромонтаж, 04 — СКС, 05 — видеонаблюдение.
+ * Ключ — путь slug из данных (порядок услуг в сетке может быть любым).
+ */
+const HERO_SIDE_IMAGE_BY_SLUG: Record<string, string> = {
+  "/services/acoustics": "/images/hero/hero-01.png",
+  "/services/smart-home": "/images/hero/hero-02.png",
+  "/services/electrical": "/images/hero/hero-03.png",
+  "/services/structured-cabling": "/images/hero/hero-04.png",
+  "/services/security": "/images/hero/hero-05.png",
+};
+
+function heroSideImageForSlug(slug: string): string | undefined {
+  const path = slug.split("?")[0]?.replace(/\/$/, "") ?? slug;
+  return HERO_SIDE_IMAGE_BY_SLUG[path];
+}
+
+/** Обложка для карточки: приоритет — фото из макета; иначе админка. */
+function heroCardMedia(s: ServiceItem) {
+  const heroImg = heroSideImageForSlug(s.slug);
+  return {
+    coverImage: heroImg ?? s.coverImage,
+    videoUrl: heroImg ? undefined : s.videoUrl,
+  };
+}
 
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
@@ -37,6 +65,7 @@ function ServiceCard({
   coverImage,
   videoUrl,
   shortDescription,
+  imagePriority,
 }: {
   title: string;
   slug: string;
@@ -46,11 +75,13 @@ function ServiceCard({
   coverImage?: string | null;
   videoUrl?: string | null;
   shortDescription?: string;
+  /** LCP: первый боковой кадр при открытии главной */
+  imagePriority?: boolean;
 }) {
   return (
     <Link
       href={slug}
-      className="w-full h-full flex flex-col items-center justify-center overflow-hidden transition-colors duration-300 group relative"
+      className="group relative flex h-full w-full flex-col items-center justify-end overflow-hidden px-1 pb-3 pt-14 transition-colors duration-300"
       style={{
         opacity,
         transform: `scale(${scale})`,
@@ -66,7 +97,7 @@ function ServiceCard({
           muted
           playsInline
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-500"
+          className="absolute inset-0 z-0 h-full w-full object-cover"
         />
       ) : coverImage ? (
         <Image
@@ -74,15 +105,29 @@ function ServiceCard({
           alt={title}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
-          className="absolute inset-0 object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-500"
-          loading="lazy"
+          className="absolute inset-0 z-0 object-cover"
+          loading={imagePriority ? "eager" : "lazy"}
+          priority={imagePriority}
         />
       ) : null}
 
-      {/* Title */}
+      {/* Градиент снизу: фото сверху светлое, подпись всегда на затемнении */}
+      {(videoUrl || coverImage) && (
+        <>
+          <div
+            className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-transparent from-[15%] via-black/25 via-[45%] to-black/75 transition-[background] duration-300 group-hover:via-black/35 group-hover:to-black/88"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-0 z-[1] bg-black/0 transition-colors duration-300 group-hover:bg-black/22"
+            aria-hidden
+          />
+        </>
+      )}
+
+      {/* Title — белый + обводка тенью, на градиенте не сливается с фоном */}
       <span
-        className="relative z-10 text-[10px] lg:text-xs uppercase tracking-[0.1em] text-center px-3 font-semibold transition-all duration-300 group-hover:text-[var(--accent)] group-hover:-translate-y-1"
-        style={{ color: "var(--text-muted)" }}
+        className="relative z-10 px-3 text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-300 [text-shadow:0_1px_2px_rgba(0,0,0,0.95),0_0_24px_rgba(0,0,0,0.65),0_2px_12px_rgba(0,0,0,0.55)] group-hover:-translate-y-1 group-hover:text-[var(--accent)] group-hover:[text-shadow:0_1px_3px_rgba(0,0,0,0.9),0_0_28px_rgba(201,168,76,0.45)] lg:text-xs"
       >
         {title}
       </span>
@@ -90,8 +135,7 @@ function ServiceCard({
       {/* Hover description */}
       {shortDescription && (
         <span
-          className="relative z-10 text-[8px] lg:text-[9px] text-center px-3 mt-1.5 leading-relaxed max-w-[90%] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 line-clamp-3"
-          style={{ color: "var(--text-muted)" }}
+          className="relative z-10 mt-1.5 max-w-[90%] translate-y-2 px-3 text-center text-[8px] leading-relaxed text-white/95 opacity-0 transition-all duration-300 line-clamp-3 [text-shadow:0_1px_3px_rgba(0,0,0,0.9),0_2px_10px_rgba(0,0,0,0.55)] group-hover:translate-y-0 group-hover:opacity-100 lg:text-[9px]"
         >
           {shortDescription}
         </span>
@@ -99,10 +143,9 @@ function ServiceCard({
 
       {/* Arrow on hover */}
       <div
-        className="absolute bottom-3 right-3 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
-        style={{ border: "1px solid var(--border)" }}
+        className="absolute bottom-3 right-3 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-white/0 opacity-0 transition-all duration-300 group-hover:border-white/35 group-hover:bg-black/25 group-hover:opacity-100"
       >
-        <ArrowRight size={10} style={{ color: "var(--text-muted)" }} />
+        <ArrowRight size={10} className="text-white/90" />
       </div>
     </Link>
   );
@@ -128,6 +171,7 @@ function MobileServiceLink({ title, slug }: { title: string; slug: string }) {
 }
 
 export function HeroSection({ services: propServices }: { services?: ServiceItem[] } = {}) {
+  const contact = useContactConfig();
   const services = propServices && propServices.length > 0 ? propServices : SERVICES;
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
@@ -270,9 +314,9 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                   opacity={sideOpacity}
                   scale={sideScale}
                   borderRadius={borderRadius}
-                  coverImage={services[0].coverImage}
-                  videoUrl={services[0].videoUrl}
+                  {...heroCardMedia(services[0])}
                   shortDescription={services[0].shortDescription}
+                  imagePriority={!!heroSideImageForSlug(services[0].slug)}
                 />
               </div>
 
@@ -350,9 +394,9 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                     className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-[11px] sm:text-xs"
                     style={{ color: "var(--text-muted)" }}
                   >
-                    <span className="whitespace-nowrap">{EMAIL}</span>
+                    <span className="whitespace-nowrap">{contact.email}</span>
                     <span style={{ color: "var(--text-subtle)" }}>/</span>
-                    <span className="whitespace-nowrap">{PHONE2}</span>
+                    <span className="whitespace-nowrap">{contact.phone2}</span>
                   </div>
 
                   <div
@@ -401,8 +445,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                   opacity={sideOpacity}
                   scale={sideScale}
                   borderRadius={borderRadius}
-                  coverImage={services[1].coverImage}
-                  videoUrl={services[1].videoUrl}
+                  {...heroCardMedia(services[1])}
                   shortDescription={services[1].shortDescription}
                 />
               </div>
@@ -425,8 +468,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                     opacity={sideOpacity}
                     scale={sideScale}
                     borderRadius={borderRadius}
-                    coverImage={s.coverImage}
-                    videoUrl={s.videoUrl}
+                    {...heroCardMedia(s)}
                     shortDescription={s.shortDescription}
                   />
                 </div>
@@ -442,7 +484,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
         style={{ backgroundColor: "var(--bg)" }}
       >
         {/* Hero content */}
-        <div className="flex min-h-[70vh] min-w-0 flex-col justify-center px-5 py-12 sm:px-8">
+        <div className="relative flex min-h-[70vh] min-w-0 flex-col justify-center px-5 py-12 sm:px-8">
           {/* Ghost text */}
           <div className="pointer-events-none absolute inset-0 flex select-none items-center justify-center">
             <h2
@@ -482,8 +524,8 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                 className="flex flex-col gap-1.5 text-[10px] sm:text-[11px]"
                 style={{ color: "var(--text-muted)" }}
               >
-                <span className="break-all">{EMAIL}</span>
-                <span>{PHONE2}</span>
+                <span className="break-all">{contact.email}</span>
+                <span>{contact.phone2}</span>
               </div>
               <Link
                 href="/services"

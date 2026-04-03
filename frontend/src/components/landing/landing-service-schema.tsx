@@ -1,10 +1,11 @@
-import { SITE_NAME, CITY, SITE_URL, PHONE_RAW, PHONE2_RAW } from "@/lib/constants";
+import { SITE_NAME, CITY, SITE_URL } from "@/lib/constants";
 
 interface LandingServiceSchemaProps {
   serviceName: string;
   serviceDescription: string;
   slug: string;
   priceRange?: string;
+  telephone: [string, string];
 }
 
 export function LandingServiceSchema({
@@ -12,6 +13,7 @@ export function LandingServiceSchema({
   serviceDescription,
   slug,
   priceRange = "от 50 000 ₽",
+  telephone,
 }: LandingServiceSchemaProps) {
   const schema = {
     "@context": "https://schema.org",
@@ -21,7 +23,7 @@ export function LandingServiceSchema({
     provider: {
       "@type": "ElectricalContractor",
       name: SITE_NAME,
-      telephone: [PHONE_RAW, PHONE2_RAW],
+      telephone,
       url: SITE_URL,
       areaServed: {
         "@type": "City",

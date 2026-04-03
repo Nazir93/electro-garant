@@ -46,7 +46,6 @@ const KNOWN_PAGES = [
   { path: "/blog", label: "Блог" },
   { path: "/price", label: "Прайс" },
   { path: "/contacts", label: "Контакты" },
-  { path: "/technology", label: "Технология монтажа" },
   { path: "/privacy", label: "Политика конфиденциальности" },
   { path: "/consent", label: "Согласие на обработку данных" },
 ];

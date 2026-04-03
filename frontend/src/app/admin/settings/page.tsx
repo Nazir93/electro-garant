@@ -3,7 +3,20 @@
 import { useState, useEffect } from "react";
 import { Save, AlertCircle } from "lucide-react";
 
-const SETTINGS_GROUPS = [
+type SettingsField = {
+  key: string;
+  label: string;
+  placeholder?: string;
+  multiline?: boolean;
+};
+
+type SettingsGroup = {
+  title: string;
+  description?: string;
+  fields: SettingsField[];
+};
+
+const SETTINGS_GROUPS: SettingsGroup[] = [
   {
     title: "Общие",
     fields: [
@@ -14,20 +27,23 @@ const SETTINGS_GROUPS = [
   },
   {
     title: "Контакты",
+    description:
+      "Заполненные поля подставляются на сайт вместо значений по умолчанию из кода (constants / .env). Пустое поле — берётся дефолт.",
     fields: [
-      { key: "phone", label: "Телефон", placeholder: "8 (928) 455-455-9" },
-      { key: "phone_raw", label: "Телефон (для ссылки)", placeholder: "89284554559" },
+      { key: "phone", label: "Телефон 1 (отображение)", placeholder: "8 (928) 455-45-59" },
+      { key: "phone_raw", label: "Телефон 1 (для ссылки tel:)", placeholder: "89284554559" },
+      { key: "phone2", label: "Телефон 2 (отображение)", placeholder: "8 (900) 233-66-39" },
+      { key: "phone2_raw", label: "Телефон 2 (для ссылки tel:)", placeholder: "89002336639" },
       { key: "email", label: "Email", placeholder: "garantmontaj@gmail.com" },
-      { key: "address", label: "Адрес", placeholder: "Краснодарский край, г. Сочи, ..." },
-      { key: "working_hours", label: "Режим работы", placeholder: "Пн–Пт 09:00–18:00" },
+      { key: "address", label: "Адрес офиса", placeholder: "г. Сочи, ул. Авиационная, 15" },
+      { key: "working_hours", label: "Режим работы", placeholder: "Пн–Пт 9:00–17:00" },
     ],
   },
   {
     title: "Соцсети",
     fields: [
       { key: "social_telegram", label: "Telegram", placeholder: "https://t.me/..." },
-      { key: "social_whatsapp", label: "WhatsApp", placeholder: "https://wa.me/..." },
-      { key: "social_vk", label: "VK", placeholder: "https://vk.com/..." },
+      { key: "social_max", label: "Max", placeholder: "https://max.ru/..." },
     ],
   },
   {
@@ -46,6 +62,8 @@ const SETTINGS_GROUPS = [
   },
   {
     title: "Аналитика",
+    description:
+      "ID из этого блока имеют приоритет. Если пусто — подставляются NEXT_PUBLIC_YANDEX_METRIKA_ID и NEXT_PUBLIC_GA_ID из .env.",
     fields: [
       { key: "yandex_metrika_id", label: "ID Яндекс.Метрики", placeholder: "12345678" },
       { key: "google_analytics_id", label: "ID Google Analytics", placeholder: "G-XXXXXXXXXX" },
@@ -142,6 +160,9 @@ export default function AdminSettingsPage() {
       {SETTINGS_GROUPS.map((group) => (
         <div key={group.title} className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5 space-y-4">
           <h2 className="text-sm font-semibold text-white/60 uppercase tracking-wider">{group.title}</h2>
+          {group.description && (
+            <p className="text-xs text-white/35 leading-relaxed -mt-1">{group.description}</p>
+          )}
           <div className="space-y-3">
             {group.fields.map((field) => (
               <div key={field.key}>

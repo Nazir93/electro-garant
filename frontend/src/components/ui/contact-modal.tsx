@@ -1,15 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X, ArrowRight, ArrowLeft, Paperclip, Loader2, CheckCircle, FileText, Eye, Calculator } from "lucide-react";
+import { X, ArrowRight, Paperclip, Loader2, CheckCircle, FileText, Eye, Calculator, Send } from "lucide-react";
 import { useModal } from "@/lib/modal-context";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
-import { PHONE, PHONE_RAW, PHONE2, PHONE2_RAW } from "@/lib/constants";
+import { SITE_NAME } from "@/lib/constants";
+import { useContactConfig } from "@/lib/contact-config-context";
+import type { PriceEstimatePayload } from "@/lib/price-estimate-export";
+import {
+  type WorkMode,
+  computeCalculatorEstimate,
+  CALC_SERVICE_IDS,
+} from "@/lib/calculator-prices";
 import { useSmartCaptchaToken } from "@/components/smartcaptcha-provider";
+import {
+  FunnelFillButton as FillButton,
+  FunnelInputField as InputField,
+  FunnelSelect,
+} from "@/components/ui/funnel-ui";
+import { BackNavButton } from "@/components/ui/back-nav";
 
 type WizardStep =
   | "q1"
@@ -17,6 +30,7 @@ type WizardStep =
   | "form-project"
   | "form-inspection"
   | "form-calculator"
+  | "form-price-estimate"
   | "success";
 
 /* ───── Schemas ───── */
@@ -28,7 +42,7 @@ const projectFormSchema = z.object({
   company: z.string().optional(),
   budget: z.string().optional(),
   description: z.string().min(10, "Опишите проект подробнее"),
-  privacy: z.literal(true, { errorMap: () => ({ message: "Необходимо согласие" }) }),
+  privacy: z.boolean().refine((v) => v === true, { message: "Необходимо согласие" }),
   honeypot: z.string().max(0).optional(),
 });
 type ProjectFormData = z.infer<typeof projectFormSchema>;
@@ -41,13 +55,14 @@ const inspectionFormSchema = z.object({
   area: z.string().optional(),
   description: z.string().optional(),
   preferredTime: z.string().optional(),
-  privacy: z.literal(true, { errorMap: () => ({ message: "Необходимо согласие" }) }),
+  privacy: z.boolean().refine((v) => v === true, { message: "Необходимо согласие" }),
   honeypot: z.string().max(0).optional(),
 });
 type InspectionFormData = z.infer<typeof inspectionFormSchema>;
 
 const calculatorSchema = z.object({
   objectType: z.string().min(1, "Выберите тип объекта"),
+  workMode: z.enum(["rough", "finish", "design"]),
   area: z.string().min(1, "Укажите площадь"),
   rooms: z.string().optional(),
   floors: z.string().optional(),
@@ -56,10 +71,22 @@ const calculatorSchema = z.object({
   services: z.array(z.string()).min(1, "Выберите хотя бы одну услугу"),
   name: z.string().min(2, "Минимум 2 символа"),
   phone: z.string().min(10, "Введите корректный номер"),
-  privacy: z.literal(true, { errorMap: () => ({ message: "Необходимо согласие" }) }),
+  privacy: z.boolean().refine((v) => v === true, { message: "Необходимо согласие" }),
   honeypot: z.string().max(0).optional(),
 });
 type CalculatorFormData = z.infer<typeof calculatorSchema>;
+
+const priceEstimateSendSchema = z.object({
+  name: z.string().min(2, "Минимум 2 символа"),
+  phone: z
+    .string()
+    .min(10, "Введите номер телефона")
+    .max(30)
+    .regex(/^[\d\s+\-()]+$/, "Некорректный формат телефона"),
+  privacy: z.boolean().refine((v) => v === true, { message: "Необходимо согласие" }),
+  honeypot: z.string().max(0).optional(),
+});
+type PriceEstimateSendData = z.infer<typeof priceEstimateSendSchema>;
 
 /* ───── Constants ───── */
 
@@ -83,14 +110,26 @@ const OBJECT_TYPES = [
   "Другое",
 ];
 
-const SERVICE_OPTIONS = [
-  { id: "electrical", label: "Электромонтажные работы" },
-  { id: "lighting", label: "Архитектурная подсветка" },
-  { id: "acoustics", label: "Коммерческая акустика" },
-  { id: "cabling", label: "Слаботочные системы" },
-  { id: "smart-home", label: "Умный дом" },
-  { id: "security", label: "Видеонаблюдение и безопасность" },
-  { id: "design", label: "Проектирование" },
+const SERVICE_OPTIONS = CALC_SERVICE_IDS.map((id) => ({
+  id,
+  label:
+    id === "electrical"
+      ? "Электромонтажные работы"
+      : id === "lighting"
+        ? "Архитектурная подсветка"
+        : id === "acoustics"
+          ? "Коммерческая акустика"
+          : id === "cabling"
+            ? "Слаботочные системы"
+            : id === "smart-home"
+              ? "Умный дом"
+              : "Видеонаблюдение и безопасность",
+}));
+
+const WORK_MODE_OPTIONS: { id: WorkMode; label: string; hint?: string }[] = [
+  { id: "rough", label: "Черновой этап" },
+  { id: "finish", label: "Чистовой этап" },
+  { id: "design", label: "Проектирование", hint: "материал не учитывается" },
 ];
 
 const TIERS = ["econom", "standard", "premium"] as const;
@@ -100,104 +139,29 @@ const TIER_LABELS: Record<string, string> = {
   premium: "Премиум",
 };
 
-type PriceEntry = { noMat: [number, number, number]; withMat: [number, number, number] };
+const OBJECT_TYPE_SELECT_OPTIONS = [
+  { value: "", label: "Выберите тип" },
+  ...OBJECT_TYPES.map((t) => ({ value: t, label: t })),
+];
 
-const PRICE_TABLE: Record<string, PriceEntry> = {
-  electrical:  { noMat: [4000, 5500, 9000],   withMat: [6800, 12400, 21000] },
-  lighting:    { noMat: [1200, 1900, 4300],    withMat: [2200, 3650, 9800] },
-  acoustics:   { noMat: [900, 1400, 2600],     withMat: [4500, 10200, 14800] },
-  cabling:     { noMat: [800, 1300, 1900],      withMat: [1400, 1990, 3200] },
-  "smart-home": { noMat: [6500, 9000, 16900],  withMat: [9200, 13500, 29000] },
-  security:    { noMat: [500, 1400, 4200],      withMat: [800, 2400, 7500] },
-  design:      { noMat: [800, 1400, 2000],      withMat: [800, 1400, 2000] },
-};
+const FLOOR_SELECT_OPTIONS = [
+  { value: "", label: "Выберите" },
+  ...["1", "2", "3", "4", "5+"].map((f) => ({ value: f, label: f })),
+];
+
+const PREFERRED_TIME_OPTIONS = [
+  { value: "", label: "Любое" },
+  { value: "morning", label: "Утро (9–12)" },
+  { value: "afternoon", label: "День (12–17)" },
+  { value: "evening", label: "Вечер (17–20)" },
+];
+
+const BUDGET_SELECT_OPTIONS = BUDGET_OPTIONS.map((opt, i) => ({
+  value: i === 0 ? "" : opt,
+  label: opt,
+}));
 
 /* ───── Shared UI ───── */
-
-function FillButton({
-  children,
-  onClick,
-  type = "button",
-  disabled,
-  icon,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  type?: "button" | "submit";
-  disabled?: boolean;
-  icon?: React.ReactNode;
-}) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="w-full flex items-center justify-between px-6 py-5 sm:px-8 sm:py-6 text-lg sm:text-xl md:text-2xl font-heading transition-all duration-500 relative overflow-hidden"
-      style={{ border: "1px solid var(--border)", borderRadius: "20px" }}
-    >
-      <div
-        className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
-        style={{
-          backgroundColor: "var(--text)",
-          transform: hovered ? "scaleX(1)" : "scaleX(0)",
-          borderRadius: "20px",
-        }}
-      />
-      <span
-        className="relative z-10 transition-colors duration-700 flex items-center gap-3"
-        style={{ color: hovered ? "var(--bg)" : "var(--text)" }}
-      >
-        {icon}
-        {children}
-      </span>
-      <ArrowRight
-        size={22}
-        className="relative z-10 transition-colors duration-700"
-        style={{ color: hovered ? "var(--bg)" : "var(--text)" }}
-      />
-    </button>
-  );
-}
-
-function InputField({
-  label,
-  error,
-  children,
-}: {
-  label?: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="relative">
-      {label && (
-        <label className="block text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--text-subtle)" }}>
-          {label}
-        </label>
-      )}
-      {children}
-      {error && <p className="mt-1 text-[11px] text-red-400">{error}</p>}
-    </div>
-  );
-}
-
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2 text-xs uppercase tracking-[0.15em] mb-8 transition-colors"
-      style={{ color: "var(--text-muted)" }}
-      onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
-    >
-      <ArrowLeft size={14} />
-      Назад
-    </button>
-  );
-}
 
 /* ───── Question Steps ───── */
 
@@ -226,7 +190,7 @@ function Question2({ onAnswer, onBack }: { onAnswer: (answer: "yes" | "no" | "un
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-5">
       <div className="w-full max-w-md">
-        <BackButton onClick={onBack} />
+        <BackNavButton onClick={onBack} className="mb-8" />
       </div>
       <p className="text-[10px] uppercase tracking-[0.3em] mb-6" style={{ color: "var(--text-muted)" }}>
         Шаг 2 из 2
@@ -263,12 +227,178 @@ async function readLeadError(response: Response): Promise<string> {
   return "Не удалось отправить заявку. Проверьте поля или позвоните нам.";
 }
 
+/* ───── Отправка сметы с калькулятора прайса (/price) ───── */
+
+function PriceEstimateSendForm({
+  payload,
+  onSuccess,
+  getRecaptchaToken,
+}: {
+  payload: PriceEstimatePayload;
+  onSuccess: () => void;
+  getRecaptchaToken?: (action: string) => Promise<string>;
+}) {
+  const contact = useContactConfig();
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { register, handleSubmit, control, formState: { errors } } = useForm<PriceEstimateSendData>({
+    resolver: zodResolver(priceEstimateSendSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      privacy: false,
+      honeypot: "",
+    },
+  });
+
+  const onSubmit = async (data: PriceEstimateSendData) => {
+    if (data.honeypot) return;
+    setSubmitError(null);
+    setLoading(true);
+    try {
+      const recaptchaToken = getRecaptchaToken ? await getRecaptchaToken("submit") : "";
+      const params = new URLSearchParams(window.location.search);
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          phone: data.phone,
+          service: "Смета с калькулятора прайса",
+          source: "price-smeta",
+          pageUrl: window.location.href,
+          honeypot: data.honeypot || "",
+          recaptchaToken: recaptchaToken || undefined,
+          utmSource: params.get("utm_source"),
+          utmMedium: params.get("utm_medium"),
+          utmCampaign: params.get("utm_campaign"),
+          calcData: {
+            kind: "price-smeta",
+            siteName: SITE_NAME,
+            withVat: payload.withVat,
+            total: payload.total,
+            positionCount: payload.positionCount,
+            lines: payload.lines.map((l) => ({
+              id: l.id,
+              name: l.name,
+              sectionTitle: l.sectionTitle,
+              unit: l.unit,
+              qty: l.qty,
+              pricePerUnit: l.pricePerUnit,
+              lineTotal: l.lineTotal,
+            })),
+          },
+        }),
+      });
+      if (response.ok) {
+        const result = (await response.json()) as { redirectUrl?: string };
+        if (result.redirectUrl) window.location.href = result.redirectUrl;
+        else onSuccess();
+      } else {
+        setSubmitError(await readLeadError(response));
+      }
+    } catch {
+      setSubmitError("Нет связи с сервером. Позвоните нам: " + contact.phone);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const nds = payload.withVat ? "с НДС 22%" : "без НДС";
+
+  return (
+    <div className="min-h-screen flex items-start md:items-center">
+      <div className="container mx-auto py-20 md:py-16 pt-24 md:pt-20">
+        <div className="max-w-2xl mx-auto px-4">
+          <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl leading-[1.05] mb-2">
+            ОТПРАВИТЬ СМЕТУ
+          </h2>
+          <p className="text-sm mb-1" style={{ color: "var(--text-muted)" }}>
+            {SITE_NAME} · калькулятор прайса
+          </p>
+          <p className="text-base mb-6 font-heading tabular-nums" style={{ color: "var(--accent)" }}>
+            Итого: {payload.total.toLocaleString("ru-RU")} ₽ ({nds}) · {payload.positionCount} поз.
+          </p>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+            <input type="text" tabIndex={-1} autoComplete="off" className="sr-only" aria-hidden {...register("honeypot")} />
+
+            <InputField label="Имя" error={errors.name?.message}>
+              <input
+                type="text"
+                className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none"
+                style={{ borderColor: errors.name ? "#ef4444" : "var(--border)", color: "var(--text)" }}
+                {...register("name")}
+              />
+            </InputField>
+
+            <InputField label="Телефон" error={errors.phone?.message}>
+              <input
+                type="tel"
+                inputMode="tel"
+                placeholder="+7"
+                className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none"
+                style={{ borderColor: errors.phone ? "#ef4444" : "var(--border)", color: "var(--text)" }}
+                {...register("phone")}
+              />
+            </InputField>
+
+            <div className="flex items-start gap-3">
+              <Controller
+                name="privacy"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    id="privacy-price-smeta"
+                    type="checkbox"
+                    className="w-4 h-4 mt-0.5 accent-[var(--accent)] shrink-0 cursor-pointer relative z-10"
+                    checked={field.value === true}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                )}
+              />
+              <label htmlFor="privacy-price-smeta" className="text-sm cursor-pointer" style={{ color: "var(--text-muted)" }}>
+                Я согласен с{" "}
+                <Link href="/privacy" className="underline" onClick={(e) => e.stopPropagation()}>
+                  политикой конфиденциальности
+                </Link>
+              </label>
+            </div>
+            {errors.privacy && <p className="text-[11px] text-red-400 -mt-2">{errors.privacy.message}</p>}
+
+            {submitError && (
+              <p className="text-sm text-red-400">{submitError}</p>
+            )}
+
+            <FillButton type="submit" disabled={loading} icon={loading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}>
+              {loading ? "Отправка…" : "Отправить смету"}
+            </FillButton>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProjectForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => void; onSuccess: () => void; getRecaptchaToken?: (action: string) => Promise<string> }) {
+  const contact = useContactConfig();
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ProjectFormData>({
+  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<ProjectFormData>({
     resolver: zodResolver(projectFormSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      email: "",
+      company: "",
+      budget: "",
+      description: "",
+      privacy: false,
+      honeypot: "",
+    },
   });
 
   const onSubmit = async (data: ProjectFormData) => {
@@ -302,7 +432,7 @@ function ProjectForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => v
         setSubmitError(await readLeadError(response));
       }
     } catch {
-      setSubmitError("Нет связи с сервером. Позвоните нам: " + PHONE);
+      setSubmitError("Нет связи с сервером. Позвоните нам: " + contact.phone);
     }
     finally { setLoading(false); }
   };
@@ -311,39 +441,49 @@ function ProjectForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => v
     <div className="min-h-screen flex items-start md:items-center">
       <div className="container mx-auto py-20 md:py-16">
         <div className="max-w-3xl mx-auto">
-          <BackButton onClick={onBack} />
+          <BackNavButton onClick={onBack} className="mb-8" />
           <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl leading-[1.05] mb-8">
             ОПИШИТЕ<br />ВАШ ПРОЕКТ
           </h2>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid grid-cols-1 sm:grid-cols-2">
               <div className="relative" style={{ border: "1px solid var(--border)" }}>
-                <input type="text" placeholder="Имя*" className="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} {...register("name")} />
+                <input type="text" placeholder="Имя*" className="funnel-text-input w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} {...register("name")} />
                 {errors.name && <span className="absolute bottom-1 right-3 text-[10px] text-red-400">{errors.name.message}</span>}
               </div>
               <div className="relative border-phone-field" style={{ border: "1px solid var(--border)", borderTop: "none", borderLeft: "none" }}>
-                <input type="tel" placeholder="Телефон*" inputMode="tel" autoComplete="tel" className="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} {...register("phone")} />
+                <input type="tel" placeholder="Телефон*" inputMode="tel" autoComplete="tel" className="funnel-text-input w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} {...register("phone")} />
                 {errors.phone && <span className="absolute bottom-1 right-3 text-[10px] text-red-400">{errors.phone.message}</span>}
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2">
               <div className="relative" style={{ border: "1px solid var(--border)", borderTop: "none" }}>
-                <input type="email" placeholder="E-mail*" className="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} {...register("email")} />
+                <input type="email" placeholder="E-mail*" className="funnel-text-input w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} {...register("email")} />
                 {errors.email && <span className="absolute bottom-1 right-3 text-[10px] text-red-400">{errors.email.message}</span>}
               </div>
               <div className="border-phone-field" style={{ border: "1px solid var(--border)", borderTop: "none", borderLeft: "none" }}>
-                <input type="text" placeholder="Компания" className="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} {...register("company")} />
+                <input type="text" placeholder="Компания" className="funnel-text-input w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} {...register("company")} />
               </div>
             </div>
             <div style={{ border: "1px solid var(--border)", borderTop: "none" }}>
-              <select className="w-full px-4 sm:px-5 py-3.5 sm:py-4 text-sm focus:outline-none cursor-pointer appearance-none" style={{ color: "var(--text-muted)", backgroundColor: "var(--bg)" }} {...register("budget")}>
-                {BUDGET_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt === BUDGET_OPTIONS[0] ? "" : opt} style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>{opt}</option>
-                ))}
-              </select>
+              <Controller
+                name="budget"
+                control={control}
+                render={({ field }) => (
+                  <FunnelSelect
+                    variant="panel"
+                    className="[&_button]:text-sm"
+                    options={BUDGET_SELECT_OPTIONS}
+                    placeholder={BUDGET_OPTIONS[0]}
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                  />
+                )}
+              />
             </div>
             <div className="relative" style={{ border: "1px solid var(--border)", borderTop: "none" }}>
-              <textarea placeholder="Описание проекта*" rows={3} className="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none resize-none" style={{ color: "var(--text)" }} {...register("description")} />
+              <textarea placeholder="Описание проекта*" rows={3} className="funnel-text-input w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-transparent text-sm focus:outline-none resize-none" style={{ color: "var(--text)" }} {...register("description")} />
               {errors.description && <span className="absolute bottom-3 right-3 text-[10px] text-red-400">{errors.description.message}</span>}
             </div>
             <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
@@ -354,9 +494,26 @@ function ProjectForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => v
               </label>
             </div>
             <div className="flex items-center gap-2 px-5 py-5">
-              <label className="flex items-center gap-2 cursor-pointer text-xs" style={{ color: "var(--text-muted)" }}>
-                <input type="checkbox" className="w-4 h-4 accent-[var(--accent)]" {...register("privacy")} />
-                <span>Я согласен с <a href="/privacy" className="underline" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</a></span>
+              <Controller
+                name="privacy"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    id="privacy-project"
+                    type="checkbox"
+                    className="w-4 h-4 accent-[var(--accent)] cursor-pointer relative z-10 shrink-0"
+                    checked={field.value === true}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                )}
+              />
+              <label htmlFor="privacy-project" className="cursor-pointer text-xs" style={{ color: "var(--text-muted)" }}>
+                Я согласен с{" "}
+                <a href="/privacy" className="underline" target="_blank" rel="noopener noreferrer">
+                  политикой конфиденциальности
+                </a>
                 {errors.privacy && <span className="text-red-400 text-[10px] ml-1">*</span>}
               </label>
             </div>
@@ -387,10 +544,22 @@ function ProjectForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => v
 /* ───── Form: Inspection (site visit) ───── */
 
 function InspectionForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => void; onSuccess: () => void; getRecaptchaToken?: (action: string) => Promise<string> }) {
+  const contact = useContactConfig();
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<InspectionFormData>({
+  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<InspectionFormData>({
     resolver: zodResolver(inspectionFormSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      objectType: "",
+      address: "",
+      area: "",
+      description: "",
+      preferredTime: "",
+      privacy: false,
+      honeypot: "",
+    },
   });
 
   const onSubmit = async (data: InspectionFormData) => {
@@ -426,7 +595,7 @@ function InspectionForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
         setSubmitError(await readLeadError(response));
       }
     } catch {
-      setSubmitError("Нет связи с сервером. Позвоните нам: " + PHONE);
+      setSubmitError("Нет связи с сервером. Позвоните нам: " + contact.phone);
     }
     finally { setLoading(false); }
   };
@@ -435,7 +604,7 @@ function InspectionForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
     <div className="min-h-screen flex items-start md:items-center">
       <div className="container mx-auto py-20 md:py-16">
         <div className="max-w-2xl mx-auto">
-          <BackButton onClick={onBack} />
+          <BackNavButton onClick={onBack} className="mb-8" />
           <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl leading-[1.05] mb-3">
             ОПИСАНИЕ ОБЪЕКТА
           </h2>
@@ -445,42 +614,80 @@ function InspectionForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <InputField label="Ваше имя" error={errors.name?.message}>
-                <input type="text" placeholder="Иван" className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.name ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("name")} />
+                <input type="text" placeholder="Иван" className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.name ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("name")} />
               </InputField>
               <InputField label="Телефон" error={errors.phone?.message}>
-                <input type="tel" placeholder="+7 (999) 000-00-00" inputMode="tel" autoComplete="tel" className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.phone ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("phone")} />
+                <input type="tel" placeholder="+7 (999) 000-00-00" inputMode="tel" autoComplete="tel" className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.phone ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("phone")} />
               </InputField>
             </div>
             <InputField label="Тип объекта" error={errors.objectType?.message}>
-              <select className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none cursor-pointer appearance-none" style={{ borderColor: errors.objectType ? "#ef4444" : "var(--border)", color: "var(--text)", backgroundColor: "transparent" }} {...register("objectType")}>
-                <option value="" style={{ backgroundColor: "var(--bg)" }}>Выберите тип</option>
-                {OBJECT_TYPES.map((t) => <option key={t} value={t} style={{ backgroundColor: "var(--bg)" }}>{t}</option>)}
-              </select>
+              <Controller
+                name="objectType"
+                control={control}
+                render={({ field }) => (
+                  <FunnelSelect
+                    variant="underline"
+                    options={OBJECT_TYPE_SELECT_OPTIONS}
+                    placeholder="Выберите тип"
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    invalid={!!errors.objectType}
+                  />
+                )}
+              />
             </InputField>
             <InputField label="Адрес объекта" error={errors.address?.message}>
-              <input type="text" placeholder="г. Сочи, ул. ..." className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.address ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("address")} />
+              <input type="text" placeholder="г. Сочи, ул. ..." className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.address ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("address")} />
             </InputField>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <InputField label="Площадь (м²)">
-                <input type="text" placeholder="100" inputMode="numeric" className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: "var(--border)", color: "var(--text)" }} {...register("area")} />
+                <input type="text" placeholder="100" inputMode="numeric" className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: "var(--border)", color: "var(--text)" }} {...register("area")} />
               </InputField>
               <InputField label="Удобное время для звонка">
-                <select className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none cursor-pointer appearance-none" style={{ borderColor: "var(--border)", color: "var(--text)", backgroundColor: "transparent" }} {...register("preferredTime")}>
-                  <option value="" style={{ backgroundColor: "var(--bg)" }}>Любое</option>
-                  <option value="morning" style={{ backgroundColor: "var(--bg)" }}>Утро (9–12)</option>
-                  <option value="afternoon" style={{ backgroundColor: "var(--bg)" }}>День (12–17)</option>
-                  <option value="evening" style={{ backgroundColor: "var(--bg)" }}>Вечер (17–20)</option>
-                </select>
+                <Controller
+                  name="preferredTime"
+                  control={control}
+                  render={({ field }) => (
+                    <FunnelSelect
+                      variant="underline"
+                      options={PREFERRED_TIME_OPTIONS}
+                      placeholder="Любое"
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  )}
+                />
               </InputField>
             </div>
             <InputField label="Комментарий">
-              <textarea placeholder="Опишите что нужно сделать..." rows={3} className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none resize-none" style={{ borderColor: "var(--border)", color: "var(--text)" }} {...register("description")} />
+              <textarea placeholder="Опишите что нужно сделать..." rows={3} className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none resize-none" style={{ borderColor: "var(--border)", color: "var(--text)" }} {...register("description")} />
             </InputField>
-            <label className="flex items-center gap-2 cursor-pointer text-xs mt-2" style={{ color: "var(--text-muted)" }}>
-              <input type="checkbox" className="w-4 h-4 accent-[var(--accent)]" {...register("privacy")} />
-              <span>Я согласен с <Link href="/privacy" className="underline" onClick={(e) => e.stopPropagation()}>политикой конфиденциальности</Link></span>
-              {errors.privacy && <span className="text-red-400 text-[10px] ml-1">*</span>}
-            </label>
+            <div className="flex items-center gap-2 mt-2">
+              <Controller
+                name="privacy"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    id="privacy-inspection"
+                    type="checkbox"
+                    className="w-4 h-4 accent-[var(--accent)] cursor-pointer relative z-10 shrink-0"
+                    checked={field.value === true}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                )}
+              />
+              <label htmlFor="privacy-inspection" className="cursor-pointer text-xs" style={{ color: "var(--text-muted)" }}>
+                Я согласен с{" "}
+                <Link href="/privacy" className="underline" onClick={(e) => e.stopPropagation()}>
+                  политикой конфиденциальности
+                </Link>
+                {errors.privacy && <span className="text-red-400 text-[10px] ml-1">*</span>}
+              </label>
+            </div>
             <p className="text-[10px] -mt-2" style={{ color: "var(--text-subtle)" }}>
               Мы не передаём ваши данные третьим лицам.{" "}
               <Link href="/consent" className="underline hover:text-[var(--accent)] transition-colors" onClick={(e) => e.stopPropagation()}>
@@ -507,14 +714,27 @@ function InspectionForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
 
 /* ───── Form: Calculator ───── */
 
-function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => void; onSuccess: () => void; getRecaptchaToken?: (action: string) => Promise<string> }) {
+function CalculatorForm({ onBack: _onBack, onSuccess, getRecaptchaToken }: { onBack: () => void; onSuccess: () => void; getRecaptchaToken?: (action: string) => Promise<string> }) {
+  const contact = useContactConfig();
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<number | null>(null);
-  const [withEquipment, setWithEquipment] = useState(false);
-  const { register, handleSubmit, formState: { errors }, watch, reset, setValue } = useForm<CalculatorFormData>({
+  const { register, handleSubmit, control, formState: { errors }, watch, reset, setValue } = useForm<CalculatorFormData>({
     resolver: zodResolver(calculatorSchema),
-    defaultValues: { services: [], tier: "standard", withMaterials: false },
+    defaultValues: {
+      services: [],
+      tier: "standard",
+      withMaterials: false,
+      workMode: "rough",
+      objectType: "",
+      floors: "",
+      area: "",
+      rooms: "",
+      name: "",
+      phone: "",
+      privacy: false,
+      honeypot: "",
+    },
   });
 
   const watchArea = watch("area");
@@ -522,46 +742,29 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
   const watchTier = watch("tier");
   const watchMaterials = watch("withMaterials");
   const watchObjectType = watch("objectType");
+  const watchWorkMode = watch("workMode");
+  const watchFloors = watch("floors");
 
-  const showFloors = ["Квартира", "Частный дом", "Гостиница"].includes(watchObjectType);
-  const hasAcoustics = watchServices.includes("acoustics");
-  const hasSmartHome = watchServices.includes("smart-home");
-  const hasDesign = watchServices.includes("design");
-  const designAutoForced = hasSmartHome && !hasDesign;
-  const materialsDisabled = hasDesign || designAutoForced;
+  const showFloorsByObject = ["Квартира", "Частный дом", "Гостиница"].includes(watchObjectType);
+  const showFloorField = showFloorsByObject || watchServices.includes("lighting");
+  const isDesignMode = watchWorkMode === "design";
 
   useEffect(() => {
-    if (materialsDisabled) setValue("withMaterials", false);
-  }, [materialsDisabled, setValue]);
+    if (isDesignMode) setValue("withMaterials", false);
+  }, [isDesignMode, setValue]);
 
   useEffect(() => {
     const rawArea = parseFloat(watchArea || "0");
-    const area = rawArea > 0 ? Math.max(rawArea, 30) : 0;
-    const tierIdx = TIERS.indexOf(watchTier || "standard");
-
-    const services = [...watchServices];
-    if (services.includes("smart-home") && !services.includes("design")) {
-      services.push("design");
-    }
-
-    if (area > 0 && services.length > 0 && tierIdx >= 0) {
-      const total = services.reduce((sum, s) => {
-        const entry = PRICE_TABLE[s];
-        if (!entry) return sum;
-        if (s === "acoustics") {
-          return sum + (withEquipment ? entry.withMat : entry.noMat)[tierIdx];
-        }
-        if (s === "design") {
-          return sum + entry.noMat[tierIdx];
-        }
-        const prices = watchMaterials ? entry.withMat : entry.noMat;
-        return sum + prices[tierIdx];
-      }, 0);
-      setEstimate(Math.round(area * total));
-    } else {
-      setEstimate(null);
-    }
-  }, [watchArea, watchServices, watchTier, watchMaterials, withEquipment]);
+    const result = computeCalculatorEstimate({
+      workMode: watchWorkMode || "rough",
+      services: watchServices,
+      tier: watchTier || "standard",
+      withMaterials: isDesignMode ? false : watchMaterials,
+      areaRaw: rawArea,
+      floorsRaw: watchFloors,
+    });
+    setEstimate(result?.total ?? null);
+  }, [watchArea, watchServices, watchTier, watchMaterials, watchWorkMode, watchFloors, isDesignMode]);
 
   const onSubmit = async (data: CalculatorFormData) => {
     if (data.honeypot) return;
@@ -569,11 +772,16 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
     setLoading(true);
     try {
       const recaptchaToken = getRecaptchaToken ? await getRecaptchaToken("submit") : "";
-      const services = [...data.services];
-      if (services.includes("smart-home") && !services.includes("design")) {
-        services.push("design");
-      }
       const params = new URLSearchParams(window.location.search);
+      const rawArea = parseFloat(data.area || "0");
+      const computed = computeCalculatorEstimate({
+        workMode: data.workMode,
+        services: data.services,
+        tier: data.tier,
+        withMaterials: data.workMode === "design" ? false : data.withMaterials,
+        areaRaw: rawArea,
+        floorsRaw: data.floors,
+      });
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -584,15 +792,17 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
           recaptchaToken: recaptchaToken || undefined,
           utmSource: params.get("utm_source"), utmMedium: params.get("utm_medium"), utmCampaign: params.get("utm_campaign"),
           calcData: {
+            workMode: data.workMode,
             objectType: data.objectType,
             area: data.area,
             rooms: data.rooms || null,
             floors: data.floors || null,
-            services,
-            estimate: estimate ?? null,
+            services: data.services,
+            estimate: computed?.total ?? null,
             tier: data.tier,
-            withMaterials: data.withMaterials,
-            withEquipment: hasAcoustics ? withEquipment : null,
+            withMaterials: data.workMode === "design" ? false : data.withMaterials,
+            lightingMultiplier: computed?.lightingMultiplier ?? null,
+            areaUsed: computed?.areaUsed ?? null,
           },
         }),
       });
@@ -604,16 +814,15 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
         setSubmitError(await readLeadError(response));
       }
     } catch {
-      setSubmitError("Нет связи с сервером. Позвоните нам: " + PHONE);
+      setSubmitError("Нет связи с сервером. Позвоните нам: " + contact.phone);
     }
     finally { setLoading(false); }
   };
 
   return (
     <div className="min-h-screen flex items-start md:items-center">
-      <div className="container mx-auto py-20 md:py-16">
+      <div className="container mx-auto py-20 md:py-16 pt-24 md:pt-20">
         <div className="max-w-2xl mx-auto">
-          <BackButton onClick={onBack} />
           <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl leading-[1.05] mb-3">
             ОРИЕНТИРОВОЧНЫЙ<br />РАСЧЁТ
           </h2>
@@ -621,22 +830,73 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
             Заполните параметры объекта — мы рассчитаем примерную стоимость
           </p>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+            <input type="hidden" {...register("workMode")} />
+
+            {/* ── Этап работ (таблица цен) ── */}
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--text-subtle)" }}>
+                Этап работ
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {WORK_MODE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setValue("workMode", opt.id, { shouldValidate: true })}
+                    className="flex flex-col items-center justify-center py-3 px-2 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
+                    style={{
+                      border: watchWorkMode === opt.id ? "1px solid var(--accent)" : "1px solid var(--border)",
+                      backgroundColor: watchWorkMode === opt.id ? "rgba(201,168,76,0.1)" : "transparent",
+                      color: watchWorkMode === opt.id ? "var(--accent)" : "var(--text-muted)",
+                    }}
+                  >
+                    <span>{opt.label}</span>
+                    {opt.hint && (
+                      <span className="text-[9px] normal-case font-sans tracking-normal mt-1 opacity-80" style={{ color: "var(--text-subtle)" }}>
+                        {opt.hint}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* ── Тип объекта ── */}
             <InputField label="Тип объекта" error={errors.objectType?.message}>
-              <select className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none cursor-pointer appearance-none" style={{ borderColor: errors.objectType ? "#ef4444" : "var(--border)", color: "var(--text)", backgroundColor: "transparent" }} {...register("objectType")}>
-                <option value="" style={{ backgroundColor: "var(--bg)" }}>Выберите тип</option>
-                {OBJECT_TYPES.map((t) => <option key={t} value={t} style={{ backgroundColor: "var(--bg)" }}>{t}</option>)}
-              </select>
+              <Controller
+                name="objectType"
+                control={control}
+                render={({ field }) => (
+                  <FunnelSelect
+                    variant="underline"
+                    options={OBJECT_TYPE_SELECT_OPTIONS}
+                    placeholder="Выберите тип"
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    invalid={!!errors.objectType}
+                  />
+                )}
+              />
             </InputField>
 
-            {/* ── Количество этажей (для Квартира / Частный дом / Гостиница) ── */}
-            {showFloors && (
-              <InputField label="Количество этажей">
-                <select className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none cursor-pointer appearance-none" style={{ borderColor: "var(--border)", color: "var(--text)", backgroundColor: "transparent" }} {...register("floors")}>
-                  <option value="" style={{ backgroundColor: "var(--bg)" }}>Выберите</option>
-                  {["1", "2", "3", "4", "5+"].map((f) => <option key={f} value={f} style={{ backgroundColor: "var(--bg)" }}>{f}</option>)}
-                </select>
+            {/* ── Количество этажей (объект многоэтажный или выбрана подсветка — коэффициент по этажам) ── */}
+            {showFloorField && (
+              <InputField label={watchServices.includes("lighting") ? "Количество этажей (для расчёта подсветки)" : "Количество этажей"}>
+                <Controller
+                  name="floors"
+                  control={control}
+                  render={({ field }) => (
+                    <FunnelSelect
+                      variant="underline"
+                      options={FLOOR_SELECT_OPTIONS}
+                      placeholder="Выберите"
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  )}
+                />
               </InputField>
             )}
 
@@ -649,28 +909,6 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {SERVICE_OPTIONS.map((service) => {
                   const isSelected = watchServices.includes(service.id);
-                  const isAutoForced = service.id === "design" && hasSmartHome && !isSelected;
-
-                  if (isAutoForced) {
-                    return (
-                      <div
-                        key={service.id}
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
-                        style={{
-                          border: "1px solid var(--accent)",
-                          backgroundColor: "rgba(201,168,76,0.08)",
-                          opacity: 0.75,
-                        }}
-                      >
-                        <div className="w-4 h-4 rounded shrink-0 flex items-center justify-center" style={{ backgroundColor: "var(--accent)" }}>
-                          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        </div>
-                        <span className="text-sm" style={{ color: "var(--accent)" }}>Проектирование умного дома</span>
-                        <span className="text-[8px] ml-auto uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: "var(--accent)", border: "1px solid rgba(201,168,76,0.3)" }}>авто</span>
-                      </div>
-                    );
-                  }
-
                   return (
                     <label
                       key={service.id}
@@ -695,44 +933,9 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
               </div>
             </div>
 
-            {/* ── Рассчитать с оборудованием (только для акустики) ── */}
-            {hasAcoustics && (
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--text-subtle)" }}>
-                  Рассчитать с оборудованием
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setWithEquipment(false)}
-                    className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
-                    style={{
-                      border: !withEquipment ? "1px solid var(--accent)" : "1px solid var(--border)",
-                      backgroundColor: !withEquipment ? "rgba(201,168,76,0.1)" : "transparent",
-                      color: !withEquipment ? "var(--accent)" : "var(--text-muted)",
-                    }}
-                  >
-                    Нет
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setWithEquipment(true)}
-                    className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
-                    style={{
-                      border: withEquipment ? "1px solid var(--accent)" : "1px solid var(--border)",
-                      backgroundColor: withEquipment ? "rgba(201,168,76,0.1)" : "transparent",
-                      color: withEquipment ? "var(--accent)" : "var(--text-muted)",
-                    }}
-                  >
-                    Да
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* ── Площадь ── */}
             <InputField label="Площадь (м²)" error={errors.area?.message}>
-              <input type="text" placeholder="от 30" inputMode="numeric" className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.area ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("area")} />
+              <input type="text" placeholder="от 30" inputMode="numeric" className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.area ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("area")} />
             </InputField>
             <p className="text-[9px] -mt-3" style={{ color: "var(--text-subtle)" }}>
               Минимальная площадь расчёта — 30 м²
@@ -761,49 +964,40 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
               </div>
             </div>
 
-            {/* ── Рассчитать с материалом (неактивно при проектировании) ── */}
-            <div
-              className="transition-opacity duration-300"
-              style={{
-                opacity: materialsDisabled ? 0.35 : 1,
-                pointerEvents: materialsDisabled ? "none" : "auto",
-              }}
-            >
-              <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--text-subtle)" }}>
-                Рассчитать с материалом
-              </p>
-              {materialsDisabled && (
-                <p className="text-[9px] -mt-1 mb-3" style={{ color: "var(--text-subtle)" }}>
-                  Не применимо при выборе проектирования
+            {/* ── Рассчитать с материалом (только черновой / чистовой) ── */}
+            {!isDesignMode && (
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--text-subtle)" }}>
+                  Рассчитать с материалом
                 </p>
-              )}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setValue("withMaterials", false)}
-                  className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
-                  style={{
-                    border: !watchMaterials ? "1px solid var(--accent)" : "1px solid var(--border)",
-                    backgroundColor: !watchMaterials ? "rgba(201,168,76,0.1)" : "transparent",
-                    color: !watchMaterials ? "var(--accent)" : "var(--text-muted)",
-                  }}
-                >
-                  Нет
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setValue("withMaterials", true)}
-                  className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
-                  style={{
-                    border: watchMaterials ? "1px solid var(--accent)" : "1px solid var(--border)",
-                    backgroundColor: watchMaterials ? "rgba(201,168,76,0.1)" : "transparent",
-                    color: watchMaterials ? "var(--accent)" : "var(--text-muted)",
-                  }}
-                >
-                  Да
-                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setValue("withMaterials", false)}
+                    className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
+                    style={{
+                      border: !watchMaterials ? "1px solid var(--accent)" : "1px solid var(--border)",
+                      backgroundColor: !watchMaterials ? "rgba(201,168,76,0.1)" : "transparent",
+                      color: !watchMaterials ? "var(--accent)" : "var(--text-muted)",
+                    }}
+                  >
+                    Нет
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setValue("withMaterials", true)}
+                    className="flex items-center justify-center py-3 rounded-xl text-sm font-heading uppercase tracking-wide transition-all duration-300"
+                    style={{
+                      border: watchMaterials ? "1px solid var(--accent)" : "1px solid var(--border)",
+                      backgroundColor: watchMaterials ? "rgba(201,168,76,0.1)" : "transparent",
+                      color: watchMaterials ? "var(--accent)" : "var(--text-muted)",
+                    }}
+                  >
+                    Да
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* ── Ориентировочная стоимость ── */}
             {estimate !== null && (
@@ -825,18 +1019,37 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <InputField label="Ваше имя" error={errors.name?.message}>
-                <input type="text" placeholder="Иван" className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.name ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("name")} />
+                <input type="text" placeholder="Иван" className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.name ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("name")} />
               </InputField>
               <InputField label="Телефон" error={errors.phone?.message}>
-                <input type="tel" placeholder="+7 (999) 000-00-00" inputMode="tel" autoComplete="tel" className="w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.phone ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("phone")} />
+                <input type="tel" placeholder="+7 (999) 000-00-00" inputMode="tel" autoComplete="tel" className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.phone ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("phone")} />
               </InputField>
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer text-xs mt-2" style={{ color: "var(--text-muted)" }}>
-              <input type="checkbox" className="w-4 h-4 accent-[var(--accent)]" {...register("privacy")} />
-              <span>Я согласен с <Link href="/privacy" className="underline" onClick={(e) => e.stopPropagation()}>политикой конфиденциальности</Link></span>
-              {errors.privacy && <span className="text-red-400 text-[10px] ml-1">*</span>}
-            </label>
+            <div className="flex items-center gap-2 mt-2">
+              <Controller
+                name="privacy"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    id="privacy-calculator"
+                    type="checkbox"
+                    className="w-4 h-4 accent-[var(--accent)] cursor-pointer relative z-10 shrink-0"
+                    checked={field.value === true}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                )}
+              />
+              <label htmlFor="privacy-calculator" className="cursor-pointer text-xs" style={{ color: "var(--text-muted)" }}>
+                Я согласен с{" "}
+                <Link href="/privacy" className="underline" onClick={(e) => e.stopPropagation()}>
+                  политикой конфиденциальности
+                </Link>
+                {errors.privacy && <span className="text-red-400 text-[10px] ml-1">*</span>}
+              </label>
+            </div>
             <p className="text-[10px] -mt-2" style={{ color: "var(--text-subtle)" }}>
               Мы не передаём ваши данные третьим лицам.{" "}
               <Link href="/consent" className="underline hover:text-[var(--accent)] transition-colors" onClick={(e) => e.stopPropagation()}>
@@ -864,6 +1077,7 @@ function CalculatorForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
 /* ───── Success Screen ───── */
 
 function SuccessScreen({ onClose }: { onClose: () => void }) {
+  const contact = useContactConfig();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
       <CheckCircle size={56} style={{ color: "var(--accent)" }} className="mb-8" />
@@ -872,7 +1086,7 @@ function SuccessScreen({ onClose }: { onClose: () => void }) {
         Мы свяжемся с вами в ближайшее время
       </p>
       <p className="text-sm mb-10" style={{ color: "var(--text-subtle)" }}>
-        Или позвоните нам: <a href={`tel:${PHONE_RAW}`} className="underline" style={{ color: "var(--text-muted)" }}>{PHONE}</a>{" / "}<a href={`tel:${PHONE2_RAW}`} className="underline" style={{ color: "var(--text-muted)" }}>{PHONE2}</a>
+        Или позвоните нам: <a href={`tel:${contact.phoneRaw}`} className="underline" style={{ color: "var(--text-muted)" }}>{contact.phone}</a>{" / "}<a href={`tel:${contact.phone2Raw}`} className="underline" style={{ color: "var(--text-muted)" }}>{contact.phone2}</a>
       </p>
       <button
         onClick={onClose}
@@ -888,8 +1102,10 @@ function SuccessScreen({ onClose }: { onClose: () => void }) {
 /* ───── Main Modal ───── */
 
 export function ContactModal() {
-  const { isOpen, closeModal } = useModal();
+  const { isOpen, closeModal, initialContactStep, priceEstimatePayload } = useModal();
   const [step, setStep] = useState<WizardStep>("q1");
+  /** Вошли сразу в ориентировочный расчёт (без шагов «Есть проект?») — «Назад» закрывает модалку */
+  const [directEstimateEntry, setDirectEstimateEntry] = useState(false);
   const router = useRouter();
   const getSmartCaptchaToken = useSmartCaptchaToken();
 
@@ -903,16 +1119,28 @@ export function ContactModal() {
 
   useEffect(() => {
     if (isOpen) {
-      setStep("q1");
+      if (initialContactStep === "form-calculator") {
+        setStep("form-calculator");
+        setDirectEstimateEntry(true);
+      } else if (initialContactStep === "form-price-estimate") {
+        setStep("form-price-estimate");
+        setDirectEstimateEntry(false);
+      } else {
+        setStep("q1");
+        setDirectEstimateEntry(false);
+      }
       window.__lenis?.stop();
     } else {
       window.__lenis?.start();
     }
-    return () => { window.__lenis?.start(); };
-  }, [isOpen]);
+    return () => {
+      window.__lenis?.start();
+    };
+  }, [isOpen, initialContactStep]);
 
   const handleClose = () => {
     setStep("q1");
+    setDirectEstimateEntry(false);
     closeModal();
   };
 
@@ -946,7 +1174,7 @@ export function ContactModal() {
     >
       <button
         onClick={handleClose}
-        className="fixed top-4 right-4 md:top-6 md:right-6 z-[110] w-12 h-12 flex items-center justify-center transition-colors duration-200"
+        className="fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] md:top-6 md:right-6 z-[110] min-w-[44px] min-h-[44px] w-12 h-12 flex items-center justify-center transition-colors duration-200 touch-manipulation"
         style={{ color: "var(--text-muted)" }}
         onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; }}
@@ -955,11 +1183,35 @@ export function ContactModal() {
         <X size={28} />
       </button>
 
+      {(step === "form-calculator" || step === "form-price-estimate") && (
+        <BackNavButton
+          className="fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-[110] md:top-6 md:left-6 touch-manipulation"
+          onClick={() => {
+            if (step === "form-price-estimate") handleClose();
+            else if (directEstimateEntry) handleClose();
+            else setStep("q2");
+          }}
+        />
+      )}
+
       {step === "q1" && <Question1 onAnswer={handleQ1} />}
       {step === "q2" && <Question2 onAnswer={handleQ2} onBack={() => setStep("q1")} />}
       {step === "form-project" && <ProjectForm onBack={() => setStep("q1")} onSuccess={() => setStep("success")} getRecaptchaToken={getSmartCaptchaToken} />}
       {step === "form-inspection" && <InspectionForm onBack={() => setStep("q2")} onSuccess={() => setStep("success")} getRecaptchaToken={getSmartCaptchaToken} />}
-      {step === "form-calculator" && <CalculatorForm onBack={() => setStep("q2")} onSuccess={() => setStep("success")} getRecaptchaToken={getSmartCaptchaToken} />}
+      {step === "form-calculator" && (
+        <CalculatorForm
+          onBack={directEstimateEntry ? handleClose : () => setStep("q2")}
+          onSuccess={() => setStep("success")}
+          getRecaptchaToken={getSmartCaptchaToken}
+        />
+      )}
+      {step === "form-price-estimate" && priceEstimatePayload && (
+        <PriceEstimateSendForm
+          payload={priceEstimatePayload}
+          onSuccess={() => setStep("success")}
+          getRecaptchaToken={getSmartCaptchaToken}
+        />
+      )}
       {step === "success" && <SuccessScreen onClose={handleClose} />}
     </div>
   );

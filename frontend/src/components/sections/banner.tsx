@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { useModal } from "@/lib/modal-context";
 import { useTheme } from "@/lib/theme-context";
 
 type AnnotationItem = {
@@ -61,8 +60,10 @@ const ANNOTATIONS: AnnotationItem[] = [
     label: "Умный дом",
     desc: "Автоматизация и управление",
     href: "/services/smart-home",
-    dotX: 58, dotY: 60,
-    labelX: 23, labelY: 68,
+    dotX: 44,
+    dotY: 64,
+    labelX: 15,
+    labelY: 70,
     align: "left",
     icon: "home",
   },
@@ -141,21 +142,18 @@ const ICONS: Record<string, React.ReactNode> = {
 
 function BannerCalcCtaButton({
   isDark,
-  openModal,
   bannerCtaHovered,
   setBannerCtaHovered,
   className,
 }: {
   isDark: boolean;
-  openModal: () => void;
   bannerCtaHovered: boolean;
   setBannerCtaHovered: (v: boolean) => void;
   className?: string;
 }) {
   return (
-    <button
-      type="button"
-      onClick={openModal}
+    <Link
+      href="/offer"
       onMouseEnter={() => setBannerCtaHovered(true)}
       onMouseLeave={() => setBannerCtaHovered(false)}
       className={
@@ -170,7 +168,7 @@ function BannerCalcCtaButton({
           ? "0 0 14px rgba(201,168,76,0.4), 0 0 28px rgba(201,168,76,0.2)"
           : "2px 0 12px rgba(255,255,255,0.7), 4px 0 24px rgba(255,255,255,0.4)",
       }}
-      aria-label="Рассчитать стоимость работ"
+      aria-label="Рассчитать стоимость — перейти к странице оффера"
     >
       <div
         className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
@@ -185,7 +183,7 @@ function BannerCalcCtaButton({
           color: bannerCtaHovered ? "#0A0A0A" : isDark ? "#FFFFFF" : "#0A0A0A",
         }}
       >
-        Рассчитать стоимость работ
+        Рассчитать стоимость
       </span>
       <ArrowRight
         size={18}
@@ -194,7 +192,7 @@ function BannerCalcCtaButton({
           color: bannerCtaHovered ? "#0A0A0A" : isDark ? "#FFFFFF" : "#0A0A0A",
         }}
       />
-    </button>
+    </Link>
   );
 }
 
@@ -203,7 +201,6 @@ export function BannerSection() {
   const [visible, setVisible] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [bannerCtaHovered, setBannerCtaHovered] = useState(false);
-  const { openModal } = useModal();
   const { isDark } = useTheme();
 
   useEffect(() => {
@@ -223,7 +220,7 @@ export function BannerSection() {
       className="relative overflow-hidden"
       style={{
         height: "100dvh",
-        minHeight: "600px",
+        minHeight: "min(600px, 100dvh)",
         backgroundColor: isDark ? "#000000" : "#FFFFFF",
         cursor: "none",
       }}
@@ -247,18 +244,15 @@ export function BannerSection() {
             {isDark ? (
               <span style={{ color: "#fff" }}>МОНТАЖ</span>
             ) : (
-              <>
-                <span style={{ color: "#0A0A0A" }}>МОНТА</span>
-                <span
-                  style={{
-                    color: "#0A0A0A",
-                    textShadow:
-                      "0 0 8px #fff, 0 0 16px rgba(255,255,255,0.95), 0 0 24px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.35)",
-                  }}
-                >
-                  Ж
-                </span>
-              </>
+              <span
+                style={{
+                  color: "#0A0A0A",
+                  textShadow:
+                    "0 0 8px #fff, 0 0 16px rgba(255,255,255,0.95), 0 0 24px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.35)",
+                }}
+              >
+                МОНТАЖ
+              </span>
             )}
           </span>
         </h1>
@@ -306,18 +300,15 @@ export function BannerSection() {
             {isDark ? (
               <span style={{ color: "#fff" }}>МОНТАЖ</span>
             ) : (
-              <>
-                <span style={{ color: "#0A0A0A" }}>МОНТА</span>
-                <span
-                  style={{
-                    color: "#0A0A0A",
-                    textShadow:
-                      "0 0 10px #fff, 0 0 20px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  Ж
-                </span>
-              </>
+              <span
+                style={{
+                  color: "#0A0A0A",
+                  textShadow:
+                    "0 0 10px #fff, 0 0 20px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.3)",
+                }}
+              >
+                МОНТАЖ
+              </span>
             )}
           </span>
         </h1>
@@ -440,7 +431,6 @@ export function BannerSection() {
       >
         <BannerCalcCtaButton
           isDark={isDark}
-          openModal={openModal}
           bannerCtaHovered={bannerCtaHovered}
           setBannerCtaHovered={setBannerCtaHovered}
           className="w-full"
@@ -473,7 +463,6 @@ export function BannerSection() {
       >
         <BannerCalcCtaButton
           isDark={isDark}
-          openModal={openModal}
           bannerCtaHovered={bannerCtaHovered}
           setBannerCtaHovered={setBannerCtaHovered}
           className="w-full max-w-[min(94vw,920px)]"

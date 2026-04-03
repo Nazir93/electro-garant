@@ -7,8 +7,11 @@ import { LandingSteps } from "@/components/landing/landing-steps";
 import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingServiceSchema } from "@/components/landing/landing-service-schema";
 import type { ServiceLandingDocument } from "@/lib/service-landing-schema";
+import { loadContactConfig } from "@/lib/load-contact-config";
 
-export function ServiceLandingRenderer({ document }: { document: ServiceLandingDocument }) {
+export async function ServiceLandingRenderer({ document }: { document: ServiceLandingDocument }) {
+  const contact = await loadContactConfig();
+  const telephone: [string, string] = [contact.phoneRaw, contact.phone2Raw];
   return (
     <article>
       {document.sections.map((section, i) => {
@@ -21,6 +24,7 @@ export function ServiceLandingRenderer({ document }: { document: ServiceLandingD
                 serviceDescription={section.serviceDescription}
                 slug={section.slug}
                 priceRange={section.priceRange}
+                telephone={telephone}
               />
             );
           case "hero":

@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Calendar, Tag } from "lucide-react";
+import { Calendar, Tag } from "lucide-react";
+import { BackNavLink } from "@/components/ui/back-nav";
 
 interface BlogPost {
   title: string;
@@ -24,14 +24,9 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
   return (
     <article className="pt-28 pb-16 md:pt-36 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto max-w-3xl px-5">
-        <Link
-          href="/blog"
-          className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] mb-10 transition-colors duration-200 hover:opacity-70"
-          style={{ color: "var(--text-muted)" }}
-        >
-          <ArrowLeft size={14} />
-          Все статьи
-        </Link>
+        <div className="mb-10">
+          <BackNavLink href="/blog">Все статьи</BackNavLink>
+        </div>
 
         <div className="flex items-center gap-4 mb-6">
           <span
@@ -81,14 +76,7 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
         />
 
         <div className="mt-16 pt-8" style={{ borderTop: "1px solid var(--border)" }}>
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.1em] transition-colors duration-200 hover:opacity-70"
-            style={{ color: "var(--accent)" }}
-          >
-            <ArrowLeft size={16} />
-            Вернуться к статьям
-          </Link>
+          <BackNavLink href="/blog">Вернуться к статьям</BackNavLink>
         </div>
       </div>
     </article>

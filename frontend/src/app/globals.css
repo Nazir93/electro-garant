@@ -26,6 +26,7 @@
   }
 
   :root {
+    color-scheme: dark;
     --bg: #0A0A0A;
     --bg-secondary: #111111;
     --card-bg: #141414;
@@ -38,6 +39,7 @@
   }
 
   [data-theme="light"] {
+    color-scheme: light;
     --bg: #FFFFFF;
     --bg-secondary: #F5F5F5;
     --card-bg: #FAFAFA;
@@ -91,10 +93,42 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    background-color: var(--bg);
+    color: var(--text);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 16px center;
     padding-right: 40px;
+  }
+
+  option {
+    background-color: var(--card-bg);
+    color: var(--text);
+  }
+
+  /* Автозаполнение браузера — не белое/голубое на тёмном фоне */
+  .funnel-text-input:-webkit-autofill,
+  .funnel-text-input:-webkit-autofill:hover,
+  .funnel-text-input:-webkit-autofill:focus,
+  .funnel-text-input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--text) !important;
+    caret-color: var(--text);
+    box-shadow: 0 0 0 1000px var(--bg-secondary) inset !important;
+    transition: background-color 50000s ease-in-out 0s;
+  }
+
+  [data-theme="light"] .funnel-text-input:-webkit-autofill,
+  [data-theme="light"] .funnel-text-input:-webkit-autofill:hover,
+  [data-theme="light"] .funnel-text-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text) !important;
+    box-shadow: 0 0 0 1000px var(--bg-secondary) inset !important;
+  }
+
+  textarea.funnel-text-input:-webkit-autofill,
+  textarea.funnel-text-input:-webkit-autofill:hover,
+  textarea.funnel-text-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text) !important;
+    box-shadow: 0 0 0 1000px var(--bg-secondary) inset !important;
   }
 
   ::selection {
@@ -203,8 +237,24 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /**
+   * iOS Safari: при font-size < 16px на input зумит при фокусе.
+   * Компактные поля на мобильных — 16px, на sm+ можно меньше из макета.
+   */
+  @media screen and (max-width: 639.98px) {
+    .funnel-text-input,
+    input.funnel-text-input,
+    textarea.funnel-text-input {
+      font-size: 16px;
+    }
   }
 
   /* Contact modal: restore left border on stacked fields (mobile) */
@@ -336,6 +386,48 @@
   }
 }
 
+/** Route loader: молния — лёгкая «вибрация» */
+@keyframes loaderLightningVibrate {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  10% {
+    transform: translate3d(-2px, 1px, 0) rotate(-4deg);
+  }
+  20% {
+    transform: translate3d(2px, -1px, 0) rotate(3deg);
+  }
+  30% {
+    transform: translate3d(-1px, -2px, 0) rotate(-3deg);
+  }
+  40% {
+    transform: translate3d(2px, 2px, 0) rotate(4deg);
+  }
+  50% {
+    transform: translate3d(-2px, -1px, 0) rotate(-2deg);
+  }
+  60% {
+    transform: translate3d(1px, 2px, 0) rotate(3deg);
+  }
+  70% {
+    transform: translate3d(-1px, -1px, 0) rotate(-4deg);
+  }
+  80% {
+    transform: translate3d(2px, 0, 0) rotate(2deg);
+  }
+  90% {
+    transform: translate3d(-2px, 1px, 0) rotate(-1deg);
+  }
+}
+
+.loader-lightning-vibrate {
+  animation: loaderLightningVibrate 0.22s linear infinite;
+  filter: drop-shadow(0 0 14px rgba(201, 168, 76, 0.45))
+    drop-shadow(0 0 28px rgba(201, 168, 76, 0.2));
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .price-pulse-border,
   .price-pulse-glow,
@@ -344,5 +436,9 @@
   }
   .menu-stagger {
     animation: none !important;
+  }
+  .loader-lightning-vibrate {
+    animation: none;
+    filter: drop-shadow(0 0 10px rgba(201, 168, 76, 0.35));
   }
 }

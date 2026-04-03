@@ -3,11 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { SITE_NAME, PHONE, PHONE_RAW, PHONE2, PHONE2_RAW, EMAIL, SOCIAL_LINKS } from "@/lib/constants";
-import { useModal } from "@/lib/modal-context";
+import { SITE_NAME } from "@/lib/constants";
+import { useContactConfig } from "@/lib/contact-config-context";
 
 export function Footer() {
-  const { openModal } = useModal();
+  const contact = useContactConfig();
   const [btnHovered, setBtnHovered] = useState(false);
   const currentYear = new Date().getFullYear();
 
@@ -18,8 +18,8 @@ export function Footer() {
     >
       {/* CTA Button */}
       <div className="container mx-auto py-8 sm:py-12 md:py-16 pr-5 lg:pr-[80px]">
-        <button
-          onClick={openModal}
+        <Link
+          href="/offer"
           onMouseEnter={() => setBtnHovered(true)}
           onMouseLeave={() => setBtnHovered(false)}
           className="group relative w-full flex items-center justify-between px-5 sm:px-8 md:px-12 py-4 sm:py-6 md:py-8 overflow-hidden transition-colors duration-700"
@@ -45,7 +45,7 @@ export function Footer() {
             className="relative z-10 transition-colors duration-700 shrink-0 ml-3"
             style={{ color: btnHovered ? "var(--bg)" : "var(--text)" }}
           />
-        </button>
+        </Link>
       </div>
 
       {/* Large company name */}
@@ -77,19 +77,19 @@ export function Footer() {
             className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 text-[10px] sm:text-xs uppercase tracking-[0.1em]"
             style={{ color: "var(--text-muted)" }}
           >
-            {SOCIAL_LINKS.vk && (
+            {contact.social.max && (
               <a
-                href={SOCIAL_LINKS.vk}
+                href={contact.social.max}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-colors duration-200 hover:text-[var(--text)]"
               >
-                VK
+                Max
               </a>
             )}
-            {SOCIAL_LINKS.telegram && (
+            {contact.social.telegram && (
               <a
-                href={SOCIAL_LINKS.telegram}
+                href={contact.social.telegram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-colors duration-200 hover:text-[var(--text)]"
@@ -97,33 +97,23 @@ export function Footer() {
                 Telegram
               </a>
             )}
-            {SOCIAL_LINKS.whatsapp && (
-              <a
-                href={SOCIAL_LINKS.whatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors duration-200 hover:text-[var(--text)]"
-              >
-                WhatsApp
-              </a>
-            )}
             <a
-              href={`mailto:${EMAIL}`}
+              href={`mailto:${contact.email}`}
               className="transition-colors duration-200 hover:text-[var(--text)]"
             >
-              {EMAIL}
+              {contact.email}
             </a>
             <a
-              href={`tel:${PHONE_RAW}`}
+              href={`tel:${contact.phoneRaw}`}
               className="transition-colors duration-200 hover:text-[var(--text)]"
             >
-              {PHONE}
+              {contact.phone}
             </a>
             <a
-              href={`tel:${PHONE2_RAW}`}
+              href={`tel:${contact.phone2Raw}`}
               className="transition-colors duration-200 hover:text-[var(--text)]"
             >
-              {PHONE2}
+              {contact.phone2}
             </a>
             <Link
               href="/privacy"

@@ -23,14 +23,14 @@ export function SmartCaptchaGate({ children }: { children: React.ReactNode }) {
 
   const getToken = useCallback(() => {
     if (!siteKey) return Promise.resolve("");
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<string>((resolve) => {
       resolveRef.current = resolve;
       setTriggerExecute(true);
       timeoutRef.current = setTimeout(() => {
         if (resolveRef.current) {
+          resolveRef.current("");
           resolveRef.current = undefined;
           setTriggerExecute(false);
-          reject(new Error("Таймаут капчи"));
         }
       }, 30000);
     });
