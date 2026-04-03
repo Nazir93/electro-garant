@@ -7,6 +7,7 @@ import { NavBar } from "@/components/layout/header";
 import { ViewAllServices } from "@/components/layout/view-all-services";
 import { HeroSection } from "@/components/sections/hero";
 import { PriceBannerSection } from "@/components/sections/price-banner";
+import { AboutSection } from "@/components/sections/about";
 import { PortfolioSection } from "@/components/sections/portfolio";
 import { PartnersSection } from "@/components/sections/partners";
 
@@ -36,6 +37,7 @@ export default async function HomePage() {
         <NavBar />
       </div>
       <PriceBannerSection />
+      <AboutSection />
       <PortfolioSection projects={projects} />
       <PartnersSection />
     </>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import Link from "next/link";
 import { Calculator, Download, Zap, Award, BadgeCheck, ListChecks } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
@@ -40,7 +39,7 @@ export function PriceBannerSection() {
   const [visible, setVisible] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const { isDark } = useTheme();
-  const { openModal } = useModal();
+  const { openModalToEstimate } = useModal();
 
   const accentRGB = "201,168,76";
 
@@ -58,7 +57,7 @@ export function PriceBannerSection() {
   return (
     <div
       ref={sectionRef}
-      id="about"
+      id="price-banner"
       className="relative border-t"
       style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}
     >
@@ -215,8 +214,9 @@ export function PriceBannerSection() {
             </span>
           </button>
 
-          <Link
-            href="/price"
+          <a
+            href="/price-list.pdf"
+            download
             className="group flex min-h-[48px] items-center justify-center gap-2.5 rounded-full border px-7 py-3.5 transition-colors duration-300 sm:px-9 sm:py-4"
             style={{
               borderColor: "var(--border)",
@@ -234,11 +234,11 @@ export function PriceBannerSection() {
             >
               Скачать прайс
             </span>
-          </Link>
+          </a>
         </div>
       </div>
 
-      {/* Нижняя полоса (раньше пропала при упрощении блока) — якорь для #about см. FixedStatsBar */}
+      {/* Нижняя бегущая строка; якорь блока — #price-banner */}
       <div
         className="overflow-hidden border-t py-3 sm:py-3.5"
         style={{

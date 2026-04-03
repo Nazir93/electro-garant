@@ -1,6 +1,6 @@
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Гарант Монтаж";
 export const CITY = process.env.NEXT_PUBLIC_CITY || "Сочи";
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://gmont.ru";
 
 export const PHONE = "8 (928) 455-45-59";
 export const PHONE_RAW = "89284554559";

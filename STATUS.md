@@ -2,6 +2,8 @@
 
 > Дата обновления: 16 марта 2026
 
+**Продакшен-сайт:** [https://gmont.ru](https://gmont.ru)
+
 ---
 
 ## Как запустить локально (без VPS)
@@ -164,14 +166,17 @@ docker compose up -d
 
 ```
 DATABASE_URL="postgresql://user:password@localhost:5432/garant_montazh?schema=public"
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+# На сервере укажите канонический адрес сайта (политика конфиденциальности, метаданные):
+NEXT_PUBLIC_SITE_URL="https://gmont.ru"
 NEXT_PUBLIC_SITE_NAME="Гарант Монтаж"
 NEXT_PUBLIC_CITY="Сочи"
 ADMIN_EMAIL="admin@garantmontazh.ru"
 ADMIN_SECRET="dev-secret-change-in-production"
 NEXTAUTH_SECRET="dev-nextauth-secret"
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="https://gmont.ru"
 ```
+
+Локальная разработка: `NEXT_PUBLIC_SITE_URL` и `NEXTAUTH_URL` можно временно задать как `http://localhost:3000`.
 
 ### Опционально (добавить когда будут готовы):
 
