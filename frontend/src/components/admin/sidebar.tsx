@@ -8,16 +8,12 @@ import {
   Inbox,
   FileText,
   Briefcase,
-  Users,
   Settings,
   LogOut,
   ChevronLeft,
   Menu,
   Globe,
   FolderOpen,
-  Star,
-  HelpCircle,
-  UserCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -35,13 +31,9 @@ const LEADS_SUBLINKS: { href: string; label: string }[] = [
 const NAV_ITEMS = [
   { href: "/admin", label: "Дашборд", icon: LayoutDashboard, exact: true },
   { href: "/admin/leads", label: "Заявки", icon: Inbox, leadsSubmenu: true as const },
-  { href: "/admin/projects", label: "Портфолио", icon: FolderOpen },
+  { href: "/admin/projects", label: "Кейсы портфолио", icon: FolderOpen },
   { href: "/admin/posts", label: "Новости", icon: FileText },
   { href: "/admin/services", label: "Услуги", icon: Briefcase },
-  { href: "/admin/reviews", label: "Отзывы", icon: Star },
-  { href: "/admin/faq", label: "FAQ", icon: HelpCircle },
-  { href: "/admin/team", label: "Команда", icon: UserCircle },
-  { href: "/admin/partners", label: "Партнёры", icon: Users },
   { href: "/admin/seo", label: "SEO", icon: Globe },
   { href: "/admin/settings", label: "Настройки", icon: Settings },
 ];

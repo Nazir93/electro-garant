@@ -1,20 +1,20 @@
 import { prisma } from "@/lib/db";
-import { Inbox, FileText, Briefcase, Users } from "lucide-react";
+import { Inbox, FileText, FolderOpen } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 async function getStats() {
   try {
-    const [leads, newLeads, posts, partners] = await Promise.all([
+    const [leads, newLeads, posts, projects] = await Promise.all([
       prisma.lead.count(),
       prisma.lead.count({ where: { status: "NEW" } }),
       prisma.post.count(),
-      prisma.partner.count(),
+      prisma.project.count(),
     ]);
-    return { leads, newLeads, posts, partners, dbConnected: true };
+    return { leads, newLeads, posts, projects, dbConnected: true };
   } catch {
-    return { leads: 0, newLeads: 0, posts: 0, partners: 0, dbConnected: false };
+    return { leads: 0, newLeads: 0, posts: 0, projects: 0, dbConnected: false };
   }
 }
 
@@ -59,12 +59,12 @@ export default async function AdminDashboard() {
       bg: "bg-emerald-500/10",
     },
     {
-      label: "Партнёры",
-      value: stats.partners,
-      icon: Users,
-      href: "/admin/partners",
-      accent: "text-purple-400",
-      bg: "bg-purple-500/10",
+      label: "Кейсы портфолио",
+      value: stats.projects,
+      icon: FolderOpen,
+      href: "/admin/projects",
+      accent: "text-amber-400",
+      bg: "bg-amber-500/10",
     },
   ];
 

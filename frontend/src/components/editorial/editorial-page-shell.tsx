@@ -6,6 +6,8 @@ type EditorialPageShellProps = {
   backLabel: string;
   meta?: ReactNode;
   title: string;
+  /** Заменяет классы H1 (по умолчанию крупный кейс/лендинг) */
+  titleClassName?: string;
   /** Renders between H1 and lead (e.g. case meta grid) */
   belowTitle?: ReactNode;
   lead?: ReactNode;
@@ -21,11 +23,15 @@ type EditorialPageShellProps = {
 /**
  * Shared article layout for blog posts and portfolio cases: padding, max width, typography scale.
  */
+const DEFAULT_TITLE_CLASS =
+  "font-heading text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-8";
+
 export function EditorialPageShell({
   backHref,
   backLabel,
   meta,
   title,
+  titleClassName,
   belowTitle,
   lead,
   fullWidthTop,
@@ -33,9 +39,12 @@ export function EditorialPageShell({
   after,
   footer,
 }: EditorialPageShellProps) {
+  const headingClass = titleClassName ?? DEFAULT_TITLE_CLASS;
   return (
     <article className="pt-28 pb-16 md:pt-36 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
-      {fullWidthTop ? <div className="w-full">{fullWidthTop}</div> : null}
+      {fullWidthTop ? (
+        <div className="mb-8 w-full md:mb-10">{fullWidthTop}</div>
+      ) : null}
       <div className="container mx-auto max-w-3xl px-5">
         <div className="mb-10">
           <BackNavLink href={backHref}>{backLabel}</BackNavLink>
@@ -43,10 +52,7 @@ export function EditorialPageShell({
 
         {meta ? <div className="mb-6">{meta}</div> : null}
 
-        <h1
-          className="font-heading text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-8"
-          style={{ color: "var(--text)" }}
-        >
+        <h1 className={headingClass} style={{ color: "var(--text)" }}>
           {title}
         </h1>
 

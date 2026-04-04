@@ -99,9 +99,9 @@ function ServiceCard({
         </>
       )}
 
-      {/* Title — белый + обводка тенью, на градиенте не сливается с фоном */}
+      {/* Title — компактно на фото, 2 строки макс. */}
       <span
-        className="relative z-10 px-3 text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-300 [text-shadow:0_1px_2px_rgba(0,0,0,0.95),0_0_24px_rgba(0,0,0,0.65),0_2px_12px_rgba(0,0,0,0.55)] group-hover:-translate-y-1 group-hover:text-[var(--accent)] group-hover:[text-shadow:0_1px_3px_rgba(0,0,0,0.9),0_0_28px_rgba(201,168,76,0.45)] lg:text-xs"
+        className="relative z-10 max-w-[96%] px-2 text-center text-[9px] font-semibold uppercase leading-tight tracking-[0.08em] text-white line-clamp-2 transition-all duration-300 [text-shadow:0_1px_2px_rgba(0,0,0,0.95),0_0_20px_rgba(0,0,0,0.7),0_2px_10px_rgba(0,0,0,0.55)] sm:px-3 sm:text-[10px] group-hover:-translate-y-1 group-hover:text-[var(--accent)] group-hover:[text-shadow:0_1px_3px_rgba(0,0,0,0.9),0_0_28px_rgba(201,168,76,0.45)] lg:max-w-[94%] lg:text-[11px]"
       >
         {title}
       </span>

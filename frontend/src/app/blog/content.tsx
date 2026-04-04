@@ -51,10 +51,10 @@ function PostCard({
         style={{ opacity: 0.03 }}
       >
         <span
-          className="font-heading text-[160px] leading-none select-none"
+          className="font-heading text-[160px] leading-none select-none tabular-nums"
           style={{ color: "var(--text)" }}
         >
-          {String(index + 1).padStart(2, "0")}
+          {index + 1}
         </span>
       </div>
 

@@ -27,6 +27,7 @@ function blogBannerSlides(post: Pick<BlogPost, "coverImage" | "coverVideo">) {
 }
 
 export function BlogPostContent({ post }: { post: BlogPost }) {
+  const bannerSlides = blogBannerSlides(post);
   const date = new Date(post.createdAt).toLocaleDateString("ru-RU", {
     day: "numeric",
     month: "long",
@@ -58,10 +59,15 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
       backLabel="Все статьи"
       meta={meta}
       title={post.title}
+      titleClassName="font-heading text-2xl sm:text-3xl md:text-[1.75rem] lg:text-4xl leading-snug tracking-tight mb-6 break-words"
       lead={post.excerpt}
       footer={<BackNavLink href="/blog">Вернуться к статьям</BackNavLink>}
+      fullWidthTop={
+        bannerSlides.length > 0 ? (
+          <EditorialBanner fullBleed slides={bannerSlides} alt={post.title} />
+        ) : null
+      }
     >
-      <EditorialBanner slides={blogBannerSlides(post)} alt={post.title} />
       <div
         className="prose prose-lg max-w-none"
         style={{ color: "var(--text)" }}
