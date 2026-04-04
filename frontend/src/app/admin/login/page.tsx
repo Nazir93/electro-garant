@@ -100,8 +100,12 @@ export default function AdminLoginPage() {
           <LoginForm />
         </Suspense>
 
-        <p className="mt-6 text-center text-[11px] text-white/20">
-          Задайте ADMIN_EMAIL и ADMIN_SECRET в .env.local
+        <p className="mt-6 text-center text-[11px] text-white/25 leading-relaxed">
+          Вход настраивается переменными окружения на сервере:{" "}
+          <span className="text-white/40">ADMIN_EMAIL</span>,{" "}
+          <span className="text-white/40">ADMIN_SECRET</span>,{" "}
+          <span className="text-white/40">NEXTAUTH_SECRET</span>,{" "}
+          <span className="text-white/40">NEXTAUTH_URL</span> (https://ваш-домен).
         </p>
       </div>
     </div>
