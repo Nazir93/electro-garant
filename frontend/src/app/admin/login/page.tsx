@@ -100,6 +100,22 @@ export default function AdminLoginPage() {
           <LoginForm />
         </Suspense>
 
+        <div
+          className="mt-5 p-3 rounded-xl border text-[11px] leading-relaxed"
+          style={{
+            borderColor: "rgba(201, 168, 76, 0.35)",
+            backgroundColor: "rgba(201, 168, 76, 0.06)",
+            color: "rgba(255,255,255,0.65)",
+          }}
+        >
+          <strong className="text-[#C9A84C]">Входили по IP, а по домену не пускает?</strong>
+          <br />
+          На сервере в окружении процесса Next.js задайте{" "}
+          <code className="text-white/90">NEXTAUTH_URL=https://gmont.ru</code> (тот же хост, что в браузере, не IP),
+          сохраните и перезапустите приложение. В браузере очистите cookie для gmont.ru или откройте вход в режиме
+          инкогнито.
+        </div>
+
         <p className="mt-6 text-center text-[11px] text-white/25 leading-relaxed">
           Вход настраивается переменными окружения на сервере:{" "}
           <span className="text-white/40">ADMIN_EMAIL</span>,{" "}
