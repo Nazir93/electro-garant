@@ -30,8 +30,8 @@ export function LandingHero({
   }, []);
 
   return (
-    <section ref={ref} className="pt-20 pb-10 sm:pt-28 sm:pb-14 md:pt-40 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
-      <div className="container mx-auto">
+    <section ref={ref} className="pt-20 pb-12 sm:pt-24 sm:pb-14 md:pt-28 md:pb-16" style={{ backgroundColor: "var(--bg)" }}>
+      <div className="container mx-auto max-w-5xl">
         {/* Tag */}
         <div
           className="transition-all duration-700 ease-out"
@@ -41,20 +41,20 @@ export function LandingHero({
           }}
         >
           <span
-            className="inline-block text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-5 sm:mb-8"
+            className="inline-block text-[10px] sm:text-xs uppercase tracking-[0.12em] px-3 py-1.5 rounded-full mb-4 sm:mb-5"
             style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
           >
             {tag}
           </span>
         </div>
 
-        {/* Title */}
+        {/* Title — без vw/clamp, чтобы на широких экранах не раздувалось */}
         <h1
-          className="font-heading text-[clamp(24px,8vw,80px)] leading-[0.92] tracking-tight mb-6 sm:mb-10 md:mb-12 max-w-4xl transition-all duration-1000 ease-out"
+          className="font-heading text-2xl sm:text-3xl md:text-4xl leading-snug tracking-tight mb-6 sm:mb-8 max-w-3xl break-words transition-all duration-700 ease-out"
           style={{
             color: "var(--text)",
             opacity: visible ? 1 : 0,
-            transform: visible ? "translateY(0)" : "translateY(30px)",
+            transform: visible ? "translateY(0)" : "translateY(12px)",
             transitionDelay: "100ms",
           }}
         >
@@ -63,10 +63,10 @@ export function LandingHero({
 
         {(bannerImageDesktop || bannerImageMobile) && (
           <div
-            className="mb-8 sm:mb-10 md:mb-12 transition-all duration-1000 ease-out"
+            className="mb-8 sm:mb-10 transition-all duration-700 ease-out"
             style={{
               opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : "translateY(20px)",
+              transform: visible ? "translateY(0)" : "translateY(12px)",
               transitionDelay: "150ms",
             }}
           >
@@ -78,7 +78,7 @@ export function LandingHero({
               <img
                 src={bannerImageMobile || bannerImageDesktop || ""}
                 alt=""
-                className="w-full rounded-2xl object-cover max-h-[min(50vh,520px)] border border-[var(--border)]"
+                className="w-full rounded-xl object-cover max-h-[min(46vh,420px)] border border-[var(--border)]"
                 loading="eager"
                 decoding="async"
               />
@@ -86,44 +86,49 @@ export function LandingHero({
           </div>
         )}
 
-        {/* Two columns: subtitle + features */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 md:gap-20">
-          {/* Left: main description */}
+        {/* Две колонки: подпись и списки — min-w-0 против вылезания текста */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-14">
           <div
-            className="transition-all duration-1000 ease-out"
+            className="min-w-0 transition-all duration-700 ease-out"
             style={{
               opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : "translateY(30px)",
+              transform: visible ? "translateY(0)" : "translateY(12px)",
               transitionDelay: "200ms",
             }}
           >
-            <p className="text-sm sm:text-base md:text-lg leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            <p
+              className="text-sm sm:text-base leading-relaxed break-words"
+              style={{ color: "var(--text-muted)" }}
+            >
               {subtitle}
             </p>
           </div>
 
-          {/* Right: features + goals */}
           <div
-            className="transition-all duration-1000 ease-out"
+            className="min-w-0 transition-all duration-700 ease-out"
             style={{
               opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : "translateY(30px)",
-              transitionDelay: "300ms",
+              transform: visible ? "translateY(0)" : "translateY(12px)",
+              transitionDelay: "280ms",
             }}
           >
-            <ul className="space-y-2 mb-8">
+            <ul className="space-y-2.5 mb-6 md:mb-8">
               {features.map((f, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm" style={{ color: "var(--text-muted)" }}>
-                  <span className="mt-1.5 w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
+                <li
+                  key={i}
+                  className="flex items-start gap-3 text-sm leading-relaxed break-words"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  <span className="mt-2 w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
                   {f}
                 </li>
               ))}
             </ul>
-            <div className="border-t pt-6" style={{ borderColor: "var(--border)" }}>
-              <p className="text-[10px] uppercase tracking-[0.15em] font-bold mb-2" style={{ color: "var(--text)" }}>
+            <div className="border-t pt-5" style={{ borderColor: "var(--border)" }}>
+              <p className="text-[10px] uppercase tracking-[0.12em] font-semibold mb-2" style={{ color: "var(--text)" }}>
                 Ключевые задачи:
               </p>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+              <p className="text-sm leading-relaxed break-words" style={{ color: "var(--text-muted)" }}>
                 {goals}
               </p>
             </div>

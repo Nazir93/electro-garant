@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Calendar, Tag } from "lucide-react";
 import { BackNavLink } from "@/components/ui/back-nav";
+import { formatArticleBody } from "@/lib/html-content";
 
 interface BlogPost {
   title: string;
@@ -72,7 +73,7 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
         <div
           className="prose prose-lg max-w-none"
           style={{ color: "var(--text)" }}
-          dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
+          dangerouslySetInnerHTML={{ __html: formatArticleBody(post.content) }}
         />
 
         <div className="mt-16 pt-8" style={{ borderTop: "1px solid var(--border)" }}>
@@ -81,37 +82,4 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
       </div>
     </article>
   );
-}
-
-const ALLOWED_TAGS = new Set([
-  "p", "br", "b", "i", "em", "strong", "a", "ul", "ol", "li",
-  "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "code",
-  "img", "figure", "figcaption", "table", "thead", "tbody", "tr", "th", "td",
-  "span", "div", "hr", "sub", "sup", "mark", "del", "ins",
-]);
-
-const ALLOWED_ATTRS: Record<string, Set<string>> = {
-  a: new Set(["href", "target", "rel", "title"]),
-  img: new Set(["src", "alt", "width", "height", "loading"]),
-  "*": new Set(["class", "style", "id"]),
-};
-
-function sanitizeHtml(html: string): string {
-  return html
-    .replace(/<script[\s>][\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s>][\s\S]*?<\/style>/gi, "")
-    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, "")
-    .replace(/\son\w+\s*=\s*[^\s>]*/gi, "")
-    .replace(/javascript\s*:/gi, "blocked:")
-    .replace(/data\s*:\s*text\/html/gi, "blocked:")
-    .replace(/<\/?(iframe|object|embed|form|input|textarea|button|select|meta|link|base|applet)[\s>][^>]*>/gi, "");
-}
-
-function formatContent(raw: string): string {
-  if (raw.startsWith("<")) return sanitizeHtml(raw);
-  return raw
-    .split("\n\n")
-    .filter(Boolean)
-    .map((p) => `<p>${p.replace(/\n/g, "<br/>")}</p>`)
-    .join("");
 }

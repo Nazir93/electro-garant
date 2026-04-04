@@ -33,7 +33,7 @@ export function LandingPain({ title, points, conclusion }: LandingPainProps) {
           {/* Left: sticky title */}
           <div className="md:sticky md:top-32 md:self-start">
             <h2
-              className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1] transition-all duration-700"
+              className="font-heading text-xl sm:text-2xl md:text-3xl leading-tight break-words transition-all duration-700"
               style={{
                 color: "var(--text)",
                 opacity: visible ? 1 : 0,

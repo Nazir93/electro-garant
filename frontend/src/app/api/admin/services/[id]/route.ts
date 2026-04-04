@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { mergeServiceTitleIntoLandingJson } from "@/lib/merge-service-title-into-landing";
 
 export async function GET(
   _request: NextRequest,
@@ -22,6 +23,16 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
+    let landingJsonOut: unknown = body.landingJson;
+    if (
+      body.title !== undefined &&
+      landingJsonOut !== undefined &&
+      landingJsonOut !== null &&
+      typeof body.title === "string"
+    ) {
+      landingJsonOut = mergeServiceTitleIntoLandingJson(landingJsonOut, body.title.trim());
+    }
+
     const service = await prisma.service.update({
       where: { id: params.id },
       data: {
@@ -36,7 +47,7 @@ export async function PUT(
         ...(body.bannerImageMobile !== undefined && { bannerImageMobile: body.bannerImageMobile }),
         ...(body.published !== undefined && { published: body.published }),
         ...(body.order !== undefined && { order: body.order }),
-        ...(body.landingJson !== undefined && { landingJson: body.landingJson }),
+        ...(body.landingJson !== undefined && { landingJson: landingJsonOut }),
       } as unknown as Prisma.ServiceUpdateInput,
     });
     return NextResponse.json(service);

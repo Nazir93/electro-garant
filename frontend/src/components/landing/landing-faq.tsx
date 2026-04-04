@@ -144,7 +144,7 @@ export function LandingFaq({ items, service }: LandingFaqProps) {
           {/* Left: heading */}
           <div className="md:col-span-4">
             <h2
-              className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 transition-all duration-700"
+              className="font-heading text-xl sm:text-2xl md:text-3xl mb-3 break-words transition-all duration-700"
               style={{
                 color: "var(--text)",
                 opacity: visible ? 1 : 0,

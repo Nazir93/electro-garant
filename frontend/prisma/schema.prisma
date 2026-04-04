@@ -239,6 +239,8 @@ model PageMeta {
   ogDescription String? @db.Text
   ogImage     String?
   h1          String?
+  /// Доп. HTML под мета-описанием (напр. страница «Услуги»): теги как в блоге, можно картинки и style
+  bodyHtml    String? @db.Text
   noindex     Boolean @default(false)
 
   @@index([path])

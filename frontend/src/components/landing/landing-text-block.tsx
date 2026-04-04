@@ -36,28 +36,28 @@ export function LandingTextBlock({ leftText, rightText, accent }: LandingTextBlo
         borderBottom: accent ? "1px solid var(--border)" : undefined,
       }}
     >
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 md:gap-20">
+      <div className="container mx-auto max-w-5xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           <div
-            className="transition-all duration-700 ease-out"
+            className="min-w-0 transition-all duration-700 ease-out"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? "translateX(0)" : "translateX(-30px)",
             }}
           >
-            <p className="text-sm md:text-base leading-[1.8]" style={{ color: "var(--text-muted)" }}>
+            <p className="text-sm md:text-base leading-relaxed break-words" style={{ color: "var(--text-muted)" }}>
               {leftText}
             </p>
           </div>
           <div
-            className="transition-all duration-700 ease-out"
+            className="min-w-0 transition-all duration-700 ease-out"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? "translateX(0)" : "translateX(30px)",
               transitionDelay: "100ms",
             }}
           >
-            <p className="text-sm md:text-base leading-[1.8]" style={{ color: "var(--text-muted)" }}>
+            <p className="text-sm md:text-base leading-relaxed break-words" style={{ color: "var(--text-muted)" }}>
               {rightText}
             </p>
           </div>

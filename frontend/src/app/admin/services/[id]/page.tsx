@@ -7,6 +7,9 @@ import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import type { ServiceType } from "@prisma/client";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 import { getDefaultServiceLandingDocument } from "@/lib/service-landing-defaults";
+import { parseServiceLandingDocument, type ServiceLandingDocument } from "@/lib/service-landing-schema";
+import { mergeServiceTitleIntoLandingJson } from "@/lib/merge-service-title-into-landing";
+import { ServiceLandingTextForm } from "@/components/admin/service-landing-text-form";
 
 const SERVICE_TYPES = [
   { value: "ELECTRICAL", label: "Электромонтаж" },
@@ -33,11 +36,26 @@ export default function AdminEditServicePage() {
   const [icon, setIcon] = useState("zap");
   const [coverImage, setCoverImage] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
-  const [bannerImageDesktop, setBannerImageDesktop] = useState("");
-  const [bannerImageMobile, setBannerImageMobile] = useState("");
+  /** Один URL для hero: при сохранении дублируется в desktop и mobile в БД. */
+  const [bannerImage, setBannerImage] = useState("");
   const [published, setPublished] = useState(true);
   const [order, setOrder] = useState(0);
-  const [landingJsonText, setLandingJsonText] = useState("");
+  const [landingDoc, setLandingDoc] = useState<ServiceLandingDocument | null>(null);
+  const [seoH1, setSeoH1] = useState<string | null>(null);
+
+  const effectivePageH1 = (seoH1 && seoH1.trim()) || title.trim() || "—";
+
+  useEffect(() => {
+    if (!slug) return;
+    const path = `/services/${slug}`;
+    fetch(`/api/admin/meta?path=${encodeURIComponent(path)}`)
+      .then((r) => r.json())
+      .then((meta: { h1?: string | null }) => {
+        const h = meta?.h1;
+        setSeoH1(typeof h === "string" && h.trim() ? h.trim() : null);
+      })
+      .catch(() => setSeoH1(null));
+  }, [slug]);
 
   useEffect(() => {
     fetch(`/api/admin/services/${params.id}`)
@@ -53,13 +71,15 @@ export default function AdminEditServicePage() {
           setIcon(data.icon);
           setCoverImage(data.coverImage || "");
           setVideoUrl(data.videoUrl || "");
-          setBannerImageDesktop(data.bannerImageDesktop || "");
-          setBannerImageMobile(data.bannerImageMobile || "");
+          setBannerImage(
+            (data.bannerImageDesktop || data.bannerImageMobile || "").trim()
+          );
           setPublished(data.published);
           setOrder(data.order);
-          setLandingJsonText(
-            data.landingJson != null ? JSON.stringify(data.landingJson, null, 2) : ""
-          );
+          const defaultDoc = getDefaultServiceLandingDocument(data.serviceType as ServiceType);
+          const parsed =
+            data.landingJson != null ? parseServiceLandingDocument(data.landingJson) ?? defaultDoc : defaultDoc;
+          setLandingDoc(parsed);
         }
       })
       .catch(() => setError("Ошибка загрузки"))
@@ -72,17 +92,13 @@ export default function AdminEditServicePage() {
     setError("");
 
     try {
-      const trimmed = landingJsonText.trim();
-      let landingJson: unknown = null;
-      if (trimmed) {
-        try {
-          landingJson = JSON.parse(trimmed) as unknown;
-        } catch {
-          setError("Некорректный JSON в поле «Лендинг услуги»");
-          setSaving(false);
-          return;
-        }
+      if (!landingDoc) {
+        setError("Нет данных страницы услуги. Обновите страницу или нажмите «Подставить шаблон».");
+        setSaving(false);
+        return;
       }
+
+      const landingJson = mergeServiceTitleIntoLandingJson(landingDoc, title.trim());
 
       const res = await fetch(`/api/admin/services/${params.id}`, {
         method: "PUT",
@@ -95,8 +111,8 @@ export default function AdminEditServicePage() {
           icon,
           coverImage: coverImage || null,
           videoUrl: videoUrl || null,
-          bannerImageDesktop: bannerImageDesktop.trim() || null,
-          bannerImageMobile: bannerImageMobile.trim() || null,
+          bannerImageDesktop: bannerImage.trim() || null,
+          bannerImageMobile: bannerImage.trim() || null,
           published,
           order,
           landingJson,
@@ -119,7 +135,7 @@ export default function AdminEditServicePage() {
   if (loading) return <div className="p-12 text-center text-white/30">Загрузка...</div>;
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
         <Link href="/admin/services" className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors">
           <ArrowLeft size={16} /> Услуги
@@ -131,14 +147,24 @@ export default function AdminEditServicePage() {
 
       <h1 className="text-2xl font-bold">Редактировать услугу</h1>
 
-      <p className="text-xs text-white/35 leading-relaxed">
-        SEO (title, description, OG): раздел{" "}
-        <Link href="/admin/seo" className="text-[#C9A84C]/90 hover:text-[#C9A84C]">
-          SEO &amp; Настройки
-        </Link>
-        , путь страницы{" "}
-        <code className="text-white/50">/services/{slug || "…"}</code>. Там же можно задать H1 для страницы.
-      </p>
+      <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 space-y-2 text-xs text-white/40 leading-relaxed">
+        <p>
+          <span className="text-white/55">Заголовок на странице услуги (как у посетителей):</span>{" "}
+          <span className="text-white/90 font-medium">{effectivePageH1}</span>
+        </p>
+        <p>
+          Сначала берётся <strong className="text-white/60 font-normal">H1 из SEO</strong> для{" "}
+          <code className="text-white/45">/services/{slug || "…"}</code>, если поле заполнено. Иначе — как «Название»
+          (подставляется в шапку при сохранении).
+        </p>
+        <p>
+          Мета title/description и OG:{" "}
+          <Link href="/admin/seo" className="text-[#C9A84C]/90 hover:text-[#C9A84C]">
+            SEO &amp; Настройки
+          </Link>
+          .
+        </p>
+      </div>
 
       {error && (
         <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
@@ -149,6 +175,9 @@ export default function AdminEditServicePage() {
           <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Название</label>
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required
             className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+          <p className="mt-1.5 text-[11px] text-white/30 leading-relaxed">
+            Карточки на главной и списке услуг, большой заголовок на странице услуги (если не задан H1 в SEO).
+          </p>
         </div>
 
         <div>
@@ -202,17 +231,10 @@ export default function AdminEditServicePage() {
         />
 
         <AdminMediaUpload
-          label="Баннер лендинга — desktop (от 768px)"
+          label="Баннер лендинга (один для всех экранов)"
           accept="image"
-          value={bannerImageDesktop}
-          onChange={setBannerImageDesktop}
-        />
-
-        <AdminMediaUpload
-          label="Баннер лендинга — mobile"
-          accept="image"
-          value={bannerImageMobile}
-          onChange={setBannerImageMobile}
+          value={bannerImage}
+          onChange={setBannerImage}
         />
 
         <div>
@@ -221,51 +243,38 @@ export default function AdminEditServicePage() {
             className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
         </div>
 
-        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 space-y-3">
+        <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <label className="block text-xs font-medium text-white/50 uppercase tracking-wider">
-              Лендинг услуги (JSON)
+              Тексты страницы услуги (как на сайте)
             </label>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => {
                   if (!serviceType) return;
-                  const doc = getDefaultServiceLandingDocument(serviceType as ServiceType);
-                  setLandingJsonText(JSON.stringify(doc, null, 2));
+                  if (!confirm("Заменить все тексты на шаблон для выбранного типа? Текущие правки пропадут.")) return;
+                  setLandingDoc(getDefaultServiceLandingDocument(serviceType as ServiceType));
                 }}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium border border-white/15 text-white/70 hover:border-[#C9A84C]/40 hover:text-white transition-colors"
               >
                 Подставить шаблон
               </button>
-              <button
-                type="button"
-                onClick={() => setLandingJsonText("")}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-white/15 text-white/70 hover:border-red-400/40 hover:text-red-300 transition-colors"
-              >
-                Очистить (как в коде)
-              </button>
             </div>
           </div>
-          <p className="text-xs text-white/40 leading-relaxed">
-            Корень: <code className="text-white/50">{"{ \"sections\": [ ... ] }"}</code>. Типы блоков:{" "}
-            <code className="text-white/50">schema</code>, <code className="text-white/50">hero</code>,{" "}
-            <code className="text-white/50">showcase</code>, <code className="text-white/50">textBlock</code>,{" "}
-            <code className="text-white/50">pain</code>, <code className="text-white/50">advantages</code>,{" "}
-            <code className="text-white/50">steps</code>, <code className="text-white/50">faq</code>. В блоке{" "}
-            <code className="text-white/50">hero</code> можно задать{" "}
-            <code className="text-white/50">bannerImageDesktop</code> и{" "}
-            <code className="text-white/50">bannerImageMobile</code> (иначе берутся поля баннеров выше). Пустое поле — на
-            сайте показывается встроенный шаблон.
-          </p>
-          <textarea
-            value={landingJsonText}
-            onChange={(e) => setLandingJsonText(e.target.value)}
-            rows={16}
-            spellCheck={false}
-            placeholder='{ "sections": [ ... ] }'
-            className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/[0.08] text-xs font-mono text-white/90 resize-y min-h-[200px] focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-          />
+          {landingDoc ? (
+            <ServiceLandingTextForm document={landingDoc} onChange={setLandingDoc} />
+          ) : (
+            <p className="text-sm text-white/40">Загрузка блоков…</p>
+          )}
+          <details className="rounded-xl border border-white/[0.06] bg-black/20 px-3 py-2 text-xs text-white/40">
+            <summary className="cursor-pointer text-white/50 hover:text-white/70 select-none">JSON (отладка)</summary>
+            <pre className="mt-3 overflow-x-auto text-[11px] leading-relaxed text-white/50 whitespace-pre-wrap break-all">
+              {landingDoc
+                ? JSON.stringify(mergeServiceTitleIntoLandingJson(landingDoc, title.trim()), null, 2)
+                : ""}
+            </pre>
+          </details>
         </div>
 
         <div className="flex items-center gap-3">

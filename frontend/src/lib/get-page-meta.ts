@@ -70,3 +70,40 @@ export async function getPageH1(path: string, fallback: string): Promise<string>
     return fallback;
   }
 }
+
+/** Текст под заголовком на странице: `description` из SEO-админки (тот же сниппет для поиска), иначе fallback. */
+export async function getPageDescriptionBody(path: string, fallback: string): Promise<string> {
+  try {
+    const meta = await prisma.pageMeta.findUnique({
+      where: { path },
+      select: { description: true },
+    });
+    if (meta?.description?.trim()) return meta.description.trim();
+  } catch {
+    // DB недоступна
+  }
+  return fallback;
+}
+
+/** Одна выборка полей страницы для разметки и баннера (OG-картинка = баннер на `/services`). */
+export async function getPageMetaFields(path: string): Promise<{
+  h1: string | null;
+  description: string | null;
+  ogImage: string | null;
+  bodyHtml: string | null;
+}> {
+  try {
+    const meta = await prisma.pageMeta.findUnique({
+      where: { path },
+      select: { h1: true, description: true, ogImage: true, bodyHtml: true },
+    });
+    return {
+      h1: meta?.h1?.trim() || null,
+      description: meta?.description?.trim() || null,
+      ogImage: meta?.ogImage?.trim() || null,
+      bodyHtml: meta?.bodyHtml?.trim() || null,
+    };
+  } catch {
+    return { h1: null, description: null, ogImage: null, bodyHtml: null };
+  }
+}

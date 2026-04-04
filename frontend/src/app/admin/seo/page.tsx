@@ -14,6 +14,7 @@ interface PageMetaItem {
   ogDescription: string | null;
   ogImage: string | null;
   h1: string | null;
+  bodyHtml: string | null;
   noindex: boolean;
 }
 
@@ -231,12 +232,39 @@ function MetaTab() {
                 ))}
                 <div className="md:col-span-2">
                   <AdminMediaUpload
-                    label="OG изображение (превью в соцсетях)"
+                    label={
+                      path === "/services"
+                        ? "OG + баннер на странице «Услуги» (одно изображение)"
+                        : "OG изображение (превью в соцсетях)"
+                    }
                     accept="image"
                     value={getField(path, "ogImage")}
                     onChange={(url) => updateDraft(path, "ogImage", url)}
                   />
                 </div>
+
+                {path === "/services" && (
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="block text-xs text-white/40">
+                      Текст страницы «Услуги» (HTML — как в новостях: абзацы, заголовки, жирный, картинки)
+                    </label>
+                    <p className="text-[11px] text-white/25 leading-relaxed">
+                      Визуального редактора нет: вставляйте разметку вручную или скопируйте из статьи блога. Пример:{" "}
+                      <code className="text-white/40">&lt;p&gt;…&lt;/p&gt;</code>,{" "}
+                      <code className="text-white/40">&lt;h2&gt;</code>,{" "}
+                      <code className="text-white/40">&lt;img src=&quot;/uploads/...&quot; alt=&quot;&quot; /&gt;</code>,{" "}
+                      <code className="text-white/40">&lt;strong&gt;</code>. Блок показывается под баннером, над списком услуг.
+                    </p>
+                    <textarea
+                      value={getField(path, "bodyHtml")}
+                      onChange={(e) => updateDraft(path, "bodyHtml", e.target.value)}
+                      rows={14}
+                      spellCheck={false}
+                      placeholder="<p>Введите HTML или обычный текст (абзацы через пустую строку).</p>"
+                      className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 resize-y min-h-[200px] focus:outline-none focus:border-[#C9A84C]/40 transition-colors font-mono"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between pt-2">

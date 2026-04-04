@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { path, title, description, keywords, ogTitle, ogDescription, ogImage, h1, noindex } = body;
+    const { path, title, description, keywords, ogTitle, ogDescription, ogImage, h1, bodyHtml, noindex } = body;
 
     if (!path) {
       return NextResponse.json({ error: "path is required" }, { status: 400 });
@@ -39,6 +39,7 @@ export async function PUT(request: NextRequest) {
         ...(ogDescription !== undefined && { ogDescription }),
         ...(ogImage !== undefined && { ogImage }),
         ...(h1 !== undefined && { h1 }),
+        ...(bodyHtml !== undefined && { bodyHtml }),
         ...(noindex !== undefined && { noindex }),
       },
       create: {
@@ -50,6 +51,7 @@ export async function PUT(request: NextRequest) {
         ogDescription: ogDescription || null,
         ogImage: ogImage || null,
         h1: h1 || null,
+        bodyHtml: bodyHtml ?? null,
         noindex: noindex || false,
       },
     });

@@ -97,9 +97,9 @@ export function LandingSteps({ title, steps }: LandingStepsProps) {
       style={{ backgroundColor: "var(--bg-secondary)", borderTop: "1px solid var(--border)" }}
     >
       <div className="container mx-auto">
-        <div className="flex items-end justify-between mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-10">
           <h2
-            className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl transition-all duration-700"
+            className="font-heading text-xl sm:text-2xl md:text-3xl max-w-2xl break-words transition-all duration-700"
             style={{
               color: "var(--text)",
               opacity: visible ? 1 : 0,

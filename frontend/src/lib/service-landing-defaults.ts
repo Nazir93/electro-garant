@@ -605,23 +605,38 @@ function architecturalLightingDoc(): ServiceLandingDocument {
   };
 }
 
+/** Убираем декоративные «витрины» с картинками — на странице услуги один баннер в hero + SEO-тексты. */
+function stripShowcaseSections(doc: ServiceLandingDocument): ServiceLandingDocument {
+  return {
+    sections: doc.sections.filter((s) => s.type !== "showcase"),
+  };
+}
+
 export function getDefaultServiceLandingDocument(serviceType: ServiceType): ServiceLandingDocument {
+  let raw: ServiceLandingDocument;
   switch (serviceType) {
     case "ELECTRICAL":
-      return electricalDoc();
+      raw = electricalDoc();
+      break;
     case "ACOUSTICS":
-      return acousticsDoc();
+      raw = acousticsDoc();
+      break;
     case "STRUCTURED_CABLING":
-      return structuredCablingDoc();
+      raw = structuredCablingDoc();
+      break;
     case "SMART_HOME":
-      return smartHomeDoc();
+      raw = smartHomeDoc();
+      break;
     case "SECURITY":
-      return securityDoc();
+      raw = securityDoc();
+      break;
     case "ARCHITECTURAL_LIGHTING":
-      return architecturalLightingDoc();
+      raw = architecturalLightingDoc();
+      break;
     default:
-      return electricalDoc();
+      raw = electricalDoc();
   }
+  return stripShowcaseSections(raw);
 }
 
 export function resolveServiceLandingDocument(
