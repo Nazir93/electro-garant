@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { X, Sun, Moon, ChevronRight } from "lucide-react";
+import { X, Sun, Moon, ChevronRight, Send } from "lucide-react";
 import { SITE_NAME } from "@/lib/constants";
 import { useContactConfig } from "@/lib/contact-config-context";
 import { MaxMessengerIcon } from "@/components/icons/max-messenger-icon";
@@ -495,13 +495,17 @@ export function Header() {
                     href={contact.social.telegram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[#0088cc]"
+                    className="group w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"
                     style={{ borderColor: "var(--border)" }}
-                    aria-label="Telegram"
+                    aria-label="Написать в Telegram"
+                    title="Telegram"
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5" style={{ color: "var(--text-muted)" }}>
-                      <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.855.075 1.644.357 1.937.793.825 2.009 1.467 3.097 2.033l.09.044c.397.208.775.406 1.025.607.282.219.435.396.484.52.05.124.065.278-.061.63-.136.38-.396.987-.744 1.773-.56 1.264-1.3 2.934-1.558 3.545-.19.453-.39.905-.078 1.384.156.24.397.44.742.508.346.068.626-.06.953-.217l.098-.046 3.965-2.556c.39 1.276.756 2.475 1.116 3.648.19.612.64.86 1.063.86.425 0 .822-.238 1.062-.86l3.065-10.39L21.198 4.58c.22-.085.468-.228.633-.46.165-.232.224-.544.174-.85a1.12 1.12 0 0 0-.807-.837z" />
-                    </svg>
+                    <Send
+                      size={16}
+                      strokeWidth={1.75}
+                      className="shrink-0 text-[var(--text-muted)] transition-colors duration-300 group-hover:text-[var(--accent)]"
+                      aria-hidden
+                    />
                   </a>
                 )}
                 {contact.social.max && (
@@ -509,11 +513,12 @@ export function Header() {
                     href={contact.social.max}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110"
+                    className="group w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:border-[var(--accent)]"
                     style={{ borderColor: "var(--border)" }}
-                    aria-label="Max"
+                    aria-label="Написать в Max"
+                    title="Max"
                   >
-                    <MaxMessengerIcon className="w-4 h-4 text-[var(--text-muted)]" />
+                    <MaxMessengerIcon className="h-4 w-4 text-[var(--text-muted)] opacity-[0.92] transition-colors duration-300 group-hover:text-[var(--accent)] group-hover:opacity-100" aria-hidden />
                   </a>
                 )}
               </div>

@@ -421,15 +421,11 @@ export function PricePageContent() {
 
           {/* ── Автозаполнение сметы ── */}
           <div
-            className="mt-6 sm:mt-8 rounded-2xl p-4 sm:p-6"
-            style={{
-              border: "1px solid var(--border)",
-              backgroundColor: "var(--card-bg)",
-            }}
+            className="mt-6 sm:mt-8 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-4 sm:p-6"
           >
             <p
-              className="text-[10px] uppercase tracking-[0.2em] mb-4"
-              style={{ color: "var(--text-subtle)" }}
+              className="mb-4 font-heading text-base font-semibold leading-snug tracking-tight sm:text-lg"
+              style={{ color: "var(--text)" }}
             >
               Быстрый расчёт по параметрам объекта
             </p>
@@ -523,6 +519,12 @@ export function PricePageContent() {
         style={{ borderColor: "var(--border)", backgroundColor: "color-mix(in srgb, var(--bg) 85%, transparent)" }}
       >
         <div className="container mx-auto py-3 sm:py-4">
+          <h2
+            className="font-heading text-base font-semibold tracking-tight sm:text-lg mb-3 sm:mb-3.5"
+            style={{ color: "var(--text)" }}
+          >
+            Рассчитать смету вручную
+          </h2>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {/* Search */}
             <div className="flex-1 relative">

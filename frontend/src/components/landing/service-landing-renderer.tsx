@@ -7,11 +7,28 @@ import { LandingSteps } from "@/components/landing/landing-steps";
 import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingServiceSchema } from "@/components/landing/landing-service-schema";
 import type { ServiceLandingDocument } from "@/lib/service-landing-schema";
+import { getPageH1 } from "@/lib/get-page-meta";
 import { loadContactConfig } from "@/lib/load-contact-config";
 
-export async function ServiceLandingRenderer({ document }: { document: ServiceLandingDocument }) {
+export async function ServiceLandingRenderer({
+  document,
+  pagePath,
+}: {
+  document: ServiceLandingDocument;
+  /** Путь страницы для H1 из SEO (PageMeta), например `/services/electrical` */
+  pagePath: string;
+}) {
   const contact = await loadContactConfig();
   const telephone: [string, string] = [contact.phoneRaw, contact.phone2Raw];
+
+  const heroH1ByIndex = new Map<number, string>();
+  for (let i = 0; i < document.sections.length; i++) {
+    const s = document.sections[i];
+    if (s.type === "hero") {
+      heroH1ByIndex.set(i, await getPageH1(pagePath, s.title));
+    }
+  }
+
   return (
     <article>
       {document.sections.map((section, i) => {
@@ -31,12 +48,14 @@ export async function ServiceLandingRenderer({ document }: { document: ServiceLa
             return (
               <LandingHero
                 key={i}
-                title={section.title}
+                title={heroH1ByIndex.get(i) ?? section.title}
                 subtitle={section.subtitle}
                 service={section.serviceKey}
                 tag={section.tag}
                 features={section.features}
                 goals={section.goals}
+                bannerImageDesktop={section.bannerImageDesktop}
+                bannerImageMobile={section.bannerImageMobile}
               />
             );
           case "showcase":

@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { Calculator, Download, Zap, Award, BadgeCheck, ListChecks } from "lucide-react";
+import Link from "next/link";
+import { Calculator, Download, Building2, LayoutGrid, Plug2, MapPinned } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
-import { useModal } from "@/lib/modal-context";
 
 /** Нижняя бегущая строка — не дублирует цифры из FixedStatsBar и не список услуг как в шапке */
 const PRICE_TICKER_ITEMS = [
@@ -16,22 +16,34 @@ const PRICE_TICKER_ITEMS = [
 ] as const;
 
 const ADVANTAGES = [
-  { icon: Zap, label: "Собственный штат", value: "15+", unit: "инженеров", desc: "Без субподряда и «левых» бригад" },
   {
-    icon: BadgeCheck,
-    label: "Смета до старта",
-    value: "0",
-    unit: "скрытых строк",
-    desc: "Состав и цена согласованы до подписания договора",
+    icon: Building2,
+    label: "На рынке",
+    value: "13",
+    unit: "лет",
+    desc: "Мы работаем с FG Group, Роза Хутор, Горки Город, MR. Food и др.",
   },
   {
-    icon: ListChecks,
-    label: "Понятные этапы",
-    value: "По",
-    unit: "договору",
-    desc: "Сроки этапов и приёмка прописаны заранее — всегда ясно, что сделано и что дальше",
+    icon: LayoutGrid,
+    label: "Объектов сдано",
+    value: "250",
+    unit: "+",
+    desc: "26 баров и ресторанов, 2 гостиницы, 1 завод, 200+ частных заказов",
   },
-  { icon: Award, label: "Гарантия", value: "5", unit: "лет", desc: "На монтаж и подключённое оборудование" },
+  {
+    icon: Plug2,
+    label: "Кабеля протянуто",
+    value: "145 000",
+    unit: "+ м",
+    desc: "в 2025 году",
+  },
+  {
+    icon: MapPinned,
+    label: "Регионы работы",
+    value: "3",
+    unit: "региона",
+    desc: "Работаем в 3-х регионах страны: Краснодарский край, Ростовская обл., Москва",
+  },
 ];
 
 export function PriceBannerSection() {
@@ -39,7 +51,6 @@ export function PriceBannerSection() {
   const [visible, setVisible] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const { isDark } = useTheme();
-  const { openModalToEstimate } = useModal();
 
   const accentRGB = "201,168,76";
 
@@ -138,9 +149,9 @@ export function PriceBannerSection() {
                 onMouseEnter={() => setHoveredCard(i)}
                 onMouseLeave={() => setHoveredCard(null)}
               >
-                <div className="relative flex items-baseline gap-1.5">
+                <div className="relative flex min-h-[2.75rem] flex-wrap items-baseline gap-x-1.5 gap-y-0.5 sm:min-h-[3rem]">
                   <span
-                    className="font-heading text-2xl leading-none transition-colors duration-300 sm:text-3xl md:text-4xl"
+                    className="font-heading text-[1.375rem] leading-none tracking-tight transition-colors duration-300 sm:text-2xl md:text-[1.625rem] lg:text-[1.75rem]"
                     style={{
                       color: isHovered ? `rgba(${accentRGB},1)` : "var(--text)",
                       fontVariantNumeric: "tabular-nums",
@@ -148,12 +159,14 @@ export function PriceBannerSection() {
                   >
                     {adv.value}
                   </span>
-                  <span
-                    className="text-[10px] uppercase tracking-wider sm:text-xs"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {adv.unit}
-                  </span>
+                  {adv.unit ? (
+                    <span
+                      className="text-[10px] font-medium leading-none tracking-[0.12em] sm:text-[11px]"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {adv.unit}
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="relative mt-3 flex items-center gap-2">
@@ -174,7 +187,7 @@ export function PriceBannerSection() {
                     />
                   </div>
                   <span
-                    className="text-[11px] font-medium uppercase tracking-wide sm:text-xs"
+                    className="text-[10px] font-medium uppercase leading-snug tracking-[0.14em] sm:text-[11px]"
                     style={{ color: "var(--text)" }}
                   >
                     {adv.label}
@@ -182,7 +195,7 @@ export function PriceBannerSection() {
                 </div>
 
                 <p
-                  className="relative mt-2 text-[10px] leading-relaxed sm:text-[11px]"
+                  className="relative mt-2 text-[10px] leading-relaxed normal-case tracking-normal sm:text-[11px]"
                   style={{ color: "var(--text-subtle)" }}
                 >
                   {adv.desc}
@@ -199,9 +212,9 @@ export function PriceBannerSection() {
             transform: visible ? "translateY(0)" : "translateY(12px)",
           }}
         >
-          <button
-            type="button"
-            onClick={openModalToEstimate}
+          <Link
+            href="/price#price-calculator"
+            scroll={true}
             className="group relative flex min-h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-full px-7 py-3.5 transition-all duration-300 hover:opacity-95 sm:px-9 sm:py-4"
             style={{
               backgroundColor: `rgba(${accentRGB},1)`,
@@ -212,7 +225,7 @@ export function PriceBannerSection() {
             <span className="relative z-10 font-heading text-xs uppercase tracking-[0.1em] sm:text-sm">
               Калькулятор стоимости
             </span>
-          </button>
+          </Link>
 
           <a
             href="/price-list.pdf"

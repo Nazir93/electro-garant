@@ -1,11 +1,17 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE_NAME } from "@/lib/constants";
+import { getPageMeta } from "@/lib/get-page-meta";
 
-export const metadata: Metadata = {
-  title: `Форум | ${SITE_NAME}`,
-  description: "Форум скоро откроется.",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  return getPageMeta({
+    title: `Форум | ${SITE_NAME}`,
+    description: "Форум скоро откроется. Раздел в разработке.",
+    path: "/forum",
+    keywords: ["форум", SITE_NAME],
+  });
+}
 
 export default function ForumPage() {
   return (

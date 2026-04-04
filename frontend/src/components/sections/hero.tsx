@@ -7,34 +7,8 @@ import { ArrowRight } from "lucide-react";
 import { CITY, SERVICES } from "@/lib/constants";
 import { useContactConfig } from "@/lib/contact-config-context";
 import type { ServiceItem } from "@/lib/get-services";
+import { resolveServiceCardMedia, serviceCardHasVisualMedia } from "@/lib/service-card-media";
 import { useTheme } from "@/lib/theme-context";
-
-/**
- * Фото для карточек hero по разделу услуги (как на макетах):
- * 01 — акустика, 02 — умный дом, 03 — электромонтаж, 04 — СКС, 05 — видеонаблюдение.
- * Ключ — путь slug из данных (порядок услуг в сетке может быть любым).
- */
-const HERO_SIDE_IMAGE_BY_SLUG: Record<string, string> = {
-  "/services/acoustics": "/images/hero/hero-01.png",
-  "/services/smart-home": "/images/hero/hero-02.png",
-  "/services/electrical": "/images/hero/hero-03.png",
-  "/services/structured-cabling": "/images/hero/hero-04.png",
-  "/services/security": "/images/hero/hero-05.png",
-};
-
-function heroSideImageForSlug(slug: string): string | undefined {
-  const path = slug.split("?")[0]?.replace(/\/$/, "") ?? slug;
-  return HERO_SIDE_IMAGE_BY_SLUG[path];
-}
-
-/** Обложка для карточки: приоритет — фото из макета; иначе админка. */
-function heroCardMedia(s: ServiceItem) {
-  const heroImg = heroSideImageForSlug(s.slug);
-  return {
-    coverImage: heroImg ?? s.coverImage,
-    videoUrl: heroImg ? undefined : s.videoUrl,
-  };
-}
 
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
@@ -314,9 +288,9 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                   opacity={sideOpacity}
                   scale={sideScale}
                   borderRadius={borderRadius}
-                  {...heroCardMedia(services[0])}
+                  {...resolveServiceCardMedia(services[0])}
                   shortDescription={services[0].shortDescription}
-                  imagePriority={!!heroSideImageForSlug(services[0].slug)}
+                  imagePriority={serviceCardHasVisualMedia(services[0])}
                 />
               </div>
 
@@ -445,7 +419,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                   opacity={sideOpacity}
                   scale={sideScale}
                   borderRadius={borderRadius}
-                  {...heroCardMedia(services[1])}
+                  {...resolveServiceCardMedia(services[1])}
                   shortDescription={services[1].shortDescription}
                 />
               </div>
@@ -468,7 +442,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                     opacity={sideOpacity}
                     scale={sideScale}
                     borderRadius={borderRadius}
-                    {...heroCardMedia(s)}
+                    {...resolveServiceCardMedia(s)}
                     shortDescription={s.shortDescription}
                   />
                 </div>

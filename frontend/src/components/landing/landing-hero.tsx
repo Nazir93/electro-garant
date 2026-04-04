@@ -9,9 +9,19 @@ interface LandingHeroProps {
   tag: string;
   features: string[];
   goals: string;
+  bannerImageDesktop?: string;
+  bannerImageMobile?: string;
 }
 
-export function LandingHero({ title, subtitle, tag, features, goals }: LandingHeroProps) {
+export function LandingHero({
+  title,
+  subtitle,
+  tag,
+  features,
+  goals,
+  bannerImageDesktop,
+  bannerImageMobile,
+}: LandingHeroProps) {
   const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -50,6 +60,31 @@ export function LandingHero({ title, subtitle, tag, features, goals }: LandingHe
         >
           {title}
         </h1>
+
+        {(bannerImageDesktop || bannerImageMobile) && (
+          <div
+            className="mb-8 sm:mb-10 md:mb-12 transition-all duration-1000 ease-out"
+            style={{
+              opacity: visible ? 1 : 0,
+              transform: visible ? "translateY(0)" : "translateY(20px)",
+              transitionDelay: "150ms",
+            }}
+          >
+            <picture>
+              {bannerImageDesktop ? (
+                <source media="(min-width: 768px)" srcSet={bannerImageDesktop} />
+              ) : null}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={bannerImageMobile || bannerImageDesktop || ""}
+                alt=""
+                className="w-full rounded-2xl object-cover max-h-[min(50vh,520px)] border border-[var(--border)]"
+                loading="eager"
+                decoding="async"
+              />
+            </picture>
+          </div>
+        )}
 
         {/* Two columns: subtitle + features */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 md:gap-20">

@@ -76,9 +76,23 @@ export default async function AdminDashboard() {
       </div>
 
       {!stats.dbConnected && (
-        <div className="p-4 rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/20 text-[#C9A84C] text-sm">
-          База данных не подключена. Запустите PostgreSQL и выполните{" "}
-          <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">npx prisma db push</code>
+        <div className="p-4 rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/20 text-[#C9A84C] text-sm space-y-2">
+          <p className="font-medium text-white/90">База данных недоступна</p>
+          <p className="text-white/50 text-xs leading-relaxed">
+            Админка (заявки, блог, услуги) читает данные из PostgreSQL через <code className="bg-white/10 px-1 rounded">DATABASE_URL</code> в{" "}
+            <code className="bg-white/10 px-1 rounded">frontend/.env.local</code>.
+          </p>
+          <ul className="list-disc pl-4 text-xs text-white/60 space-y-1">
+            <li>
+              Порт <strong className="text-[#C9A84C]">5432</strong> — локальный PostgreSQL на ПК, пользователь и база <code className="bg-black/30 px-1 rounded">electro</code>; первый раз:{" "}
+              <code className="bg-black/30 px-1 rounded">npm run db:push</code>. Проверка: <code className="bg-black/30 px-1 rounded">npm run db:verify</code>.
+            </li>
+            <li>
+              Порт <strong className="text-[#C9A84C]">5433</strong> — туннель к БД на VPS: в <strong>отдельном</strong> терминале{" "}
+              <code className="bg-black/30 px-1 rounded whitespace-nowrap">npm run db:tunnel -- -VpsHost &quot;IP&quot;</code>
+              , затем перезапустить <code className="bg-black/30 px-1 rounded">npm run dev</code>.
+            </li>
+          </ul>
         </div>
       )}
 

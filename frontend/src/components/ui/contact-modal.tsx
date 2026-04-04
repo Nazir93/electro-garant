@@ -413,6 +413,7 @@ function ProjectForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () => v
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name, phone: data.phone, email: data.email,
+          service: "Описание проекта",
           source: "project-form", pageUrl: window.location.href,
           honeypot: data.honeypot || "",
           recaptchaToken: recaptchaToken || undefined,
@@ -573,7 +574,7 @@ function InspectionForm({ onBack, onSuccess, getRecaptchaToken }: { onBack: () =
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: data.name, phone: data.phone, source: "inspection-request",
+          name: data.name, phone: data.phone, service: "Выезд инженера", source: "inspection-request",
           pageUrl: window.location.href,
           honeypot: data.honeypot || "",
           recaptchaToken: recaptchaToken || undefined,
@@ -786,7 +787,7 @@ function CalculatorForm({ onBack: _onBack, onSuccess, getRecaptchaToken }: { onB
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: data.name, phone: data.phone, source: "calculator",
+          name: data.name, phone: data.phone, service: "Ориентировочный расчёт", source: "calculator",
           pageUrl: window.location.href,
           honeypot: data.honeypot || "",
           recaptchaToken: recaptchaToken || undefined,

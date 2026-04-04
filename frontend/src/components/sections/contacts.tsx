@@ -7,7 +7,7 @@ import {
   Building2, CreditCard, ChevronDown,
 } from "lucide-react";
 import { MaxMessengerIcon } from "@/components/icons/max-messenger-icon";
-import { COMPANY, getYandexOfficeMapEmbedUrl, getYandexOfficeMapLinkUrl } from "@/lib/constants";
+import { COMPANY, getYandexOfficeMapEmbedUrl } from "@/lib/constants";
 import { useContactConfig } from "@/lib/contact-config-context";
 
 function RequisitesBlock() {
@@ -82,8 +82,7 @@ function RequisitesBlock() {
 
 export function ContactsSection() {
   const contact = useContactConfig();
-  /** Метка на карте — по координатам офиса (constants); поиск по text= в iframe часто без метки */
-  const mapExternalUrl = getYandexOfficeMapLinkUrl();
+  /** Метка на карте — координаты офиса в constants (см. ADDRESS / OFFICE_GEO_*) */
   const mapIframeSrc = getYandexOfficeMapEmbedUrl();
 
   return (
@@ -172,22 +171,13 @@ export function ContactsSection() {
             style={{ borderColor: "var(--border)" }}
           >
             <iframe
-              title="Карта офиса"
+              title={`Карта: ${contact.address}`}
               src={mapIframeSrc}
               className="absolute inset-0 w-full h-full border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
-          <a
-            href={mapExternalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mt-3 text-xs uppercase tracking-[0.15em] underline underline-offset-4 transition-colors hover:opacity-90"
-            style={{ color: "var(--accent)" }}
-          >
-            Открыть в Яндекс.Картах
-          </a>
         </div>
 
         {/* Messengers */}

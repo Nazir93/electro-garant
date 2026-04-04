@@ -41,7 +41,7 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix: string
   }, [value]);
 
   return (
-    <span ref={ref}>
+    <span ref={ref} className="tabular-nums">
       {count.toLocaleString("ru-RU")}
       {suffix}
     </span>
@@ -104,11 +104,14 @@ export function FixedStatsBar() {
                   </p>
                 </div>
               ) : null}
-              <div className="font-heading text-lg sm:text-xl md:text-2xl lg:text-3xl mb-0.5">
+              <div
+                className="mb-0.5 font-heading text-lg tabular-nums leading-none tracking-tight sm:text-xl md:text-[1.625rem] lg:text-[1.75rem]"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
                 <AnimatedCounter value={stat.value} suffix={stat.suffix} />
               </div>
               <p
-                className="text-[8px] sm:text-[9px] md:text-[10px] leading-tight tracking-wide"
+                className="text-[8px] sm:text-[9px] md:text-[10px] leading-snug tracking-wide"
                 style={{ color: "var(--text-muted)" }}
               >
                 {stat.label}

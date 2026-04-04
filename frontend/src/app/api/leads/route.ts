@@ -157,7 +157,12 @@ export async function POST(request: NextRequest) {
     });
 
     const redirectUrl = `/spasibo?token=${token}&from=${encodeURIComponent(source)}`;
-    return NextResponse.json({ success: true, redirectUrl });
+    return NextResponse.json({
+      success: true,
+      redirectUrl,
+      id: createdLead.id,
+      leadId: createdLead.id,
+    });
   } catch (error) {
     console.error("[LEAD ERROR]", error);
     return NextResponse.json(

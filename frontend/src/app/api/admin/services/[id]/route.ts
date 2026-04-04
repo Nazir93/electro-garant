@@ -31,6 +31,8 @@ export async function PUT(
         ...(body.icon !== undefined && { icon: body.icon }),
         ...(body.coverImage !== undefined && { coverImage: body.coverImage }),
         ...(body.videoUrl !== undefined && { videoUrl: body.videoUrl }),
+        ...(body.bannerImageDesktop !== undefined && { bannerImageDesktop: body.bannerImageDesktop }),
+        ...(body.bannerImageMobile !== undefined && { bannerImageMobile: body.bannerImageMobile }),
         ...(body.published !== undefined && { published: body.published }),
         ...(body.order !== undefined && { order: body.order }),
         ...(body.landingJson !== undefined && { landingJson: body.landingJson }),

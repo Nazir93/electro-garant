@@ -8,6 +8,7 @@ import {
   Shield,
   Users,
   Smartphone,
+  Sun,
   type LucideIcon,
 } from "lucide-react";
 
@@ -18,6 +19,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   shield: Shield,
   users: Users,
   smartphone: Smartphone,
+  sun: Sun,
 };
 
 interface AdvantageItem {

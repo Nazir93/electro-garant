@@ -63,7 +63,7 @@ export function OfferFormPageContent() {
 
   useEffect(() => {
     const titles: Record<typeof stage, string> = {
-      form: `Заявка — ${SITE_NAME}`,
+      form: `Форма обратной связи — ${SITE_NAME}`,
       timer: `Заявка принята — ${SITE_NAME}`,
       pizza: `Пицца в подарок — ${SITE_NAME}`,
     };
@@ -133,6 +133,7 @@ function FormSection({ onSubmitted }: { onSubmitted: (id: string) => void }) {
       body: JSON.stringify({
         name: data.name,
         phone: data.phone,
+        service: "Оффер: обратная связь",
         source: "offer-page",
         honeypot: data.honeypot,
       }),
@@ -145,8 +146,8 @@ function FormSection({ onSubmitted }: { onSubmitted: (id: string) => void }) {
     <div className="mx-auto flex min-h-0 w-full max-w-2xl flex-col justify-center py-1">
       <TrustLine />
 
-      <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl leading-[1.05] mb-3 text-center sm:text-left">
-        ЗАЯВКА
+      <h2 className="font-heading text-xl sm:text-2xl md:text-3xl leading-[1.08] mb-3 text-center sm:text-left">
+        ФОРМА ОБРАТНОЙ СВЯЗИ
       </h2>
       <p className="text-sm mb-8 text-center sm:text-left" style={{ color: "var(--text-muted)" }}>
         Оставьте телефон и имя — перезвоним за 5 минут.

@@ -14,9 +14,10 @@ const SERVICE_TYPES = [
   { value: "STRUCTURED_CABLING", label: "Слаботочные системы" },
   { value: "SMART_HOME", label: "Умный дом" },
   { value: "SECURITY", label: "Безопасность" },
+  { value: "ARCHITECTURAL_LIGHTING", label: "Архитектурная подсветка" },
 ];
 
-const ICONS = ["zap", "speaker", "network", "home", "shield"];
+const ICONS = ["zap", "speaker", "network", "home", "shield", "sun"];
 
 export default function AdminEditServicePage() {
   const params = useParams();
@@ -32,6 +33,8 @@ export default function AdminEditServicePage() {
   const [icon, setIcon] = useState("zap");
   const [coverImage, setCoverImage] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [bannerImageDesktop, setBannerImageDesktop] = useState("");
+  const [bannerImageMobile, setBannerImageMobile] = useState("");
   const [published, setPublished] = useState(true);
   const [order, setOrder] = useState(0);
   const [landingJsonText, setLandingJsonText] = useState("");
@@ -50,6 +53,8 @@ export default function AdminEditServicePage() {
           setIcon(data.icon);
           setCoverImage(data.coverImage || "");
           setVideoUrl(data.videoUrl || "");
+          setBannerImageDesktop(data.bannerImageDesktop || "");
+          setBannerImageMobile(data.bannerImageMobile || "");
           setPublished(data.published);
           setOrder(data.order);
           setLandingJsonText(
@@ -90,6 +95,8 @@ export default function AdminEditServicePage() {
           icon,
           coverImage: coverImage || null,
           videoUrl: videoUrl || null,
+          bannerImageDesktop: bannerImageDesktop.trim() || null,
+          bannerImageMobile: bannerImageMobile.trim() || null,
           published,
           order,
           landingJson,
@@ -123,6 +130,15 @@ export default function AdminEditServicePage() {
       </div>
 
       <h1 className="text-2xl font-bold">Редактировать услугу</h1>
+
+      <p className="text-xs text-white/35 leading-relaxed">
+        SEO (title, description, OG): раздел{" "}
+        <Link href="/admin/seo" className="text-[#C9A84C]/90 hover:text-[#C9A84C]">
+          SEO &amp; Настройки
+        </Link>
+        , путь страницы{" "}
+        <code className="text-white/50">/services/{slug || "…"}</code>. Там же можно задать H1 для страницы.
+      </p>
 
       {error && (
         <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
@@ -185,6 +201,20 @@ export default function AdminEditServicePage() {
           onChange={setVideoUrl}
         />
 
+        <AdminMediaUpload
+          label="Баннер лендинга — desktop (от 768px)"
+          accept="image"
+          value={bannerImageDesktop}
+          onChange={setBannerImageDesktop}
+        />
+
+        <AdminMediaUpload
+          label="Баннер лендинга — mobile"
+          accept="image"
+          value={bannerImageMobile}
+          onChange={setBannerImageMobile}
+        />
+
         <div>
           <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Краткое описание</label>
           <textarea value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} required rows={3}
@@ -222,7 +252,10 @@ export default function AdminEditServicePage() {
             <code className="text-white/50">schema</code>, <code className="text-white/50">hero</code>,{" "}
             <code className="text-white/50">showcase</code>, <code className="text-white/50">textBlock</code>,{" "}
             <code className="text-white/50">pain</code>, <code className="text-white/50">advantages</code>,{" "}
-            <code className="text-white/50">steps</code>, <code className="text-white/50">faq</code>. Пустое поле — на
+            <code className="text-white/50">steps</code>, <code className="text-white/50">faq</code>. В блоке{" "}
+            <code className="text-white/50">hero</code> можно задать{" "}
+            <code className="text-white/50">bannerImageDesktop</code> и{" "}
+            <code className="text-white/50">bannerImageMobile</code> (иначе берутся поля баннеров выше). Пустое поле — на
             сайте показывается встроенный шаблон.
           </p>
           <textarea

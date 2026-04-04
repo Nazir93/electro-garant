@@ -12,9 +12,10 @@ const SERVICE_TYPES = [
   { value: "STRUCTURED_CABLING", label: "Слаботочные системы" },
   { value: "SMART_HOME", label: "Умный дом" },
   { value: "SECURITY", label: "Безопасность" },
+  { value: "ARCHITECTURAL_LIGHTING", label: "Архитектурная подсветка" },
 ];
 
-const ICONS = ["zap", "speaker", "network", "home", "shield"];
+const ICONS = ["zap", "speaker", "network", "home", "shield", "sun"];
 
 export default function AdminNewServicePage() {
   const router = useRouter();
@@ -27,6 +28,8 @@ export default function AdminNewServicePage() {
   const [icon, setIcon] = useState("zap");
   const [coverImage, setCoverImage] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [bannerImageDesktop, setBannerImageDesktop] = useState("");
+  const [bannerImageMobile, setBannerImageMobile] = useState("");
   const [published, setPublished] = useState(true);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -38,7 +41,17 @@ export default function AdminNewServicePage() {
       const res = await fetch("/api/admin/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, shortDescription, serviceType, icon, coverImage: coverImage || null, videoUrl: videoUrl || null, published }),
+        body: JSON.stringify({
+          title,
+          shortDescription,
+          serviceType,
+          icon,
+          coverImage: coverImage || null,
+          videoUrl: videoUrl || null,
+          bannerImageDesktop: bannerImageDesktop.trim() || null,
+          bannerImageMobile: bannerImageMobile.trim() || null,
+          published,
+        }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Ошибка");
       router.push("/admin/services");
@@ -116,6 +129,20 @@ export default function AdminNewServicePage() {
           accept="video"
           value={videoUrl}
           onChange={setVideoUrl}
+        />
+
+        <AdminMediaUpload
+          label="Баннер лендинга — desktop (от 768px)"
+          accept="image"
+          value={bannerImageDesktop}
+          onChange={setBannerImageDesktop}
+        />
+
+        <AdminMediaUpload
+          label="Баннер лендинга — mobile"
+          accept="image"
+          value={bannerImageMobile}
+          onChange={setBannerImageMobile}
         />
 
         <div>

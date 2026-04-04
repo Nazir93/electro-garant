@@ -21,6 +21,7 @@ enum ServiceType {
   STRUCTURED_CABLING
   SMART_HOME
   SECURITY
+  ARCHITECTURAL_LIGHTING
 }
 
 enum LeadStatus {
@@ -190,6 +191,10 @@ model Service {
   icon             String      @default("zap")
   coverImage       String?
   videoUrl         String?
+  /// Баннер под заголовком H1: широкий экран (отображается от md и выше).
+  bannerImageDesktop String?
+  /// Баннер для узких экранов (мобильные). Если пусто — на мобиле показывается desktop.
+  bannerImageMobile  String?
   /// Блоки лендинга услуги (hero, тексты, FAQ и т.д.). null = шаблон из кода.
   landingJson      Json?
   published        Boolean     @default(true)

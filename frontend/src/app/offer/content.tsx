@@ -1,21 +1,11 @@
 "use client";
 
-import { useState, useRef, useLayoutEffect } from "react";
-import {
-  Phone,
-  Send,
-  Mail,
-  Calculator,
-  Download,
-  UserCircle,
-  ChevronDown,
-  Sparkles,
-} from "lucide-react";
+import { useState, useRef, useLayoutEffect, useEffect } from "react";
+import { Phone, Send, Mail, Calculator, UserCircle } from "lucide-react";
 import { MaxMessengerIcon } from "@/components/icons/max-messenger-icon";
-import { FunnelLinkRow, FunnelPanelButton } from "@/components/ui/funnel-ui";
+import { FunnelLinkRow } from "@/components/ui/funnel-ui";
 import { SITE_NAME } from "@/lib/constants";
 import { useContactConfig } from "@/lib/contact-config-context";
-import { useModal } from "@/lib/modal-context";
 import { useTheme } from "@/lib/theme-context";
 
 const OFFER_HERO_VIDEO = "/videos/offer-hero.mp4";
@@ -23,11 +13,18 @@ const OFFER_HERO_VIDEO = "/videos/offer-hero.mp4";
 export function OfferPageContent() {
   const contact = useContactConfig();
   const { isDark } = useTheme();
-  const { openModalToEstimate } = useModal();
-  const [costSectionsOpen, setCostSectionsOpen] = useState(false);
   /** Первый кадр загружен — плавно показываем видео вместо «пустого» чёрного кадра плеера */
   const [videoReady, setVideoReady] = useState(false);
+  const [videoUi, setVideoUi] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setVideoUi(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   useLayoutEffect(() => {
     const el = videoRef.current;
@@ -40,7 +37,7 @@ export function OfferPageContent() {
 
   return (
     <div
-      className="relative flex h-[100dvh] max-h-[100dvh] flex-col box-border overflow-hidden transition-colors duration-500"
+      className="relative flex h-full min-h-0 flex-col box-border overflow-x-hidden overflow-hidden overscroll-none transition-colors duration-500"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
       <div
@@ -52,9 +49,9 @@ export function OfferPageContent() {
         aria-hidden
       />
 
-      {/* Видео + тёмная плёнка; контент в одном экране (при нехватке места — прокрутка только внутри блока) */}
-      <header className="relative z-10 flex min-h-0 flex-1 flex-col">
-        <div className="absolute inset-0 overflow-hidden" aria-hidden>
+      {/* Видео + тёмная плёнка; один экран без прокрутки страницы */}
+      <header className="relative z-10 flex min-h-0 flex-1 flex-col justify-center overflow-hidden bg-[var(--bg)] py-3 transition-colors duration-500 sm:py-5 md:py-7 lg:bg-transparent lg:py-0">
+        <div className="absolute inset-0 z-0 overflow-hidden max-lg:hidden" aria-hidden>
           {/* Фон до первого кадра видео — тот же характер, что и с плёнкой, без «пустого» чёрного */}
           <div
             className="absolute inset-0 z-0"
@@ -96,137 +93,81 @@ export function OfferPageContent() {
         </div>
 
         <div
-          className={`relative z-10 mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden overflow-x-hidden px-4 pt-[max(1.25rem,calc(env(safe-area-inset-top)+0.75rem))] pr-[3.25rem] pb-[max(0.35rem,env(safe-area-inset-bottom))] md:px-6 md:pt-[max(0.75rem,env(safe-area-inset-top))] md:pr-16 md:pb-[max(0.5rem,env(safe-area-inset-bottom))] ${isDark ? "text-white" : "text-[var(--text)]"}`}
+          className="relative z-10 mx-auto box-border flex min-h-0 max-h-full w-full min-w-0 flex-col overflow-x-hidden overflow-y-hidden pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(3.25rem,calc(env(safe-area-inset-right)+2.75rem))] pt-[max(0.25rem,calc(env(safe-area-inset-top)+0.15rem))] pb-[max(0.5rem,env(safe-area-inset-bottom))] text-[var(--text)] sm:max-w-lg sm:pl-5 sm:pr-14 sm:pt-1 md:max-w-xl md:pl-6 md:pr-16 md:pb-2 lg:max-w-2xl lg:pt-0 xl:max-w-3xl"
         >
           <div
-            className={`flex min-h-0 w-full flex-1 flex-col gap-2 rounded-2xl px-3 py-3 backdrop-blur-md transition-colors duration-500 md:gap-3 md:px-5 md:py-4 ${
+            className={`flex w-full shrink-0 flex-col overflow-hidden transition-colors duration-500 max-lg:rounded-none max-lg:border-0 max-lg:bg-transparent max-lg:shadow-none max-lg:backdrop-blur-none rounded-[1.125rem] backdrop-blur-md sm:rounded-2xl ${
               isDark
-                ? "bg-[rgba(0,0,0,0.85)] shadow-[0_10px_28px_-4px_rgba(0,0,0,0.55)]"
-                : "border border-[var(--border)] bg-[rgba(255,255,255,0.88)] shadow-[0_10px_28px_-4px_rgba(0,0,0,0.1)]"
+                ? "lg:rounded-2xl lg:border lg:border-[var(--border)] lg:bg-[rgba(0,0,0,0.88)]"
+                : "lg:rounded-2xl lg:border lg:border-[var(--border)] lg:bg-[rgba(255,255,255,0.92)]"
             }`}
           >
+          <div className="flex w-full min-w-0 flex-col gap-3 px-4 py-4 sm:gap-3.5 sm:px-5 sm:py-5 md:gap-4 md:px-6 md:py-6 lg:gap-3 lg:px-5 lg:py-4">
           <div className="shrink-0">
             <p
-              className="mb-0.5 text-[10px] uppercase tracking-[0.22em] font-heading sm:text-xs"
+              className="mb-1 text-[10px] uppercase tracking-[0.2em] font-heading sm:mb-1.5 sm:text-xs sm:tracking-[0.22em] lg:mb-1"
               style={{ color: "var(--accent)" }}
             >
               {SITE_NAME}
             </p>
-            <h1
-              className={`font-heading text-lg font-bold leading-[1.08] tracking-tight sm:text-xl md:text-2xl lg:text-3xl ${
-                isDark ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" : "text-[var(--text)]"
-              }`}
-            >
+            <h1 className="font-heading text-lg font-bold leading-[1.12] tracking-tight text-[var(--text)] sm:text-xl sm:leading-[1.1] md:text-2xl">
               <span style={{ color: "var(--accent)" }}>Спасибо за интерес</span>
-              <span className={`block ${isDark ? "text-white" : "text-[var(--text)]"}`}>к нашей компании</span>
+              <span className="mt-0.5 block text-[var(--text)]">к нашей компании</span>
             </h1>
           </div>
 
-          <p
-            className={`shrink-0 text-[11px] leading-snug sm:text-xs md:text-sm md:leading-relaxed ${
-              isDark ? "text-white/95" : "text-[var(--text-muted)]"
-            }`}
-          >
-            Мы знаем, что Ваше время стоит очень дорого, поэтому предлагаем связаться прямо сейчас. Звонок займёт всего
-            лишь 3 минуты, а сэкономит до 100% вашего времени на поиск подрядчика. Звоните любым удобным для Вас способом
-            — и команда профессионалов {SITE_NAME} возьмётся за дело.
+          <p className="shrink-0 text-xs leading-relaxed text-[var(--text-muted)] sm:text-[0.8125rem] sm:leading-relaxed md:text-sm">
+            Мы знаем, что Ваше время стоит очень дорого, поэтому предлагаем связаться прямо сейчас. Звонок займёт всего лишь 3
+            минуты, а сэкономит до 100% вашего времени на поиск подрядчика. Звоните любым удобным для Вас способом — и команда
+            профессионалов {SITE_NAME} возьмётся за дело.
           </p>
 
-        <section
-          className={`shrink-0 border-t pt-2 ${isDark ? "border-white/20" : "border-[var(--border)]"}`}
-        >
-          <p
-            className={`mb-2 text-center text-[10px] uppercase tracking-[0.2em] sm:mb-2.5 ${
-              isDark ? "text-white/70" : "text-[var(--text-subtle)]"
-            }`}
+          <section
+            className="shrink-0 space-y-4 border-t border-[var(--border)] pt-4 sm:space-y-5 sm:pt-5 lg:space-y-3 lg:pt-3"
           >
-            Позвонить
-          </p>
-          <div className="mb-3 grid w-full grid-cols-1 gap-2 min-[400px]:grid-cols-2 sm:gap-3">
-            <PhoneLinkCompact phone={contact.phone} raw={contact.phoneRaw} isDark={isDark} />
-            <PhoneLinkCompact phone={contact.phone2} raw={contact.phone2Raw} isDark={isDark} />
-          </div>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2.5 pt-1">
-            <ContactChip
-              href={contact.social.max}
-              icon={<MaxMessengerIcon className="h-4 w-4 shrink-0" />}
-              label="Max"
-              large
-            />
-            <ContactChip
-              href={contact.social.telegram}
-              icon={<Send size={16} strokeWidth={2} />}
-              label="Telegram"
-              large
-            />
-            <ContactChip
-              href={`mailto:${contact.email}`}
-              icon={<Mail size={16} strokeWidth={2} />}
-              label="Почта"
-              large
-            />
-          </div>
-        </section>
-
-        <section className="mt-auto flex shrink-0 flex-col gap-2 pb-0.5">
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
-            <FunnelLinkRow href="/offer/form" onVideo compact icon={<UserCircle size={18} strokeWidth={2} />}>
-              Форма заявки
-            </FunnelLinkRow>
-            <FunnelPanelButton
-              ariaExpanded={costSectionsOpen}
-              onClick={() => setCostSectionsOpen((o) => !o)}
-              onVideo
-              compact
-              icon={<Calculator size={18} strokeWidth={2} />}
-              trailing={
-                <ChevronDown
-                  size={18}
-                  strokeWidth={2}
-                  className={`shrink-0 transition-transform duration-200 ${costSectionsOpen ? "rotate-180" : ""}`}
+            <div className="flex w-full flex-col gap-2 sm:gap-2.5">
+              <PhoneLinkCompact phone={contact.phone} raw={contact.phoneRaw} isDark={isDark} />
+              <PhoneLinkCompact phone={contact.phone2} raw={contact.phone2Raw} isDark={isDark} />
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-8 sm:gap-y-2 md:gap-x-10">
+              <div className="flex min-h-[48px] items-center justify-center sm:min-h-0">
+                <ContactChip
+                  href={contact.social.max}
+                  icon={<MaxMessengerIcon className="h-5 w-5 shrink-0 sm:h-[1.125rem] sm:w-[1.125rem] md:h-5 md:w-5" />}
+                  label="Max"
                 />
-              }
-            >
-              <span className="flex flex-col gap-0.5 leading-tight">
-                <span>Рассчитать стоимость</span>
-                <span className="text-[10px] font-normal normal-case tracking-normal text-[var(--text-muted)] sm:text-[11px]">
+              </div>
+              <div className="flex min-h-[48px] items-center justify-center sm:min-h-0">
+                <ContactChip
+                  href={contact.social.telegram}
+                  icon={<Send size={20} strokeWidth={2} className="h-5 w-5 sm:h-[1.125rem] sm:w-[1.125rem] md:h-5 md:w-5" />}
+                  label="Telegram"
+                />
+              </div>
+              <div className="flex min-h-[48px] items-center justify-center sm:min-h-0">
+                <ContactChip
+                  href={`mailto:${contact.email}`}
+                  icon={<Mail size={20} strokeWidth={2} className="h-5 w-5 sm:h-[1.125rem] sm:w-[1.125rem] md:h-5 md:w-5" />}
+                  label="Почта"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="flex shrink-0 flex-col gap-2.5 border-t border-[var(--border)] pt-4 sm:gap-3 sm:pt-5 lg:gap-2 lg:pt-3">
+            <FunnelLinkRow href="/offer/form" onVideo={videoUi} compact icon={<UserCircle size={20} strokeWidth={2} />}>
+              Заполнить форму обратной связи
+            </FunnelLinkRow>
+            <FunnelLinkRow href="/offer/calculate" onVideo={videoUi} compact icon={<Calculator size={20} strokeWidth={2} />}>
+              <span className="flex flex-col gap-1 leading-snug">
+                <span className="text-[0.8125rem] text-[var(--text)] sm:text-sm md:text-base">Рассчитать стоимость самостоятельно</span>
+                <span className="text-[11px] font-normal normal-case leading-snug tracking-normal text-[var(--text-muted)] sm:text-xs">
                   Калькулятор, ориентировочный расчёт или скачать прайс
                 </span>
               </span>
-            </FunnelPanelButton>
+            </FunnelLinkRow>
+          </section>
           </div>
-
-          {costSectionsOpen && (
-            <div
-              className={`grid grid-cols-1 gap-2 border-t pt-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.18fr)_minmax(0,0.8fr)] sm:gap-2 ${
-                isDark ? "border-white/20" : "border-[var(--border)]"
-              }`}
-            >
-              <FunnelLinkRow
-                href="/price#price-calculator"
-                onVideo
-                compact
-                icon={<Calculator size={18} strokeWidth={2} />}
-              >
-                Калькулятор сметы
-              </FunnelLinkRow>
-              <FunnelPanelButton onClick={() => openModalToEstimate()} onVideo compact icon={<Sparkles size={18} strokeWidth={2} />}>
-                <span className="inline-block whitespace-nowrap">Ориентировочный</span>{" "}
-                <span className="inline-block whitespace-nowrap">расчёт</span>
-              </FunnelPanelButton>
-              <FunnelLinkRow
-                href="/price-list.pdf"
-                download
-                onVideo
-                compact
-                narrow
-                icon={<Download size={16} strokeWidth={2} />}
-              >
-                Скачать прайс
-              </FunnelLinkRow>
-            </div>
-          )}
-        </section>
           </div>
         </div>
       </header>
@@ -238,61 +179,46 @@ function PhoneLinkCompact({ phone, raw, isDark }: { phone: string; raw: string; 
   return (
     <a
       href={`tel:${raw}`}
-      className={`group flex min-h-[3.25rem] w-full min-w-0 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-center transition-colors min-[400px]:min-h-[2.75rem] sm:flex-row sm:gap-2.5 sm:px-3 sm:py-3 md:min-h-0 ${
+      className={`group flex w-full min-w-0 touch-manipulation items-center justify-center rounded-xl px-3 py-2.5 transition-colors active:scale-[0.99] max-lg:min-h-[52px] max-lg:bg-[var(--bg-secondary)]/55 max-lg:active:bg-[var(--bg-secondary)] lg:min-h-0 lg:bg-transparent lg:px-2 lg:py-2 ${
         isDark
-          ? "border-white/15 bg-white/[0.05] hover:border-white/30 hover:bg-white/[0.09]"
-          : "border-[var(--border)] bg-[var(--card-bg)] hover:border-[var(--accent)] hover:bg-[var(--bg-secondary)]"
+          ? "lg:hover:bg-white/[0.06] lg:active:bg-white/[0.1]"
+          : "lg:hover:bg-black/[0.05] lg:active:bg-black/[0.08]"
       }`}
     >
-      <Phone
-        size={16}
-        strokeWidth={2}
-        className="shrink-0 text-[#e8c96a] transition-transform group-hover:scale-105"
-      />
-      <span
-        className={`w-full min-w-0 text-balance font-heading text-[10px] leading-tight tracking-wide tabular-nums sm:text-[11px] md:text-xs ${
-          isDark ? "text-white" : "text-[var(--text)]"
-        }`}
-      >
-        {phone}
+      <span className="inline-flex max-w-full items-center gap-2.5 sm:gap-3 md:gap-3.5">
+        <Phone
+          size={24}
+          strokeWidth={2}
+          className="shrink-0 text-[#e8c96a] transition-transform group-hover:scale-105 group-active:scale-105 sm:h-6 sm:w-6 md:h-7 md:w-7"
+          aria-hidden
+        />
+        <span className="font-heading text-[1.0625rem] font-semibold leading-none tracking-wide text-[var(--text)] tabular-nums sm:text-lg md:text-xl">
+          {phone}
+        </span>
       </span>
     </a>
   );
 }
 
-function ContactChip({
-  href,
-  icon,
-  label,
-  large,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  /** Один размер подписи в тёмной и светлой теме */
-  large?: boolean;
-}) {
+function ContactChip({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
   const [hovered, setHovered] = useState(false);
+  const isMailto = href.startsWith("mailto:");
+
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`font-medium uppercase tracking-[0.14em] transition-colors border-b border-transparent ${
-        large
-          ? "text-xs pb-1 sm:text-[13px] md:tracking-[0.16em]"
-          : "text-[10px] pb-0.5 md:text-[11px] tracking-[0.15em]"
-      }`}
+      target={isMailto ? undefined : "_blank"}
+      rel={isMailto ? undefined : "noopener noreferrer"}
+      className="touch-manipulation border-b border-transparent pb-0.5 text-[11px] font-medium uppercase tracking-[0.12em] transition-colors active:opacity-80 sm:text-[13px] sm:tracking-[0.16em]"
       style={{
         color: hovered ? "var(--accent)" : "var(--text-muted)",
         borderColor: hovered ? "var(--accent)" : "transparent",
-        backgroundColor: hovered ? "rgba(201,168,76,0.08)" : "transparent",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <span className={`inline-flex items-center ${large ? "gap-2" : "gap-1.5"}`}>
-        {icon}
+      <span className="inline-flex items-center gap-2">
+        <span className="shrink-0 text-[#e8c96a] [&_svg]:text-current">{icon}</span>
         {label}
       </span>
     </a>

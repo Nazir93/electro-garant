@@ -17,6 +17,7 @@ const SERVICE_TYPE_TO_SLUG: Record<string, string> = {
   STRUCTURED_CABLING: "/services/structured-cabling",
   SMART_HOME: "/services/smart-home",
   SECURITY: "/services/security",
+  ARCHITECTURAL_LIGHTING: "/services/architectural-lighting",
 };
 
 export async function getServicesList(): Promise<ServiceItem[]> {

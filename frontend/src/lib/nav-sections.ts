@@ -34,6 +34,7 @@ export const NAV_SECTIONS: NavSection[] = [
           { href: "/services/smart-home", label: "Умный дом" },
           { href: "/services/security", label: "Безопасность" },
           { href: "/services/structured-cabling", label: "Слаботочные" },
+          { href: "/services/architectural-lighting", label: "Архитектурная подсветка" },
         ],
       },
       { href: "/price", label: "Прайслист" },

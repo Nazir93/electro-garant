@@ -83,7 +83,7 @@ const ANNOTATIONS: AnnotationItem[] = [
     id: "lighting",
     label: "Архитектурная подсветка",
     desc: "LED-подсветка фасадов и интерьеров",
-    href: "/services/electrical",
+    href: "/services/architectural-lighting",
     dotX: 55, dotY: 34,
     labelX: 40, labelY: 25,
     align: "left",

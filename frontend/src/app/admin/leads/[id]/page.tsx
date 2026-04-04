@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { getLeadSourceLabel } from "@/lib/lead-sources";
 
 type Lead = {
   id: string;
@@ -109,7 +110,7 @@ export default function AdminLeadDetailPage() {
     { label: "Email", value: lead.email },
     { label: "Услуга", value: lead.service },
     { label: "Страница", value: lead.pageUrl },
-    { label: "Источник", value: lead.source },
+    { label: "Источник", value: getLeadSourceLabel(lead.source) },
     { label: "UTM Source", value: lead.utmSource },
     { label: "UTM Medium", value: lead.utmMedium },
     { label: "UTM Campaign", value: lead.utmCampaign },

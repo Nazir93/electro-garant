@@ -33,7 +33,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           <CustomCursor />
           <ContactModal />
           <main
-            className="theme-bg theme-text fixed inset-0 z-[85] overflow-y-auto overflow-x-hidden overscroll-y-contain border-0 bg-[var(--bg)] outline-none ring-0 transition-colors duration-500"
+            className="theme-bg theme-text fixed inset-0 z-[85] h-[100dvh] max-h-[100dvh] overflow-hidden overflow-x-hidden overscroll-none border-0 bg-[var(--bg)] outline-none ring-0 transition-colors duration-500"
           >
             {/* без PageTransition — иначе лишний fade и ощущение «лоадера» */}
             {children}

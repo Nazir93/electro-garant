@@ -36,20 +36,25 @@ export async function getPageMeta(defaults: MetaDefaults): Promise<Metadata> {
     ? dbMeta.keywords.split(",").map((k) => k.trim())
     : defaults.keywords;
 
+  const baseUrl = SITE_URL.replace(/\/$/, "");
+  const canonical = `${baseUrl}${defaults.path === "/" ? "" : defaults.path}`;
+
   return {
     title: { absolute: title },
     description,
-    ...(keywords && { keywords }),
+    ...(keywords && keywords.length > 0 && { keywords }),
     openGraph: {
       title: dbMeta?.ogTitle || title,
       description: dbMeta?.ogDescription || description,
       type: "website",
-      url: `${SITE_URL}${defaults.path}`,
+      locale: "ru_RU",
+      siteName: SITE_NAME,
+      url: `${baseUrl}${defaults.path}`,
       ...(dbMeta?.ogImage || defaults.ogImage
         ? { images: [{ url: dbMeta?.ogImage || defaults.ogImage! }] }
         : {}),
     },
-    alternates: { canonical: defaults.path },
+    alternates: { canonical },
     ...(dbMeta?.noindex ? { robots: { index: false, follow: false } } : {}),
   };
 }

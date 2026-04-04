@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import type { ServiceItem } from "@/lib/get-services";
+import { resolveServiceCardMedia } from "@/lib/service-card-media";
 import { useModal } from "@/lib/modal-context";
 
 function ServiceCard({
@@ -17,6 +18,7 @@ function ServiceCard({
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const media = resolveServiceCardMedia(service);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -56,9 +58,19 @@ function ServiceCard({
           className="aspect-[16/9] flex items-center justify-center relative overflow-hidden"
           style={{ backgroundColor: "var(--bg-secondary)" }}
         >
-          {service.coverImage ? (
+          {media.videoUrl ? (
+            <video
+              src={media.videoUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover"
+              aria-hidden
+            />
+          ) : media.coverImage ? (
             <Image
-              src={service.coverImage}
+              src={media.coverImage}
               alt={service.title}
               fill
               className="object-cover"

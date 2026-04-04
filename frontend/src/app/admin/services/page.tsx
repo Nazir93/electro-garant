@@ -21,6 +21,7 @@ const TYPE_LABELS: Record<string, string> = {
   STRUCTURED_CABLING: "СКС",
   SMART_HOME: "Умный дом",
   SECURITY: "Безопасность",
+  ARCHITECTURAL_LIGHTING: "Арх. подсветка",
 };
 
 export default function AdminServicesPage() {

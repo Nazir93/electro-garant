@@ -4,10 +4,10 @@ import { OfferFormPageContent } from "./content";
 
 export async function generateMetadata() {
   return getPageMeta({
-    title: `Заявка — ${SITE_NAME}`,
+    title: `Форма обратной связи — ${SITE_NAME}`,
     description: `Свяжемся за 5 минут. Электромонтаж в ${CITY}.`,
     path: "/offer/form",
-    keywords: ["заявка", SITE_NAME, CITY],
+    keywords: ["обратная связь", "заявка", SITE_NAME, CITY],
   });
 }
 

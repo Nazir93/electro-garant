@@ -17,6 +17,8 @@ export const serviceLandingSectionSchema = z.discriminatedUnion("type", [
     tag: z.string(),
     features: z.array(z.string()),
     goals: z.string(),
+    bannerImageDesktop: z.string().optional(),
+    bannerImageMobile: z.string().optional(),
   }),
   z.object({
     type: z.literal("showcase"),

@@ -20,10 +20,21 @@ import {
   UserCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { LEAD_SOURCE_EMPTY, LEAD_SOURCE_OPTIONS } from "@/lib/lead-sources";
+
+const LEADS_SUBLINKS: { href: string; label: string }[] = [
+  { href: "/admin/leads", label: "Все формы" },
+  { href: `/admin/leads?source=${encodeURIComponent(LEAD_SOURCE_EMPTY)}`, label: "Без источника" },
+  ...LEAD_SOURCE_OPTIONS.map((o) => ({
+    href: `/admin/leads?source=${encodeURIComponent(o.value)}`,
+    label: o.label,
+  })),
+];
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Дашборд", icon: LayoutDashboard, exact: true },
-  { href: "/admin/leads", label: "Заявки", icon: Inbox },
+  { href: "/admin/leads", label: "Заявки", icon: Inbox, leadsSubmenu: true as const },
   { href: "/admin/projects", label: "Портфолио", icon: FolderOpen },
   { href: "/admin/posts", label: "Новости", icon: FileText },
   { href: "/admin/services", label: "Услуги", icon: Briefcase },
@@ -37,8 +48,11 @@ const NAV_ITEMS = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const leadsSourceFilter = searchParams.get("source");
 
   return (
     <>
@@ -85,10 +99,66 @@ export function AdminSidebar() {
         {/* Navigation */}
         <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isLeads = "leadsSubmenu" in item && item.leadsSubmenu;
             const isActive = item.exact
               ? pathname === item.href
-              : pathname.startsWith(item.href);
-            const Icon = item.icon;
+              : isLeads
+                ? pathname.startsWith("/admin/leads")
+                : pathname.startsWith(item.href);
+
+            if (isLeads) {
+              return (
+                <div key={item.href} className="space-y-0.5">
+                  <Link
+                    href="/admin/leads"
+                    onClick={() => setMobileOpen(false)}
+                    className={`
+                      flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium
+                      transition-all duration-150
+                      ${isActive
+                        ? "bg-[#C9A84C]/10 text-[#C9A84C]"
+                        : "text-white/50 hover:text-white/80 hover:bg-white/[0.06]"
+                      }
+                    `}
+                    title={collapsed ? item.label : undefined}
+                  >
+                    <Icon size={18} className="flex-shrink-0" />
+                    {!collapsed && <span>{item.label}</span>}
+                  </Link>
+                  {!collapsed && (
+                    <div className="pl-2 ml-2 border-l border-white/[0.06] space-y-0.5 py-0.5">
+                      {LEADS_SUBLINKS.map((sub) => {
+                        const subUrl = new URL(sub.href, "https://x.local");
+                        const want = subUrl.searchParams.get("source");
+                        const subActive =
+                          pathname === "/admin/leads" &&
+                          (want === null
+                            ? leadsSourceFilter == null
+                            : leadsSourceFilter === want);
+                        return (
+                          <Link
+                            key={sub.href}
+                            href={sub.href}
+                            onClick={() => setMobileOpen(false)}
+                            className={`
+                              block pl-2 pr-2 py-1.5 rounded-md text-[12px] leading-snug
+                              transition-colors
+                              ${subActive
+                                ? "text-[#C9A84C] bg-[#C9A84C]/5"
+                                : "text-white/35 hover:text-white/65 hover:bg-white/[0.04]"
+                              }
+                            `}
+                          >
+                            {sub.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
 
             return (
               <Link

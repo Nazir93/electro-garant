@@ -33,7 +33,18 @@ function generateSlug(title: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, shortDescription, serviceType, icon, coverImage, videoUrl, published, order } = body;
+    const {
+      title,
+      shortDescription,
+      serviceType,
+      icon,
+      coverImage,
+      videoUrl,
+      bannerImageDesktop,
+      bannerImageMobile,
+      published,
+      order,
+    } = body;
 
     if (!title || !shortDescription || !serviceType) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -52,6 +63,8 @@ export async function POST(request: NextRequest) {
         icon: icon || "zap",
         coverImage: coverImage || null,
         videoUrl: videoUrl || null,
+        bannerImageDesktop: bannerImageDesktop ?? null,
+        bannerImageMobile: bannerImageMobile ?? null,
         published: published ?? true,
         order: order ?? 0,
       },

@@ -8,7 +8,7 @@ import { OfferThemeToggle } from "./offer-theme-toggle";
  */
 export default function OfferLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-full">
+    <div className="relative h-full min-h-0 overflow-hidden">
       <div className="fixed top-0 right-0 z-[95] flex items-start justify-end gap-2 p-2 pt-[max(0.5rem,env(safe-area-inset-top))] pr-[max(0.5rem,env(safe-area-inset-right))] pointer-events-none sm:gap-2.5 sm:p-3">
         <OfferThemeToggle />
         <Link

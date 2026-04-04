@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   nextjs:
     build:
@@ -16,9 +14,12 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: garant_montazh
+      # Совпадает с пользователем/БД в DATABASE_URL (frontend/.env.local).
+      # Пароль: скопируйте env.docker.example → .env в корне репо и задайте POSTGRES_PASSWORD
+      # тем же значением, что в строке подключения Prisma.
+      POSTGRES_USER: electro
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: electro
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:

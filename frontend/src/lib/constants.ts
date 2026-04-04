@@ -11,18 +11,27 @@ export const EMAIL = "garantmontaj@gmail.com";
 export const ADDRESS = "г. Сочи, ул. Авиационная, 15";
 export const WORKING_HOURS = "Пн–Пт 9:00–17:00";
 
-/** Координаты офиса (WGS84) для Яндекс.Карт: долгота, широта — метка pm2rdm на встроенной карте */
-export const OFFICE_GEO_LON = 39.9554;
-export const OFFICE_GEO_LAT = 43.4489;
+/**
+ * Координаты офиса (WGS84): долгота, широта.
+ * Привязаны к адресу ADDRESS (ул. Авиационная, 15, Сочи).
+ * При смене офиса обновите координаты или задайте NEXT_PUBLIC_OFFICE_GEO_LON / NEXT_PUBLIC_OFFICE_GEO_LAT.
+ */
+export const OFFICE_GEO_LON = Number(
+  process.env.NEXT_PUBLIC_OFFICE_GEO_LON?.trim() || "39.933169"
+);
+export const OFFICE_GEO_LAT = Number(
+  process.env.NEXT_PUBLIC_OFFICE_GEO_LAT?.trim() || "43.430127"
+);
 
-/** Виджет map-widget с меткой pm2rdm (параметр text= в iframe даёт карту без пина) */
+/** Встроенный виджет: центр + красная метка pm2rdm на здании */
 export function getYandexOfficeMapEmbedUrl(): string {
   const lon = OFFICE_GEO_LON;
   const lat = OFFICE_GEO_LAT;
-  return `https://yandex.ru/map-widget/v1/?ll=${lon}%2C${lat}&z=17&pt=${lon},${lat},pm2rdm`;
+  const ll = `${lon}%2C${lat}`;
+  return `https://yandex.ru/map-widget/v1/?ll=${ll}&z=17&l=map&pt=${lon},${lat},pm2rdm`;
 }
 
-/** Полноэкранные Яндекс.Карты с той же точкой */
+/** Полноэкранные Яндекс.Карты — та же метка, что и во встроенном виджете */
 export function getYandexOfficeMapLinkUrl(): string {
   const lon = OFFICE_GEO_LON;
   const lat = OFFICE_GEO_LAT;
@@ -102,6 +111,16 @@ export const SERVICES = [
     coverImage: null as string | null,
     videoUrl: null as string | null,
   },
+  {
+    id: "architectural-lighting",
+    slug: "/services/architectural-lighting",
+    title: "Архитектурная подсветка",
+    shortDescription:
+      "Проект и монтаж фасадной и ландшафтной подсветки. LED, сценарии, управление со смартфона.",
+    icon: "sun" as const,
+    coverImage: null as string | null,
+    videoUrl: null as string | null,
+  },
 ];
 
 /** Нижняя панель статистики (fixed-stats-bar): число + подпись, при наведении — detail */
@@ -118,18 +137,18 @@ export const STATS = [
     label: "объектов сдано",
     suffix: "+",
     detail:
-      "26 баров и 2 гостиницы, 1 завод и 200+ частных заказов",
+      "26 баров и ресторанов, 2 гостиницы, 1 завод, 200+ частных заказов",
   },
   {
     value: 145000,
-    label: "кабеля протянуто в 2025 году",
+    label: "м кабеля протянуто в 2025 году",
     suffix: "+",
     detail: "",
   },
   {
     value: 3,
-    label: "Работаем в 3-х регионах",
+    label: "Работаем в 3-х регионах страны",
     suffix: "",
-    detail: "Краснодарский край, Ростовская область, Москва",
+    detail: "Краснодарский край, Ростовская обл., Москва",
   },
 ] as const;

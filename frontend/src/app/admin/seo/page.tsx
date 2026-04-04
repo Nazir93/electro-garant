@@ -37,15 +37,24 @@ interface ErrorItem {
 const KNOWN_PAGES = [
   { path: "/", label: "Главная" },
   { path: "/services", label: "Услуги" },
-  { path: "/services/electrical", label: "Электрика" },
-  { path: "/services/acoustics", label: "Акустика" },
-  { path: "/services/structured-cabling", label: "СКС" },
-  { path: "/services/smart-home", label: "Умный дом" },
-  { path: "/services/security", label: "Безопасность" },
+  { path: "/services/electrical", label: "Услуга: электрика" },
+  { path: "/services/acoustics", label: "Услуга: акустика" },
+  { path: "/services/structured-cabling", label: "Услуга: СКС" },
+  { path: "/services/smart-home", label: "Услуга: умный дом" },
+  { path: "/services/security", label: "Услуга: безопасность" },
+  { path: "/services/architectural-lighting", label: "Услуга: архитектурная подсветка" },
   { path: "/portfolio", label: "Портфолио" },
   { path: "/blog", label: "Блог" },
   { path: "/price", label: "Прайс" },
   { path: "/contacts", label: "Контакты" },
+  { path: "/offer", label: "Оффер (лендинг)" },
+  { path: "/offer/form", label: "Оффер — форма" },
+  { path: "/offer/calculate", label: "Оффер — калькулятор" },
+  { path: "/forum", label: "Форум" },
+  { path: "/partners/partner", label: "Партнёры — подряд" },
+  { path: "/partners/supplier", label: "Партнёры — поставщик" },
+  { path: "/partners/vacancies", label: "Партнёры — вакансии" },
+  { path: "/partners/rent-repair", label: "Партнёры — аренда/ремонт" },
   { path: "/privacy", label: "Политика конфиденциальности" },
   { path: "/consent", label: "Согласие на обработку данных" },
 ];
@@ -113,11 +122,18 @@ function MetaTab() {
   }
 
   function getField(path: string, field: keyof PageMetaItem): string {
+    if (field === "noindex") return "";
     const draft = drafts[path];
     if (draft && field in draft) return (draft[field] as string) || "";
     const existing = pages.find((p) => p.path === path);
     if (existing && existing[field]) return existing[field] as string;
     return "";
+  }
+
+  function getNoindex(path: string): boolean {
+    const draft = drafts[path];
+    if (draft && "noindex" in draft) return Boolean(draft.noindex);
+    return pages.find((p) => p.path === path)?.noindex ?? false;
   }
 
   async function saveMeta(path: string) {
@@ -157,8 +173,12 @@ function MetaTab() {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-white/30 mb-4">
-        Задайте уникальные мета-теги для каждой страницы. Незаполненные поля используют значения по умолчанию.
+      <p className="text-xs text-white/30 mb-2">
+        Задайте уникальные мета-теги для каждой страницы. Незаполненные поля используют значения по умолчанию из кода.
+      </p>
+      <p className="text-xs text-white/20 mb-4">
+        Статьи блога и карточки портфолио: title/description задаются в разделах «Новости» и «Портфолио». Здесь — оболочки разделов и статические URL. Для произвольного пути (например{" "}
+        <code className="text-white/40">/portfolio/moy-proekt</code>) сохраните мета в БД — на сайте уже используется таблица PageMeta по пути.
       </p>
 
       {KNOWN_PAGES.map(({ path, label }) => (
@@ -223,7 +243,7 @@ function MetaTab() {
                 <label className="flex items-center gap-2 text-xs text-white/40">
                   <input
                     type="checkbox"
-                    checked={getField(path, "noindex") === "true" || (pages.find((p) => p.path === path)?.noindex ?? false)}
+                    checked={getNoindex(path)}
                     onChange={(e) => updateDraft(path, "noindex", e.target.checked)}
                     className="rounded"
                   />
