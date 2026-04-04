@@ -28,6 +28,8 @@ export default function AdminServicesPage() {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [seeding, setSeeding] = useState(false);
+  const [seedHint, setSeedHint] = useState("");
 
   async function fetchServices() {
     setLoading(true);
@@ -61,6 +63,25 @@ export default function AdminServicesPage() {
     fetchServices();
   }
 
+  async function seedFromTemplate() {
+    setSeeding(true);
+    setSeedHint("");
+    setError("");
+    try {
+      const res = await fetch("/api/admin/services/seed", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Ошибка");
+      setSeedHint(
+        `Создано записей: ${data.created}. Уже было: ${data.skipped}. Откройте услугу для редактирования — тексты лендинга подставятся из шаблона, пока поле JSON пустое.`
+      );
+      await fetchServices();
+    } catch {
+      setError("Не удалось заполнить каталог");
+    } finally {
+      setSeeding(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -68,16 +89,32 @@ export default function AdminServicesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Услуги</h1>
           <p className="text-sm text-white/40 mt-1">Управление каталогом услуг</p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {services.length < 6 && (
+            <button
+              type="button"
+              onClick={seedFromTemplate}
+              disabled={seeding}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 text-white/80 hover:border-[#C9A84C]/40 hover:text-white text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {seeding ? "Заполнение…" : "Заполнить из шаблона (6 услуг)"}
+            </button>
+          )}
         <Link
           href="/admin/services/new"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C9A84C] hover:bg-[#B8933F] text-black font-semibold text-sm transition-colors"
         >
           <Plus size={16} /> Добавить
         </Link>
+        </div>
       </div>
 
       {error && (
         <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
+      )}
+
+      {seedHint && (
+        <div className="p-4 rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/25 text-white/85 text-sm">{seedHint}</div>
       )}
 
       <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] overflow-hidden">
@@ -86,10 +123,15 @@ export default function AdminServicesPage() {
         ) : services.length === 0 ? (
           <div className="p-12 text-center">
             <Briefcase size={32} className="mx-auto text-white/15 mb-3" />
-            <p className="text-white/30 text-sm mb-4">Услуг пока нет</p>
-            <Link href="/admin/services/new" className="text-[#C9A84C] hover:text-[#B8933F] text-sm transition-colors">
-              Добавить первую услугу
-            </Link>
+            <p className="text-white/30 text-sm mb-4">В базе нет услуг — на сайте пока показываются встроенные шаблоны. Нажмите кнопку выше «Заполнить из шаблона», чтобы появились все 6 услуг для редактирования.</p>
+            <button
+              type="button"
+              onClick={seedFromTemplate}
+              disabled={seeding}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C9A84C] hover:bg-[#B8933F] text-black font-semibold text-sm transition-colors disabled:opacity-50"
+            >
+              {seeding ? "Заполнение…" : "Заполнить каталог из шаблона"}
+            </button>
           </div>
         ) : (
           <div className="divide-y divide-white/[0.04]">
