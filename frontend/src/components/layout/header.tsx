@@ -79,13 +79,13 @@ function FullscreenOverlayNavItems({
         isNavGroup(item) ? (
           <div key={item.label} className="w-full">
             <span
-              className="mb-1.5 block text-xs uppercase tracking-[0.12em] sm:text-sm md:text-base"
+              className="mb-1 block text-xs uppercase tracking-[0.12em] max-lg:mb-0.5 sm:text-sm md:text-base"
               style={{ color: "var(--text-subtle)" }}
             >
               {item.label}
             </span>
             <div
-              className="flex flex-col gap-0.5 border-l pl-3 sm:gap-1 md:gap-1.5"
+              className="flex flex-col gap-0.5 border-l pl-3 max-lg:!gap-0 max-lg:pl-2.5 sm:gap-1 md:gap-1.5"
               style={{ borderColor: "var(--border)" }}
             >
               {item.children.map((child) =>
@@ -97,7 +97,7 @@ function FullscreenOverlayNavItems({
                       onClose();
                       openContactModal();
                     }}
-                    className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
+                    className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] max-lg:min-h-0 max-lg:py-1 max-lg:leading-snug max-lg:text-[13px] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
                     style={{ color: "var(--text-muted)" }}
                   >
                     {child.label}
@@ -107,7 +107,7 @@ function FullscreenOverlayNavItems({
                     key={child.href}
                     href={child.href}
                     onClick={onClose}
-                    className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
+                    className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] max-lg:min-h-0 max-lg:py-1 max-lg:leading-snug max-lg:text-[13px] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
                     style={{ color: "var(--text-muted)" }}
                   >
                     {child.label}
@@ -124,7 +124,7 @@ function FullscreenOverlayNavItems({
               onClose();
               openContactModal();
             }}
-            className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
+            className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] max-lg:min-h-0 max-lg:py-1 max-lg:leading-snug max-lg:text-[13px] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
             style={{ color: "var(--text-muted)" }}
           >
             {item.label}
@@ -134,7 +134,7 @@ function FullscreenOverlayNavItems({
             key={item.href}
             href={item.href}
             onClick={onClose}
-            className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
+            className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] max-lg:min-h-0 max-lg:py-1 max-lg:leading-snug max-lg:text-[13px] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
             style={{ color: "var(--text-muted)" }}
           >
             {item.label}
@@ -454,7 +454,7 @@ export function Header() {
             <nav className="flex min-h-0 w-full min-w-0 flex-1 flex-col justify-between px-4 sm:px-8 md:px-10 lg:px-16 pt-14 sm:pt-16 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
               {/* Экраны до lg: аккордеон */}
               <div className="flex min-h-0 flex-1 flex-col lg:hidden">
-              <div className="scrollbar-none grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-2 overflow-y-auto overscroll-contain sm:gap-y-6 md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-2 [@media(max-height:700px)]:gap-x-3">
+              <div className="scrollbar-none grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-1.5 overflow-y-auto overscroll-contain sm:gap-y-6 md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-2 [@media(max-height:700px)]:gap-x-3">
                 {NAV_SECTIONS.map((section, si) => {
                   const isExpanded = expandedMenuSection === section.label;
                   const panelId = `fs-menu-section-${si}`;
@@ -462,7 +462,7 @@ export function Header() {
                   return (
                   <div
                     key={section.label}
-                    className="flex min-h-0 min-w-0 flex-col border-b border-[var(--border)] pb-3 sm:border-0 sm:pb-0 menu-stagger [@media(max-height:700px)]:pb-2"
+                    className="flex min-h-0 min-w-0 flex-col border-b border-[var(--border)] pb-2 sm:border-0 sm:pb-0 menu-stagger [@media(max-height:700px)]:pb-1.5"
                     style={{
                       animation: `menuFadeIn 0.6s ease-out ${si * 0.08}s both`,
                     }}
@@ -477,7 +477,7 @@ export function Header() {
                           prev === section.label ? null : section.label
                         )
                       }
-                      className="touch-manipulation grid w-full min-w-0 grid-cols-[auto_1fr_auto] items-start gap-x-2 rounded-lg py-1 text-left outline-none ring-offset-2 ring-offset-[var(--bg)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:gap-x-3 sm:py-0"
+                      className="touch-manipulation grid w-full min-w-0 grid-cols-[auto_1fr_auto] items-start gap-x-2 rounded-lg py-0.5 text-left outline-none ring-offset-2 ring-offset-[var(--bg)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:gap-x-3 sm:py-0"
                     >
                       <span
                         className="shrink-0 pt-1 font-heading text-xs tabular-nums tracking-[0.15em] sm:text-sm md:text-base lg:text-lg"
@@ -505,11 +505,11 @@ export function Header() {
                       role="region"
                       aria-labelledby={triggerId}
                       hidden={!isExpanded}
-                      className={isExpanded ? "mt-2 sm:mt-3" : undefined}
+                      className={isExpanded ? "mt-1.5 max-lg:mt-1 sm:mt-3" : undefined}
                     >
                       {isExpanded && (
                       <div
-                        className="flex min-w-0 flex-col gap-2 border-l pl-3 sm:gap-2 md:gap-2.5 lg:gap-3 [@media(max-height:700px)]:max-lg:gap-1.5 sm:pl-4"
+                        className="flex min-w-0 flex-col gap-2 border-l pl-3 max-lg:gap-1 sm:gap-2 md:gap-2.5 lg:gap-3 [@media(max-height:700px)]:max-lg:gap-1 sm:pl-4 max-lg:pl-2.5"
                         style={{ borderColor: "var(--border)" }}
                       >
                         <FullscreenOverlayNavItems
