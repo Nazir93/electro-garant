@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
         bannerImageMobile: bannerImageMobile ?? null,
         published: published ?? true,
         order: order ?? 0,
-      },
+      } as unknown as Prisma.ServiceCreateInput,
     });
 
     return NextResponse.json(service, { status: 201 });

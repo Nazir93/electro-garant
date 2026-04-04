@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
 export async function GET(
@@ -36,7 +37,7 @@ export async function PUT(
         ...(body.published !== undefined && { published: body.published }),
         ...(body.order !== undefined && { order: body.order }),
         ...(body.landingJson !== undefined && { landingJson: body.landingJson }),
-      },
+      } as unknown as Prisma.ServiceUpdateInput,
     });
     return NextResponse.json(service);
   } catch (error) {
