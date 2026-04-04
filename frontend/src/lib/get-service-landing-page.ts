@@ -9,6 +9,7 @@ import {
   SERVICE_PAGE_SLUG_TO_TYPE,
 } from "@/lib/service-landing-defaults";
 import type { ServiceLandingDocument } from "@/lib/service-landing-schema";
+import { ensureDefaultServicesIfNeeded } from "@/lib/seed-default-services";
 
 function mergeHeroBannersFromDb(
   document: ServiceLandingDocument,
@@ -117,6 +118,12 @@ export async function getServiceMetadataDefaults(slug: string): Promise<{
 }
 
 export async function getServiceLandingPageData(slug: string): Promise<ServiceLandingPageData | null> {
+  try {
+    await ensureDefaultServicesIfNeeded();
+  } catch {
+    // БД недоступна — ниже шаблон из кода
+  }
+
   const knownType = isServicePageSlug(slug) ? SERVICE_PAGE_SLUG_TO_TYPE[slug as ServicePageSlug] : null;
 
   const row = await loadServiceRowForSlug(slug);

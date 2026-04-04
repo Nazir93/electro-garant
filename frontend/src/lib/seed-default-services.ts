@@ -60,6 +60,16 @@ const DEFAULT_SERVICES: Array<{
 ];
 
 /**
+ * Если в таблице меньше 6 услуг — дополняет недостающие slug из шаблона (без перезаписи существующих).
+ * Дешёвая проверка: один `count`, затем при необходимости создание.
+ */
+export async function ensureDefaultServicesIfNeeded(): Promise<void> {
+  const n = await prisma.service.count();
+  if (n >= DEFAULT_SERVICES.length) return;
+  await ensureDefaultServices();
+}
+
+/**
  * Создаёт в БД записи услуг по шаблону сайта, если такого slug ещё нет.
  * Уже существующие строки не перезаписывает.
  */
@@ -75,22 +85,28 @@ export async function ensureDefaultServices(): Promise<{ created: number; skippe
       continue;
     }
 
-    await prisma.service.create({
-      data: {
-        slug: row.slug,
-        title: row.title,
-        shortDescription: row.shortDescription,
-        serviceType: row.serviceType,
-        icon: row.icon,
-        coverImage: null,
-        videoUrl: null,
-        bannerImageDesktop: null,
-        bannerImageMobile: null,
-        published: true,
-        order,
-      },
-    });
-    created += 1;
+    try {
+      await prisma.service.create({
+        data: {
+          slug: row.slug,
+          title: row.title,
+          shortDescription: row.shortDescription,
+          serviceType: row.serviceType,
+          icon: row.icon,
+          coverImage: null,
+          videoUrl: null,
+          bannerImageDesktop: null,
+          bannerImageMobile: null,
+          published: true,
+          order,
+        },
+      });
+      created += 1;
+    } catch (e: unknown) {
+      const code = e && typeof e === "object" && "code" in e ? (e as { code?: string }).code : "";
+      if (code === "P2002") skipped += 1;
+      else throw e;
+    }
   }
 
   return { created, skipped };

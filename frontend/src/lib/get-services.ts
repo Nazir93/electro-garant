@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { SERVICES } from "@/lib/constants";
+import { ensureDefaultServicesIfNeeded } from "@/lib/seed-default-services";
 
 export interface ServiceItem {
   id: string;
@@ -22,6 +23,7 @@ const SERVICE_TYPE_TO_SLUG: Record<string, string> = {
 
 export async function getServicesList(): Promise<ServiceItem[]> {
   try {
+    await ensureDefaultServicesIfNeeded();
     const dbServices = await prisma.service.findMany({
       where: { published: true },
       orderBy: { order: "asc" },
