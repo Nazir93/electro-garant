@@ -9,6 +9,8 @@ type EditorialPageShellProps = {
   /** Renders between H1 and lead (e.g. case meta grid) */
   belowTitle?: ReactNode;
   lead?: ReactNode;
+  /** Full-width block above the text column (e.g. hero banner on portfolio case) */
+  fullWidthTop?: ReactNode;
   /** Content after title/lead (e.g. banner) — still inside max-width column */
   children?: ReactNode;
   /** Full-width blocks below the editorial column (e.g. portfolio extras) */
@@ -26,12 +28,14 @@ export function EditorialPageShell({
   title,
   belowTitle,
   lead,
+  fullWidthTop,
   children,
   after,
   footer,
 }: EditorialPageShellProps) {
   return (
     <article className="pt-28 pb-16 md:pt-36 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
+      {fullWidthTop ? <div className="w-full">{fullWidthTop}</div> : null}
       <div className="container mx-auto max-w-3xl px-5">
         <div className="mb-10">
           <BackNavLink href={backHref}>{backLabel}</BackNavLink>

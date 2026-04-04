@@ -4,7 +4,6 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import type { PortfolioCase } from "@/lib/portfolio-data";
-import { BackNavLink } from "@/components/ui/back-nav";
 import { EditorialPageShell } from "@/components/editorial/editorial-page-shell";
 import { EditorialBanner, editorialSlidesFromImagesAndVideo } from "@/components/editorial/editorial-banner";
 
@@ -41,95 +40,6 @@ function caseBannerUrls(p: PortfolioCase): string[] {
   push(p.coverImage);
   for (const u of p.galleryUrls ?? []) push(u);
   return out;
-}
-
-function ParallaxShowcase({
-  label,
-  dark = true,
-  imageUrl,
-}: {
-  label: string;
-  dark?: boolean;
-  imageUrl?: string | null;
-}) {
-  const ref = useRef<HTMLElement>(null);
-  const [offset, setOffset] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!ref.current) return;
-      const rect = ref.current.getBoundingClientRect();
-      const windowH = window.innerHeight;
-      const progress = (windowH - rect.top) / (windowH + rect.height);
-      setOffset(progress * 60 - 30);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  return (
-    <section
-      ref={ref}
-      className="relative overflow-hidden"
-      style={{
-        backgroundColor: dark ? "#0a0a0a" : "var(--bg-secondary)",
-        height: "60vh",
-        minHeight: "350px",
-        maxHeight: "600px",
-      }}
-    >
-      {imageUrl ? (
-        <>
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-100"
-            style={{
-              transform: `translateY(${offset}px) scale(1.08)`,
-              backgroundImage: `url(${imageUrl})`,
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: dark
-                ? "linear-gradient(to bottom, rgba(10,10,10,0.55), rgba(10,10,10,0.75))"
-                : "linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.5))",
-            }}
-          />
-        </>
-      ) : null}
-      <div
-        className="absolute inset-0 flex items-center justify-center z-[1]"
-        style={{ transform: imageUrl ? undefined : `translateY(${offset}px) scale(1.1)` }}
-      >
-        <span
-          className="text-[10px] uppercase tracking-[0.2em] text-center px-6 max-w-xl"
-          style={{
-            color: imageUrl ? "rgba(255,255,255,0.92)" : dark ? "rgba(255,255,255,0.3)" : "var(--text-subtle)",
-            textShadow: imageUrl ? "0 1px 12px rgba(0,0,0,0.8)" : undefined,
-          }}
-        >
-          {label}
-        </span>
-      </div>
-      <div
-        className="absolute inset-x-0 top-0 h-20 pointer-events-none"
-        style={{
-          background: dark
-            ? "linear-gradient(to bottom, #0a0a0a, transparent)"
-            : "linear-gradient(to bottom, var(--bg-secondary), transparent)",
-        }}
-      />
-      <div
-        className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
-        style={{
-          background: dark
-            ? "linear-gradient(to top, #0a0a0a, transparent)"
-            : "linear-gradient(to top, var(--bg-secondary), transparent)",
-        }}
-      />
-    </section>
-  );
 }
 
 function TextBlock({ leftText, rightText, accent }: { leftText: string; rightText: string; accent?: boolean }) {
@@ -277,18 +187,19 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
     <>
       <EditorialPageShell
         backHref="/portfolio"
-        backLabel="Все проекты"
+        backLabel="Вернуться к проектам"
         meta={metaPills}
         title={project.title}
         belowTitle={metaGrid}
         lead={project.heroDescription}
-        footer={<BackNavLink href="/portfolio">Вернуться к проектам</BackNavLink>}
-      >
-        <EditorialBanner
-          slides={editorialSlidesFromImagesAndVideo(caseBannerUrls(project), project.videoUrl)}
-          alt={project.title}
-        />
-      </EditorialPageShell>
+        fullWidthTop={
+          <EditorialBanner
+            fullBleed
+            slides={editorialSlidesFromImagesAndVideo(caseBannerUrls(project), project.videoUrl)}
+            alt={project.title}
+          />
+        }
+      />
 
       <section className="pb-16 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
         <div className="container mx-auto max-w-3xl px-5">
@@ -321,13 +232,9 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
         </div>
       </section>
 
-      <ParallaxShowcase label={project.showcaseLabel1} imageUrl={project.showcaseImage1} />
-
       {project.leftText1.trim() || project.rightText1.trim() ? (
         <TextBlock leftText={project.leftText1} rightText={project.rightText1} />
       ) : null}
-
-      <ParallaxShowcase label={project.showcaseLabel2} dark={false} imageUrl={project.showcaseImage2} />
 
       {project.leftText2.trim() || project.rightText2.trim() ? (
         <TextBlock leftText={project.leftText2} rightText={project.rightText2} accent />

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { X, Sun, Moon, ChevronRight, Send } from "lucide-react";
+import { X, Sun, Moon, ChevronRight, ChevronDown, Send } from "lucide-react";
 import { SITE_NAME } from "@/lib/constants";
 import { useContactConfig } from "@/lib/contact-config-context";
 import { MaxMessengerIcon } from "@/components/icons/max-messenger-icon";
@@ -155,6 +155,7 @@ function CircuitGrid() {
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedMenuSection, setExpandedMenuSection] = useState<string | null>(null);
   const [hideFloating, setHideFloating] = useState(false);
   const { toggleTheme, isDark } = useTheme();
   const { openModal } = useModal();
@@ -173,6 +174,7 @@ export function Header() {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
+      setExpandedMenuSection(null);
     }
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
@@ -338,7 +340,7 @@ export function Header() {
             <Link
               href="/"
               onClick={() => setIsOpen(false)}
-              className="font-heading text-[11px] tracking-[0.12em] uppercase select-none md:text-xs lg:text-sm"
+              className="font-heading text-sm tracking-[0.12em] uppercase select-none sm:text-base md:text-lg"
               style={{ color: "var(--text)" }}
             >
               Гарант Монтаж
@@ -366,10 +368,14 @@ export function Header() {
           {/* Один экран: без внутреннего скролла, контент уплотнён под viewport */}
           <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="flex min-h-0 w-full flex-1 flex-row items-stretch">
-            {/* Nav area */}
+            {/* Nav area — на мобильном крупнее шрифты и зоны нажатия */}
             <nav className="flex min-h-0 w-full min-w-0 flex-1 flex-col justify-between px-4 sm:px-8 md:px-10 lg:px-16 pt-14 sm:pt-16 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
-              <div className="grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-5 sm:gap-y-6 md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-3 [@media(max-height:700px)]:gap-x-3">
-                {NAV_SECTIONS.map((section, si) => (
+              <div className="grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-2 overflow-y-auto overscroll-contain sm:gap-y-6 md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-2 [@media(max-height:700px)]:gap-x-3 sm:[&::-webkit-scrollbar]:w-1.5 sm:[&::-webkit-scrollbar-thumb]:rounded-full sm:[&::-webkit-scrollbar-thumb]:bg-[var(--border)]">
+                {NAV_SECTIONS.map((section, si) => {
+                  const isExpanded = expandedMenuSection === section.label;
+                  const panelId = `fs-menu-section-${si}`;
+                  const triggerId = `fs-menu-trigger-${si}`;
+                  return (
                   <div
                     key={section.label}
                     className="flex min-h-0 min-w-0 flex-col border-b border-[var(--border)] pb-3 sm:border-0 sm:pb-0 menu-stagger [@media(max-height:700px)]:pb-2"
@@ -377,32 +383,62 @@ export function Header() {
                       animation: `menuFadeIn 0.6s ease-out ${si * 0.08}s both`,
                     }}
                   >
-                    <div className="grid min-w-0 grid-cols-[auto_1fr] gap-x-2 sm:gap-x-3">
+                    <button
+                      type="button"
+                      id={triggerId}
+                      aria-expanded={isExpanded}
+                      aria-controls={panelId}
+                      onClick={() =>
+                        setExpandedMenuSection((prev) =>
+                          prev === section.label ? null : section.label
+                        )
+                      }
+                      className="touch-manipulation grid w-full min-w-0 grid-cols-[auto_1fr_auto] items-start gap-x-2 rounded-lg py-1 text-left outline-none ring-offset-2 ring-offset-[var(--bg)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:gap-x-3 sm:py-0"
+                    >
                       <span
-                        className="shrink-0 pt-0.5 font-heading text-[9px] tabular-nums tracking-[0.15em] sm:text-[10px] md:text-xs lg:text-sm"
+                        className="shrink-0 pt-1 font-heading text-xs tabular-nums tracking-[0.15em] sm:text-sm md:text-base lg:text-lg"
                         style={{ color: "var(--text-subtle)" }}
                         aria-hidden
                       >
                         {String(si + 1).padStart(2, "0")}
                       </span>
                       <h3
-                        className="min-w-0 font-heading text-xs leading-tight tracking-tight sm:text-sm md:text-xl lg:text-2xl xl:text-3xl [@media(max-height:700px)]:max-lg:text-[10px]"
+                        className="min-w-0 font-heading text-lg leading-[1.15] tracking-tight sm:text-xl md:text-2xl lg:text-2xl xl:text-3xl [@media(max-height:700px)]:max-lg:text-base"
                         style={{ color: "var(--text)" }}
                       >
                         {section.label}
                       </h3>
-                      <div className="col-start-2 flex min-w-0 flex-col gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-3 [@media(max-height:700px)]:max-lg:gap-1">
+                      <span className="shrink-0 pt-1" aria-hidden>
+                        <ChevronDown
+                          className={`h-5 w-5 transition-transform duration-200 sm:h-5 sm:w-5 md:h-6 md:w-6 ${isExpanded ? "rotate-180" : ""}`}
+                          style={{ color: "var(--text-subtle)" }}
+                          strokeWidth={2}
+                        />
+                      </span>
+                    </button>
+                    <div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={triggerId}
+                      hidden={!isExpanded}
+                      className={isExpanded ? "mt-2 sm:mt-3" : undefined}
+                    >
+                      {isExpanded && (
+                      <div
+                        className="flex min-w-0 flex-col gap-2 border-l pl-3 sm:gap-2 md:gap-2.5 lg:gap-3 [@media(max-height:700px)]:max-lg:gap-1.5 sm:pl-4"
+                        style={{ borderColor: "var(--border)" }}
+                      >
                           {section.items.map((item) =>
                             isNavGroup(item) ? (
                               <div key={item.label} className="w-full">
                                 <span
-                                  className="mb-1 block text-[10px] uppercase tracking-[0.12em] sm:text-[11px] md:text-xs lg:text-sm"
+                                  className="mb-1.5 block text-xs uppercase tracking-[0.12em] sm:text-sm md:text-base"
                                   style={{ color: "var(--text-subtle)" }}
                                 >
                                   {item.label}
                                 </span>
                                 <div
-                                  className="flex flex-col gap-0.5 border-l pl-2 sm:gap-1 md:gap-1.5"
+                                  className="flex flex-col gap-0.5 border-l pl-3 sm:gap-1 md:gap-1.5"
                                   style={{ borderColor: "var(--border)" }}
                                 >
                                   {item.children.map((child) =>
@@ -410,7 +446,7 @@ export function Header() {
                                       <button
                                         key={child.label}
                                         onClick={() => { setIsOpen(false); openModal(); }}
-                                        className="py-0.5 text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-[15px]"
+                                        className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
                                         style={{ color: "var(--text-muted)" }}
                                       >
                                         {child.label}
@@ -420,7 +456,7 @@ export function Header() {
                                         key={child.href}
                                         href={child.href}
                                         onClick={() => setIsOpen(false)}
-                                        className="py-0.5 text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-[15px]"
+                                        className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
                                         style={{ color: "var(--text-muted)" }}
                                       >
                                         {child.label}
@@ -433,7 +469,7 @@ export function Header() {
                               <button
                                 key={item.label}
                                 onClick={() => { setIsOpen(false); openModal(); }}
-                                className="py-0.5 text-left text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-[15px]"
+                                className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
                                 style={{ color: "var(--text-muted)" }}
                               >
                                 {item.label}
@@ -443,7 +479,7 @@ export function Header() {
                                 key={item.href}
                                 href={item.href}
                                 onClick={() => setIsOpen(false)}
-                                className="py-0.5 text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-[15px]"
+                                className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
                                 style={{ color: "var(--text-muted)" }}
                               >
                                 {item.label}
@@ -451,20 +487,22 @@ export function Header() {
                             ) : null
                           )}
                       </div>
+                      )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Bottom: contacts + CTA */}
               <div
-                className="shrink-0 pt-2 sm:pt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 [@media(max-height:700px)]:pt-1 [@media(max-height:700px)]:gap-1.5"
+                className="shrink-0 pt-4 sm:pt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-3 [@media(max-height:700px)]:pt-2 [@media(max-height:700px)]:gap-2"
                 style={{ animation: "menuFadeIn 0.6s ease-out 0.4s both" }}
               >
                 <div className="flex items-center gap-2 sm:gap-5 flex-wrap">
                   <a
                     href={`tel:${contact.phone2Raw}`}
-                    className="text-[11px] transition-colors duration-300 hover:text-[var(--accent)] sm:text-xs md:text-sm lg:text-base"
+                    className="text-base font-medium tabular-nums transition-colors duration-300 hover:text-[var(--accent)] sm:text-sm md:text-base lg:text-lg"
                     style={{ color: "var(--text-muted)" }}
                   >
                     {contact.phone2}
@@ -473,7 +511,7 @@ export function Header() {
                 <Link
                   href="/offer"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-full px-5 py-2 font-heading uppercase tracking-[0.1em] transition-all duration-500 hover:scale-105 text-[10px] sm:text-xs md:text-sm lg:text-base sm:px-7 sm:py-2.5 [@media(max-height:700px)]:max-lg:py-1.5 [@media(max-height:700px)]:max-lg:px-4"
+                  className="inline-flex min-h-[48px] items-center justify-center rounded-full px-6 py-3 font-heading text-sm uppercase tracking-[0.1em] transition-all duration-500 hover:scale-[1.02] sm:min-h-0 sm:px-7 sm:py-2.5 sm:text-base md:text-lg [@media(max-height:700px)]:max-lg:py-2 [@media(max-height:700px)]:max-lg:px-5"
                   style={{ backgroundColor: "var(--accent)", color: "#0A0A0A" }}
                 >
                   Обсудить проект

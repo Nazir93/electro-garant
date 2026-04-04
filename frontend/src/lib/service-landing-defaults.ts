@@ -542,6 +542,8 @@ function architecturalLightingDoc(): ServiceLandingDocument {
         title: `Архитектурная подсветка премиум-класса в ${C}`,
         subtitle: `Компания ${S} проектирует и монтирует архитектурную подсветку фасадов, входных групп, парковок и ландшафта. Подбираем LED-светильники с нужной цветопередачей и степенью защиты, рассчитываем освещённость и блики, настраиваем сценарии «будний / выходной / праздник». Результат — узнаваемый объект и безопасная эксплуатация.`,
         serviceKey: "architectural-lighting",
+        bannerImageDesktop: "/images/hero/architectural-lighting.png",
+        bannerImageMobile: "/images/hero/architectural-lighting.png",
         tag: "Архитектурная подсветка",
         features: [
           "Светотехнический расчёт и 3D-визуализация по желанию",

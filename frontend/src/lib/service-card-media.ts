@@ -10,7 +10,7 @@ const FALLBACK_SIDE_IMAGE_BY_SLUG: Record<string, string> = {
   "/services/electrical": "/images/hero/hero-03.png",
   "/services/structured-cabling": "/images/hero/hero-04.png",
   "/services/security": "/images/hero/hero-05.png",
-  "/services/architectural-lighting": "/images/hero/hero-02.png",
+  "/services/architectural-lighting": "/images/hero/architectural-lighting.png",
 };
 
 function normalizeSlugPath(slug: string): string {

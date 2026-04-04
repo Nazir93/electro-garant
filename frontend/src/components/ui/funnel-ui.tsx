@@ -204,6 +204,14 @@ export function FunnelSelect({
   );
 }
 
+/** Цвет текста/иконки на заливке из var(--text): в WebKit на мобильных нужен и -webkit-text-fill-color */
+function funnelHoverFg(hovered: boolean, disabled?: boolean): CSSProperties {
+  if (disabled || !hovered) {
+    return { color: "var(--text)", WebkitTextFillColor: "var(--text)" };
+  }
+  return { color: "var(--bg)", WebkitTextFillColor: "var(--bg)" };
+}
+
 export function FunnelFillButton({
   children,
   onClick,
@@ -218,35 +226,38 @@ export function FunnelFillButton({
   icon?: React.ReactNode;
 }) {
   const [hovered, setHovered] = useState(false);
+  const fill = hovered && !disabled;
+  const fg = funnelHoverFg(fill, disabled);
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="w-full flex items-center justify-between px-6 py-5 sm:px-8 sm:py-6 text-lg sm:text-xl md:text-2xl font-heading transition-all duration-500 relative overflow-hidden disabled:opacity-50"
-      style={{ border: "1px solid var(--border)", borderRadius: "20px" }}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
+      className="w-full flex items-center justify-between px-6 py-5 sm:px-8 sm:py-6 text-lg sm:text-xl md:text-2xl font-heading transition-all duration-500 relative overflow-hidden disabled:opacity-50 isolate"
+      style={{ border: "1px solid var(--border)", borderRadius: "20px", color: "var(--text)" }}
     >
       <div
-        className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
+        className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] pointer-events-none"
         style={{
           backgroundColor: "var(--text)",
-          transform: hovered && !disabled ? "scaleX(1)" : "scaleX(0)",
+          transform: fill ? "scaleX(1)" : "scaleX(0)",
           borderRadius: "20px",
         }}
+        aria-hidden
       />
       <span
-        className="relative z-10 transition-colors duration-700 flex items-center gap-3 min-w-0"
-        style={{ color: hovered && !disabled ? "var(--bg)" : "var(--text)" }}
+        className="relative z-10 transition-[color] duration-700 flex items-center gap-3 min-w-0"
+        style={fg}
       >
         {icon}
         {children}
       </span>
       <ArrowRight
         size={22}
-        className="relative z-10 shrink-0 transition-colors duration-700"
-        style={{ color: hovered && !disabled ? "var(--bg)" : "var(--text)" }}
+        className="relative z-10 shrink-0 transition-[color] duration-700"
+        style={fg}
       />
     </button>
   );
@@ -313,27 +324,26 @@ export function FunnelLinkRow({
     transition: "background-color 0.2s ease, border-color 0.2s ease",
   };
 
+  const linkFg = funnelHoverFg(hovered, false);
   const innerDefault = (
     <>
       <div
-        className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
+        className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] pointer-events-none"
         style={{
           backgroundColor: "var(--text)",
           transform: hovered ? "scaleX(1)" : "scaleX(0)",
           borderRadius,
         }}
+        aria-hidden
       />
       <span
-        className="relative z-10 flex min-w-0 items-center gap-3 transition-colors duration-700"
-        style={{ color: hovered ? "var(--bg)" : "var(--text)" }}
+        className="relative z-10 flex min-w-0 items-center gap-3 transition-[color] duration-700"
+        style={linkFg}
       >
         {icon}
         <span className="min-w-0 leading-tight">{children}</span>
       </span>
-      <span
-        className="relative z-10 shrink-0 transition-colors duration-700"
-        style={{ color: hovered ? "var(--bg)" : "var(--text)" }}
-      >
+      <span className="relative z-10 shrink-0 transition-[color] duration-700" style={linkFg}>
         {trailing ?? <ArrowRight size={22} />}
       </span>
     </>
@@ -346,11 +356,17 @@ export function FunnelLinkRow({
     dense && compact ? 16 : narrow && compact && onVideo ? 16 : onVideo && compact ? 18 : 22;
   const innerOnVideo = (
     <>
-      <span className={`relative z-10 flex min-w-0 flex-1 items-center ${iconGap}`} style={{ color: "var(--text)" }}>
+      <span
+        className={`relative z-10 flex min-w-0 flex-1 items-center ${iconGap}`}
+        style={{ color: "var(--text)", WebkitTextFillColor: "var(--text)" }}
+      >
         <span className="shrink-0 text-[#e8c96a] [&_svg]:text-current">{icon}</span>
         <span className="min-w-0 flex-1 whitespace-normal break-words leading-snug">{children}</span>
       </span>
-      <span className="relative z-10 shrink-0" style={{ color: "var(--text-muted)" }}>
+      <span
+        className="relative z-10 shrink-0"
+        style={{ color: "var(--text-muted)", WebkitTextFillColor: "var(--text-muted)" }}
+      >
         {trailing ?? <ArrowRight size={arrowSize} />}
       </span>
     </>
@@ -364,9 +380,9 @@ export function FunnelLinkRow({
       <a
         href={href}
         download={download === true ? "" : download}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className={className}
+        onPointerEnter={() => setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
+        className={`${className} isolate`}
         style={mergedStyle}
       >
         {inner}
@@ -376,9 +392,9 @@ export function FunnelLinkRow({
   return (
     <Link
       href={href}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className={className}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
+      className={`${className} isolate`}
       style={mergedStyle}
     >
       {inner}
@@ -428,8 +444,8 @@ export function FunnelPanelButton({
         type="button"
         onClick={onClick}
         aria-expanded={ariaExpanded}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onPointerEnter={() => setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
         className={`flex w-full min-w-0 cursor-pointer items-center justify-between normal-case ${gapClass} text-left ${textSize} font-heading relative overflow-visible ${pad}`}
         style={{
           border: hovered ? "1px solid var(--accent)" : "1px solid var(--border)",
@@ -440,47 +456,46 @@ export function FunnelPanelButton({
       >
         <span
           className={`relative z-10 flex min-w-0 flex-1 items-center ${dense && compact ? "gap-2" : onVideo && compact ? "gap-2.5" : "gap-3"}`}
-          style={{ color: "var(--text)" }}
+          style={{ color: "var(--text)", WebkitTextFillColor: "var(--text)" }}
         >
           <span className="shrink-0 text-[#e8c96a] [&_svg]:text-current">{icon}</span>
           <span className="min-w-0 flex-1 whitespace-normal break-words leading-snug">{children}</span>
         </span>
-        <span className="relative z-10 shrink-0" style={{ color: "var(--text-muted)" }}>
+        <span
+          className="relative z-10 shrink-0"
+          style={{ color: "var(--text-muted)", WebkitTextFillColor: "var(--text-muted)" }}
+        >
           {trailing ?? <ArrowRight size={dense && compact ? 16 : onVideo && compact ? 18 : 22} />}
         </span>
       </button>
     );
   }
 
+  const panelFg = funnelHoverFg(hovered, false);
   return (
     <button
       type="button"
       onClick={onClick}
       aria-expanded={ariaExpanded}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className={`flex w-full min-w-0 cursor-pointer items-center justify-between gap-3 bg-transparent text-left ${textSize} font-heading transition-all duration-500 relative overflow-hidden ${pad}`}
-      style={{ border: "1px solid var(--border)", borderRadius }}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
+      className={`flex w-full min-w-0 cursor-pointer items-center justify-between gap-3 bg-transparent text-left ${textSize} font-heading transition-all duration-500 relative overflow-hidden isolate ${pad}`}
+      style={{ border: "1px solid var(--border)", borderRadius, color: "var(--text)" }}
     >
       <div
-        className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
+        className="absolute inset-0 origin-left transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] pointer-events-none"
         style={{
           backgroundColor: "var(--text)",
           transform: hovered ? "scaleX(1)" : "scaleX(0)",
           borderRadius,
         }}
+        aria-hidden
       />
-      <span
-        className="relative z-10 flex min-w-0 items-center gap-3 transition-colors duration-700"
-        style={{ color: hovered ? "var(--bg)" : "var(--text)" }}
-      >
+      <span className="relative z-10 flex min-w-0 items-center gap-3 transition-[color] duration-700" style={panelFg}>
         {icon}
         <span className="min-w-0 leading-tight">{children}</span>
       </span>
-      <span
-        className="relative z-10 shrink-0 transition-colors duration-700"
-        style={{ color: hovered ? "var(--bg)" : "var(--text)" }}
-      >
+      <span className="relative z-10 shrink-0 transition-[color] duration-700" style={panelFg}>
         {trailing ?? <ArrowRight size={22} />}
       </span>
     </button>

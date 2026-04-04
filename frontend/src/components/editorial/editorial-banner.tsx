@@ -32,9 +32,11 @@ type EditorialBannerProps = {
   slides: EditorialSlide[];
   alt: string;
   className?: string;
+  /** Без скруглений и с отступом только снизу — для блока на всю ширину экрана */
+  fullBleed?: boolean;
 };
 
-export function EditorialBanner({ slides, alt, className = "" }: EditorialBannerProps) {
+export function EditorialBanner({ slides, alt, className = "", fullBleed = false }: EditorialBannerProps) {
   const [index, setIndex] = useState(0);
   const slidesKey = slides.map((s) => `${s.type}:${s.url}`).join("|");
 
@@ -60,11 +62,14 @@ export function EditorialBanner({ slides, alt, className = "" }: EditorialBanner
     return () => window.removeEventListener("keydown", onKey);
   }, [go, slides.length]);
 
+  const frameRounded = fullBleed ? "rounded-none" : "rounded-2xl";
+  const emptyMb = fullBleed ? "mb-0" : "mb-10";
+
   if (slides.length === 0) {
     return (
       <div
-        className={`relative w-full aspect-[16/9] mb-10 rounded-2xl overflow-hidden flex items-center justify-center ${className}`}
-        style={{ backgroundColor: "var(--bg-secondary)", border: "1px solid var(--border)" }}
+        className={`relative w-full aspect-[16/9] ${emptyMb} ${frameRounded} overflow-hidden flex items-center justify-center ${className}`}
+        style={{ backgroundColor: "var(--bg-secondary)", border: fullBleed ? undefined : "1px solid var(--border)" }}
       >
         <span className="text-[10px] uppercase tracking-[0.2em] text-center px-4" style={{ color: "var(--text-subtle)" }}>
           Добавьте фото или видео в админке
@@ -76,15 +81,15 @@ export function EditorialBanner({ slides, alt, className = "" }: EditorialBanner
   const current = slides[index];
 
   return (
-    <div className={`relative w-full mb-10 ${className}`}>
-      <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-black">
+    <div className={`relative w-full ${fullBleed ? "mb-0" : "mb-10"} ${className}`}>
+      <div className={`relative w-full aspect-[16/9] ${frameRounded} overflow-hidden bg-black`}>
         {current.type === "image" ? (
           <Image
             src={current.url}
             alt={slides.length > 1 ? `${alt} — ${index + 1}` : alt}
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 100vw, 720px"
+            sizes={fullBleed ? "100vw" : "(max-width: 768px) 100vw, 720px"}
             priority
           />
         ) : (

@@ -35,7 +35,7 @@ export function AdminMediaUpload({
   const acceptAttr =
     accept === "image"
       ? "image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/avif,.jpg,.jpeg,.png,.webp,.gif,.svg,.avif"
-      : "video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.mkv,.m4v";
+      : "video/*,video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.mkv,.m4v,.avi";
 
   const btnLabel =
     uploading ? "Загрузка…" : accept === "image" ? "Выбрать изображение" : "Выбрать видеофайл";
@@ -74,7 +74,7 @@ export function AdminMediaUpload({
       <p className="text-[11px] text-white/25 mt-1.5">
         {accept === "image"
           ? "JPG, PNG, WebP, GIF, SVG, AVIF — по возможности конвертируется в WebP."
-          : "MP4, WebM, MOV и др. Файл сохраняется на сервере; для фона карточек нужен прямой URL к видео."}
+          : "MP4, WebM, MOV, AVI и др. На сервере действует лимит размера (nginx ~25–300 МБ — см. конфиг). Файл без расширения определяется по типу в браузере."}
       </p>
       {value && accept === "image" ? (
         // eslint-disable-next-line @next/next/no-img-element -- админ-превью по произвольному URL
