@@ -42,6 +42,8 @@
     --border: rgba(255, 255, 255, 0.12);
     --accent: #C9A84C;
     --accent-hover: #B8933F;
+    /* Скроллбар: нейтральный, без акцента */
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
   }
 
   [data-theme="light"] {
@@ -55,6 +57,7 @@
     --border: rgba(10, 10, 10, 0.12);
     --accent: #C9A84C;
     --accent-hover: #B8933F;
+    --scrollbar-thumb: rgba(10, 10, 10, 0.22);
   }
 
   *,
@@ -155,23 +158,37 @@
   }
 
   ::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--bg);
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--accent);
-    border-radius: 2px;
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--scrollbar-thumb) 85%, var(--text));
   }
 
   @supports (scrollbar-width: thin) {
     html {
       scrollbar-width: thin;
-      scrollbar-color: var(--accent) var(--bg);
+      scrollbar-color: var(--scrollbar-thumb) transparent;
     }
+  }
+
+  /* Прокрутка без видимых полос (полноэкранное меню и т.п.) */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 

@@ -454,7 +454,7 @@ export function Header() {
             <nav className="flex min-h-0 w-full min-w-0 flex-1 flex-col justify-between px-4 sm:px-8 md:px-10 lg:px-16 pt-14 sm:pt-16 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
               {/* Экраны до lg: аккордеон */}
               <div className="flex min-h-0 flex-1 flex-col lg:hidden">
-              <div className="grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-2 overflow-y-auto overscroll-contain sm:gap-y-6 md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-2 [@media(max-height:700px)]:gap-x-3 sm:[&::-webkit-scrollbar]:w-1.5 sm:[&::-webkit-scrollbar-thumb]:rounded-full sm:[&::-webkit-scrollbar-thumb]:bg-[var(--border)]">
+              <div className="scrollbar-none grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-2 overflow-y-auto overscroll-contain sm:gap-y-6 md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-2 [@media(max-height:700px)]:gap-x-3">
                 {NAV_SECTIONS.map((section, si) => {
                   const isExpanded = expandedMenuSection === section.label;
                   const panelId = `fs-menu-section-${si}`;
@@ -528,7 +528,7 @@ export function Header() {
 
               {/* lg+: прежняя сетка, все секции раскрыты */}
               <div className="hidden min-h-0 flex-1 flex-col lg:flex">
-              <div className="grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-6 overflow-y-auto overscroll-contain md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-4 [@media(max-height:700px)]:gap-x-3 sm:[&::-webkit-scrollbar]:w-1.5 sm:[&::-webkit-scrollbar-thumb]:rounded-full sm:[&::-webkit-scrollbar-thumb]:bg-[var(--border)]">
+              <div className="scrollbar-none grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-6 overflow-y-auto overscroll-contain md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-4 [@media(max-height:700px)]:gap-x-3">
                 {NAV_SECTIONS.map((section, si) => (
                   <div
                     key={section.label}
