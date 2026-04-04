@@ -26,6 +26,7 @@ export default function AdminNewPostPage() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [published, setPublished] = useState(false);
   const [coverImage, setCoverImage] = useState("");
+  const [coverVideo, setCoverVideo] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,7 +37,15 @@ export default function AdminNewPostPage() {
       const res = await fetch("/api/admin/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, excerpt, content, category, published, coverImage: coverImage || null }),
+        body: JSON.stringify({
+          title,
+          excerpt,
+          content,
+          category,
+          published,
+          coverImage: coverImage || null,
+          coverVideo: coverVideo || null,
+        }),
       });
 
       if (!res.ok) {
@@ -90,10 +99,17 @@ export default function AdminNewPostPage() {
         </div>
 
         <AdminMediaUpload
-          label="Обложка статьи"
+          label="Обложка статьи (фото в баннере)"
           accept="image"
           value={coverImage}
           onChange={setCoverImage}
+        />
+
+        <AdminMediaUpload
+          label="Видео в баннере (опционально, слайд после обложки)"
+          accept="video"
+          value={coverVideo}
+          onChange={setCoverVideo}
         />
 
         <div>

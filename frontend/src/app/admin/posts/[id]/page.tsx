@@ -29,6 +29,7 @@ export default function AdminEditPostPage() {
   const [category, setCategory] = useState("");
   const [published, setPublished] = useState(false);
   const [coverImage, setCoverImage] = useState("");
+  const [coverVideo, setCoverVideo] = useState("");
 
   useEffect(() => {
     fetch(`/api/admin/posts/${params.id}`)
@@ -44,6 +45,7 @@ export default function AdminEditPostPage() {
           setCategory(data.category);
           setPublished(data.published);
           setCoverImage(data.coverImage || "");
+          setCoverVideo(data.coverVideo || "");
         }
       })
       .catch(() => setError("Ошибка загрузки"))
@@ -59,7 +61,16 @@ export default function AdminEditPostPage() {
       const res = await fetch(`/api/admin/posts/${params.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, slug, excerpt, content, category, published, coverImage: coverImage || null }),
+        body: JSON.stringify({
+          title,
+          slug,
+          excerpt,
+          content,
+          category,
+          published,
+          coverImage: coverImage || null,
+          coverVideo: coverVideo || null,
+        }),
       });
 
       if (!res.ok) throw new Error("Ошибка сохранения");
@@ -131,10 +142,17 @@ export default function AdminEditPostPage() {
         </div>
 
         <AdminMediaUpload
-          label="Обложка статьи"
+          label="Обложка статьи (фото в баннере)"
           accept="image"
           value={coverImage}
           onChange={setCoverImage}
+        />
+
+        <AdminMediaUpload
+          label="Видео в баннере (опционально, слайд после обложки)"
+          accept="video"
+          value={coverVideo}
+          onChange={setCoverVideo}
         />
 
         <div>

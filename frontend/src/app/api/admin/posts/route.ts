@@ -48,7 +48,7 @@ function generateSlug(title: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, content, category, coverImage, published } = body;
+    const { title, excerpt, content, category, coverImage, coverVideo, published } = body;
 
     if (!title || !excerpt || !content || !category) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
         content,
         category,
         coverImage: coverImage || null,
+        coverVideo: coverVideo || null,
         published: published ?? false,
       },
     });

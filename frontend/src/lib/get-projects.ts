@@ -100,6 +100,8 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioCase | nu
         ? dbProject.features.split("\n").filter(Boolean)
         : [];
 
+      const galleryUrls = dbProject.images.map((im) => im.url);
+
       return {
         id: dbProject.id,
         slug: dbProject.slug,
@@ -123,6 +125,8 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioCase | nu
         showcaseImage1: dbProject.showcaseImage1 || dbProject.images[0]?.url || null,
         showcaseImage2: dbProject.showcaseImage2 || dbProject.images[1]?.url || null,
         videoUrl: dbProject.videoUrl || null,
+        coverImage: dbProject.coverImage || null,
+        galleryUrls,
       };
     }
   } catch {

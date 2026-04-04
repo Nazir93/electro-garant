@@ -22,6 +22,9 @@ export interface PortfolioCase {
   showcaseImage1?: string | null;
   showcaseImage2?: string | null;
   videoUrl?: string | null;
+  /** Обложка и галерея (для баннера на странице кейса) */
+  coverImage?: string | null;
+  galleryUrls?: string[];
 }
 
 export const PORTFOLIO_CASES: PortfolioCase[] = [

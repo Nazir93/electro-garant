@@ -2,9 +2,11 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import type { PortfolioCase } from "@/lib/portfolio-data";
 import { BackNavLink } from "@/components/ui/back-nav";
+import { EditorialPageShell } from "@/components/editorial/editorial-page-shell";
+import { EditorialBanner, editorialSlidesFromImagesAndVideo } from "@/components/editorial/editorial-banner";
 
 function useScrollVisible(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -25,6 +27,20 @@ function useScrollVisible(threshold = 0.15) {
   }, [threshold]);
 
   return { ref, visible };
+}
+
+function caseBannerUrls(p: PortfolioCase): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const push = (u?: string | null) => {
+    const s = u?.trim();
+    if (!s || seen.has(s)) return;
+    seen.add(s);
+    out.push(s);
+  };
+  push(p.coverImage);
+  for (const u of p.galleryUrls ?? []) push(u);
+  return out;
 }
 
 function ParallaxShowcase({
@@ -129,7 +145,7 @@ function TextBlock({ leftText, rightText, accent }: { leftText: string; rightTex
         borderBottom: accent ? "1px solid var(--border)" : undefined,
       }}
     >
-      <div className="container mx-auto">
+      <div className="container mx-auto max-w-5xl px-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
           <div
             className="transition-all duration-700 ease-out"
@@ -211,114 +227,74 @@ function NavLink({ href, label, direction }: { href: string; label: string; dire
 }
 
 export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase; allSlugs?: string[] }) {
-  const [heroVisible, setHeroVisible] = useState(false);
-
-  useEffect(() => {
-    setHeroVisible(true);
-  }, []);
-
   const currentIndex = allSlugs.indexOf(project.slug);
   const prevSlug = currentIndex > 0 ? allSlugs[currentIndex - 1] : null;
   const nextSlug = currentIndex < allSlugs.length - 1 ? allSlugs[currentIndex + 1] : null;
 
+  const metaPills = (
+    <div className="flex flex-wrap items-center gap-4">
+      <span
+        className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.15em] px-3 py-1 rounded-full"
+        style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
+      >
+        <Tag size={10} />
+        {project.tag}
+      </span>
+      <span
+        className="inline-flex items-center gap-1.5 text-[10px] tracking-wider"
+        style={{ color: "var(--text-subtle)" }}
+      >
+        <Calendar size={10} />
+        {project.year}
+      </span>
+    </div>
+  );
+
+  const metaGrid = (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {[
+        { label: "Отрасль", value: project.industry },
+        { label: "Услуга", value: project.type },
+        { label: "Площадь", value: project.area },
+        { label: "Год", value: project.year },
+      ].map((item) => (
+        <div key={item.label}>
+          <span
+            className="text-[10px] uppercase tracking-[0.15em] block mb-1"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {item.label}
+          </span>
+          <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
+            {item.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <article>
-      {/* Hero */}
-      <section className="pt-32 pb-16 md:pt-40 md:pb-20" style={{ backgroundColor: "var(--bg)" }}>
-        <div className="container mx-auto">
-          {/* Back link */}
-          <div
-            className="transition-all duration-700"
-            style={{
-              opacity: heroVisible ? 1 : 0,
-              transform: heroVisible ? "translateY(0)" : "translateY(20px)",
-            }}
-          >
-            <div className="mb-10">
-              <BackNavLink href="/portfolio">Все проекты</BackNavLink>
-            </div>
-          </div>
+    <>
+      <EditorialPageShell
+        backHref="/portfolio"
+        backLabel="Все проекты"
+        meta={metaPills}
+        title={project.title}
+        belowTitle={metaGrid}
+        lead={project.heroDescription}
+        footer={<BackNavLink href="/portfolio">Вернуться к проектам</BackNavLink>}
+      >
+        <EditorialBanner
+          slides={editorialSlidesFromImagesAndVideo(caseBannerUrls(project), project.videoUrl)}
+          alt={project.title}
+        />
+      </EditorialPageShell>
 
-          {/* Title row */}
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
-            <h1
-              className="font-heading text-[14vw] sm:text-[10vw] md:text-[7vw] lg:text-[5.5vw] leading-[0.9] tracking-tight transition-all duration-1000 ease-out"
-              style={{
-                color: "var(--text)",
-                opacity: heroVisible ? 1 : 0,
-                transform: heroVisible ? "translateY(0)" : "translateY(40px)",
-                transitionDelay: "100ms",
-              }}
-            >
-              {project.title}
-            </h1>
-            <span
-              className="font-heading text-lg md:text-xl transition-all duration-1000 ease-out italic"
-              style={{
-                color: "var(--text-muted)",
-                opacity: heroVisible ? 1 : 0,
-                transitionDelay: "200ms",
-              }}
-            >
-              ({project.tag})
-            </span>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px mb-10" style={{ backgroundColor: "var(--border)" }} />
-
-          {/* Meta row */}
-          <div
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-14 transition-all duration-1000 ease-out"
-            style={{
-              opacity: heroVisible ? 1 : 0,
-              transform: heroVisible ? "translateY(0)" : "translateY(20px)",
-              transitionDelay: "250ms",
-            }}
-          >
-            {[
-              { label: "Отрасль", value: project.industry },
-              { label: "Услуга", value: project.type },
-              { label: "Площадь", value: project.area },
-              { label: "Год", value: project.year },
-            ].map((item) => (
-              <div key={item.label}>
-                <span
-                  className="text-[10px] uppercase tracking-[0.15em] block mb-1"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {item.label}
-                </span>
-                <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
-                  {item.value}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Two columns: description + features */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
-            <div
-              className="transition-all duration-1000 ease-out"
-              style={{
-                opacity: heroVisible ? 1 : 0,
-                transform: heroVisible ? "translateY(0)" : "translateY(30px)",
-                transitionDelay: "300ms",
-              }}
-            >
-              <p className="text-base md:text-lg leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                {project.heroDescription}
-              </p>
-            </div>
-            <div
-              className="transition-all duration-1000 ease-out"
-              style={{
-                opacity: heroVisible ? 1 : 0,
-                transform: heroVisible ? "translateY(0)" : "translateY(30px)",
-                transitionDelay: "400ms",
-              }}
-            >
-              <ul className="space-y-3 mb-8">
+      <section className="pb-16 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
+        <div className="container mx-auto max-w-3xl px-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+            <div>
+              <ul className="space-y-3">
                 {project.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm" style={{ color: "var(--text-muted)" }}>
                     <span
@@ -329,65 +305,47 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
                   </li>
                 ))}
               </ul>
-              <div className="border-t pt-6" style={{ borderColor: "var(--border)" }}>
-                <p
-                  className="text-[10px] uppercase tracking-[0.15em] font-bold mb-2"
-                  style={{ color: "var(--text)" }}
-                >
-                  Ключевые задачи:
-                </p>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                  {project.goals}
-                </p>
-              </div>
+            </div>
+            <div className="border-t md:border-t-0 md:border-l pt-8 md:pt-0 md:pl-12" style={{ borderColor: "var(--border)" }}>
+              <p
+                className="text-[10px] uppercase tracking-[0.15em] font-bold mb-2"
+                style={{ color: "var(--text)" }}
+              >
+                Ключевые задачи
+              </p>
+              <p className="text-sm md:text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                {project.goals}
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {project.videoUrl ? (
-        <section className="py-8 md:py-12" style={{ backgroundColor: "var(--bg-secondary)" }}>
-          <div className="container mx-auto">
-            <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-              <video
-                src={project.videoUrl}
-                controls
-                playsInline
-                className="w-full aspect-video bg-black"
-              />
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      {/* Showcase 1 */}
       <ParallaxShowcase label={project.showcaseLabel1} imageUrl={project.showcaseImage1} />
 
-      {(project.leftText1.trim() || project.rightText1.trim()) ? (
+      {project.leftText1.trim() || project.rightText1.trim() ? (
         <TextBlock leftText={project.leftText1} rightText={project.rightText1} />
       ) : null}
 
-      {/* Showcase 2 */}
       <ParallaxShowcase label={project.showcaseLabel2} dark={false} imageUrl={project.showcaseImage2} />
 
-      {(project.leftText2.trim() || project.rightText2.trim()) ? (
+      {project.leftText2.trim() || project.rightText2.trim() ? (
         <TextBlock leftText={project.leftText2} rightText={project.rightText2} accent />
       ) : null}
 
       {(prevSlug || nextSlug) && (
-        <section className="py-16 md:py-20" style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}>
-          <div className="container mx-auto">
+        <section
+          className="py-16 md:py-20"
+          style={{ backgroundColor: "var(--bg)", borderTop: "1px solid var(--border)" }}
+        >
+          <div className="container mx-auto max-w-3xl px-5">
             <div className="flex flex-col md:flex-row gap-4">
-              {prevSlug && (
-                <NavLink href={`/portfolio/${prevSlug}`} label="Предыдущий" direction="prev" />
-              )}
-              {nextSlug && (
-                <NavLink href={`/portfolio/${nextSlug}`} label="Следующий" direction="next" />
-              )}
+              {prevSlug && <NavLink href={`/portfolio/${prevSlug}`} label="Предыдущий" direction="prev" />}
+              {nextSlug && <NavLink href={`/portfolio/${nextSlug}`} label="Следующий" direction="next" />}
             </div>
           </div>
         </section>
       )}
-    </article>
+    </>
   );
 }

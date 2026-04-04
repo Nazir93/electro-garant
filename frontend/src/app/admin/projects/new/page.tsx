@@ -271,7 +271,7 @@ export default function NewProjectPage() {
         />
 
         <AdminMediaUpload
-          label="Видео по проекту"
+          label="Видео в баннере (опционально, последний слайд после фото)"
           accept="video"
           value={form.videoUrl}
           onChange={(url) => set("videoUrl", url)}

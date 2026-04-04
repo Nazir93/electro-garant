@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     post = await prisma.post.findUnique({
       where: { slug: params.slug, published: true },
-      select: { title: true, excerpt: true, slug: true, coverImage: true },
+      select: { title: true, excerpt: true, slug: true, coverImage: true, coverVideo: true },
     });
   } catch {
     return {};
@@ -60,6 +60,7 @@ export default async function BlogPostPage({ params }: Props) {
         excerpt: post.excerpt,
         category: post.category,
         coverImage: post.coverImage,
+        coverVideo: post.coverVideo,
         createdAt: post.createdAt.toISOString(),
       }}
     />

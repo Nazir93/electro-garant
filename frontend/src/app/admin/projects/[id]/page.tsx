@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Save, ArrowLeft, Trash2, Plus, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
+import { AdminFormCollapsible, AdminFormSection } from "@/components/admin/admin-form-section";
 import { uploadAdminMedia } from "@/lib/admin-upload";
 
 const CATEGORIES = [
@@ -164,7 +165,10 @@ export default function EditProjectPage() {
         </button>
       </div>
 
-      <div className="space-y-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5">
+      <AdminFormSection
+        title="Обязательно для публикации"
+        subtitle="Название, описание, обложка и карточка в списке. Баннер на странице кейса — обложка и галерея (ниже)."
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-white/40 mb-1">Название</label>
@@ -250,66 +254,11 @@ export default function EditProjectPage() {
             placeholder="Создание надёжной электрической инфраструктуры..." />
         </div>
 
-        <div className="pt-5 mt-2 border-t border-white/[0.08] space-y-4">
-          <p className="text-xs font-semibold text-[#C9A84C] uppercase tracking-wider">Страница кейса (/portfolio/…)</p>
-          <p className="text-[11px] text-white/35 leading-relaxed">
-            После блока с описанием идут две широкие полосы и два двухколоночных текста. Если не загрузить фото полос — подставятся{" "}
-            <strong className="text-white/50">1-е и 2-е изображения галереи</strong> ниже; подпись на полосе — из поля или из alt этих фото.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-white/40 mb-1">Текст слева (под 1-й полосой)</label>
-              <textarea value={form.leftText1} onChange={(e) => set("leftText1", e.target.value)} rows={4}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-white/40 mb-1">Текст справа (под 1-й полосой)</label>
-              <textarea value={form.rightText1} onChange={(e) => set("rightText1", e.target.value)} rows={4}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-white/40 mb-1">Текст слева (под 2-й полосой)</label>
-              <textarea value={form.leftText2} onChange={(e) => set("leftText2", e.target.value)} rows={4}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-white/40 mb-1">Текст справа (под 2-й полосой)</label>
-              <textarea value={form.rightText2} onChange={(e) => set("rightText2", e.target.value)} rows={4}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-white/40 mb-1">Подпись на 1-й полосе</label>
-              <input type="text" value={form.showcaseLabel1} onChange={(e) => set("showcaseLabel1", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-                placeholder="Например: Электрощит на объекте" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-white/40 mb-1">Подпись на 2-й полосе</label>
-              <input type="text" value={form.showcaseLabel2} onChange={(e) => set("showcaseLabel2", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-                placeholder="Например: Акустика зала" />
-            </div>
-          </div>
-          <AdminMediaUpload label="Фото для 1-й полосы (иначе — 1-е в галерее)" accept="image" value={form.showcaseImage1} onChange={(url) => set("showcaseImage1", url)} />
-          <AdminMediaUpload label="Фото для 2-й полосы (иначе — 2-е в галерее)" accept="image" value={form.showcaseImage2} onChange={(url) => set("showcaseImage2", url)} />
-        </div>
-
         <AdminMediaUpload
-          label="Обложка проекта"
+          label="Обложка проекта (шапка страницы и карусель)"
           accept="image"
           value={form.coverImage}
           onChange={(url) => set("coverImage", url)}
-        />
-
-        <AdminMediaUpload
-          label="Видео по проекту"
-          accept="video"
-          value={form.videoUrl}
-          onChange={(url) => set("videoUrl", url)}
         />
 
         <div className="grid grid-cols-2 gap-4">
@@ -325,11 +274,13 @@ export default function EditProjectPage() {
             </label>
           </div>
         </div>
-      </div>
+      </AdminFormSection>
 
-      <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white/60 uppercase tracking-wider">Галерея ({images.length})</h2>
+      <AdminFormSection
+        title={`Галерея (${images.length})`}
+        subtitle="Дополнительные фото в карусели на странице кейса. Если не задать фото полос витрин ниже — подставятся 1-е и 2-е из галереи."
+      >
+        <div className="flex items-center justify-end -mt-2 mb-2">
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C9A84C]/10 text-[#C9A84C] text-xs font-semibold cursor-pointer hover:bg-[#C9A84C]/20 transition-colors">
             <Plus size={14} /> {uploadingGallery ? "Загрузка..." : "Добавить фото"}
             <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
@@ -359,7 +310,63 @@ export default function EditProjectPage() {
             ))}
           </div>
         )}
-      </div>
+      </AdminFormSection>
+
+      <AdminFormCollapsible
+        title="Дополнительно: витрины, тексты и видео"
+        subtitle="Широкие полосы и две колонки под ними. Можно заполнить позже."
+      >
+        <p className="text-[11px] text-white/35 leading-relaxed -mt-1 mb-2">
+          Подпись на полосе — из поля ниже или из alt соответствующего фото в галерее.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Текст слева (под 1-й полосой)</label>
+            <textarea value={form.leftText1} onChange={(e) => set("leftText1", e.target.value)} rows={4}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Текст справа (под 1-й полосой)</label>
+            <textarea value={form.rightText1} onChange={(e) => set("rightText1", e.target.value)} rows={4}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Текст слева (под 2-й полосой)</label>
+            <textarea value={form.leftText2} onChange={(e) => set("leftText2", e.target.value)} rows={4}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Текст справа (под 2-й полосой)</label>
+            <textarea value={form.rightText2} onChange={(e) => set("rightText2", e.target.value)} rows={4}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Подпись на 1-й полосе</label>
+            <input type="text" value={form.showcaseLabel1} onChange={(e) => set("showcaseLabel1", e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+              placeholder="Например: Электрощит на объекте" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Подпись на 2-й полосе</label>
+            <input type="text" value={form.showcaseLabel2} onChange={(e) => set("showcaseLabel2", e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+              placeholder="Например: Акустика зала" />
+          </div>
+        </div>
+        <AdminMediaUpload label="Фото для 1-й полосы (иначе — 1-е в галерее)" accept="image" value={form.showcaseImage1} onChange={(url) => set("showcaseImage1", url)} />
+        <AdminMediaUpload label="Фото для 2-й полосы (иначе — 2-е в галерее)" accept="image" value={form.showcaseImage2} onChange={(url) => set("showcaseImage2", url)} />
+        <AdminMediaUpload
+          label="Видео в баннере (слайд после фото обложки и галереи)"
+          accept="video"
+          value={form.videoUrl}
+          onChange={(url) => set("videoUrl", url)}
+        />
+      </AdminFormCollapsible>
     </div>
   );
 }
+

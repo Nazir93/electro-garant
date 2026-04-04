@@ -175,6 +175,8 @@ model Post {
   content    String   @db.Text
   category   String
   coverImage String?
+  /// Видео в карусели баннера (после обложки, если задано)
+  coverVideo String?
   published  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
