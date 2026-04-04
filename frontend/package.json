@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:with-prisma": "prisma generate --schema=prisma/schema.prisma && next build",
     "start": "next start -H 0.0.0.0",
     "lint": "next lint",
     "db:generate": "prisma generate",
@@ -14,7 +15,7 @@
     "db:verify": "dotenv -e .env.local -- node scripts/verify-db.cjs",
     "docker:db": "docker compose -f ../docker-compose.yml up -d postgres",
     "db:tunnel": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/db-tunnel.ps1",
-    "postinstall": "npx prisma generate --schema=prisma/schema.prisma || true",
+    "postinstall": "prisma generate --schema=prisma/schema.prisma",
     "pm2:start": "pm2 start ecosystem.config.cjs",
     "pm2:reload": "pm2 reload electro-next"
   },

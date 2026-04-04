@@ -1,7 +1,8 @@
 /**
  * PM2: процесс переживает выход из SSH и перезапускается при падении.
  * На VPS из папки frontend:
- *   npm ci && npx prisma generate && npm run build
+ *   npm ci && npm run build
+ *   (postinstall запускает prisma generate; если сборка всё же ругается на типы — npm run build:with-prisma)
  *   pm2 start ecosystem.config.cjs
  *   pm2 save
  *   pm2 startup   # один раз — выполнить выведенную команду sudo ...
