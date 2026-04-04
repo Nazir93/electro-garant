@@ -7,7 +7,7 @@ import { X, Sun, Moon, ChevronRight, ChevronDown, Send } from "lucide-react";
 import { SITE_NAME } from "@/lib/constants";
 import { useContactConfig } from "@/lib/contact-config-context";
 import { MaxMessengerIcon } from "@/components/icons/max-messenger-icon";
-import { NAV_SECTIONS, isNavGroup } from "@/lib/nav-sections";
+import { NAV_SECTIONS, isNavGroup, type NavSection } from "@/lib/nav-sections";
 import { useTheme } from "@/lib/theme-context";
 import { useModal } from "@/lib/modal-context";
 
@@ -62,6 +62,88 @@ const SPARK_PATHS = [
   buildGridPath(COLS, ROWS, CELL, CELL, 8, ROWS, 999),
   buildGridPath(COLS, ROWS, CELL, CELL, 5, 3, 555),
 ];
+
+/** Общий список ссылок секции — для полноэкранного меню (моб. аккордеон и desktop-сетка). */
+function FullscreenOverlayNavItems({
+  section,
+  onClose,
+  openContactModal,
+}: {
+  section: NavSection;
+  onClose: () => void;
+  openContactModal: () => void;
+}) {
+  return (
+    <>
+      {section.items.map((item) =>
+        isNavGroup(item) ? (
+          <div key={item.label} className="w-full">
+            <span
+              className="mb-1.5 block text-xs uppercase tracking-[0.12em] sm:text-sm md:text-base"
+              style={{ color: "var(--text-subtle)" }}
+            >
+              {item.label}
+            </span>
+            <div
+              className="flex flex-col gap-0.5 border-l pl-3 sm:gap-1 md:gap-1.5"
+              style={{ borderColor: "var(--border)" }}
+            >
+              {item.children.map((child) =>
+                "action" in child && child.action === "openModal" ? (
+                  <button
+                    key={child.label}
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      openContactModal();
+                    }}
+                    className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {child.label}
+                  </button>
+                ) : "href" in child ? (
+                  <Link
+                    key={child.href}
+                    href={child.href}
+                    onClick={onClose}
+                    className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {child.label}
+                  </Link>
+                ) : null
+              )}
+            </div>
+          </div>
+        ) : "action" in item && item.action === "openModal" ? (
+          <button
+            key={item.label}
+            type="button"
+            onClick={() => {
+              onClose();
+              openContactModal();
+            }}
+            className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {item.label}
+          </button>
+        ) : "href" in item ? (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onClose}
+            className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {item.label}
+          </Link>
+        ) : null
+      )}
+    </>
+  );
+}
 
 function CircuitGrid() {
   return (
@@ -370,6 +452,8 @@ export function Header() {
             <div className="flex min-h-0 w-full flex-1 flex-row items-stretch">
             {/* Nav area — на мобильном крупнее шрифты и зоны нажатия */}
             <nav className="flex min-h-0 w-full min-w-0 flex-1 flex-col justify-between px-4 sm:px-8 md:px-10 lg:px-16 pt-14 sm:pt-16 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+              {/* Экраны до lg: аккордеон */}
+              <div className="flex min-h-0 flex-1 flex-col lg:hidden">
               <div className="grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-2 overflow-y-auto overscroll-contain sm:gap-y-6 md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-2 [@media(max-height:700px)]:gap-x-3 sm:[&::-webkit-scrollbar]:w-1.5 sm:[&::-webkit-scrollbar-thumb]:rounded-full sm:[&::-webkit-scrollbar-thumb]:bg-[var(--border)]">
                 {NAV_SECTIONS.map((section, si) => {
                   const isExpanded = expandedMenuSection === section.label;
@@ -428,70 +512,56 @@ export function Header() {
                         className="flex min-w-0 flex-col gap-2 border-l pl-3 sm:gap-2 md:gap-2.5 lg:gap-3 [@media(max-height:700px)]:max-lg:gap-1.5 sm:pl-4"
                         style={{ borderColor: "var(--border)" }}
                       >
-                          {section.items.map((item) =>
-                            isNavGroup(item) ? (
-                              <div key={item.label} className="w-full">
-                                <span
-                                  className="mb-1.5 block text-xs uppercase tracking-[0.12em] sm:text-sm md:text-base"
-                                  style={{ color: "var(--text-subtle)" }}
-                                >
-                                  {item.label}
-                                </span>
-                                <div
-                                  className="flex flex-col gap-0.5 border-l pl-3 sm:gap-1 md:gap-1.5"
-                                  style={{ borderColor: "var(--border)" }}
-                                >
-                                  {item.children.map((child) =>
-                                    "action" in child && child.action === "openModal" ? (
-                                      <button
-                                        key={child.label}
-                                        onClick={() => { setIsOpen(false); openModal(); }}
-                                        className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
-                                        style={{ color: "var(--text-muted)" }}
-                                      >
-                                        {child.label}
-                                      </button>
-                                    ) : "href" in child ? (
-                                      <Link
-                                        key={child.href}
-                                        href={child.href}
-                                        onClick={() => setIsOpen(false)}
-                                        className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
-                                        style={{ color: "var(--text-muted)" }}
-                                      >
-                                        {child.label}
-                                      </Link>
-                                    ) : null
-                                  )}
-                                </div>
-                              </div>
-                            ) : "action" in item && item.action === "openModal" ? (
-                              <button
-                                key={item.label}
-                                onClick={() => { setIsOpen(false); openModal(); }}
-                                className="min-h-[44px] py-2 text-left text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
-                                style={{ color: "var(--text-muted)" }}
-                              >
-                                {item.label}
-                              </button>
-                            ) : "href" in item ? (
-                              <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={() => setIsOpen(false)}
-                                className="min-h-[44px] py-2 text-sm transition-colors duration-300 hover:text-[var(--accent)] sm:min-h-0 sm:py-1 sm:text-sm md:text-base lg:text-[15px]"
-                                style={{ color: "var(--text-muted)" }}
-                              >
-                                {item.label}
-                              </Link>
-                            ) : null
-                          )}
+                        <FullscreenOverlayNavItems
+                          section={section}
+                          onClose={() => setIsOpen(false)}
+                          openContactModal={openModal}
+                        />
                       </div>
                       )}
                     </div>
                   </div>
                   );
                 })}
+              </div>
+              </div>
+
+              {/* lg+: прежняя сетка, все секции раскрыты */}
+              <div className="hidden min-h-0 flex-1 flex-col lg:flex">
+              <div className="grid min-h-0 w-full flex-1 grid-cols-1 content-start gap-x-4 gap-y-6 overflow-y-auto overscroll-contain md:grid-cols-2 md:gap-x-10 md:gap-y-6 lg:grid-cols-4 lg:gap-x-12 lg:gap-y-6 [@media(max-height:700px)]:gap-y-4 [@media(max-height:700px)]:gap-x-3 sm:[&::-webkit-scrollbar]:w-1.5 sm:[&::-webkit-scrollbar-thumb]:rounded-full sm:[&::-webkit-scrollbar-thumb]:bg-[var(--border)]">
+                {NAV_SECTIONS.map((section, si) => (
+                  <div
+                    key={section.label}
+                    className="flex min-h-0 min-w-0 flex-col border-b border-[var(--border)] pb-4 sm:border-0 sm:pb-0 menu-stagger [@media(max-height:700px)]:pb-3"
+                    style={{
+                      animation: `menuFadeIn 0.6s ease-out ${si * 0.08}s both`,
+                    }}
+                  >
+                    <div className="grid min-w-0 grid-cols-[auto_1fr] gap-x-2 sm:gap-x-3">
+                      <span
+                        className="shrink-0 pt-1 font-heading text-xs tabular-nums tracking-[0.15em] sm:text-sm md:text-base lg:text-lg"
+                        style={{ color: "var(--text-subtle)" }}
+                        aria-hidden
+                      >
+                        {String(si + 1).padStart(2, "0")}
+                      </span>
+                      <h3
+                        className="min-w-0 font-heading text-lg leading-[1.15] tracking-tight sm:text-xl md:text-2xl lg:text-2xl xl:text-3xl [@media(max-height:700px)]:max-lg:text-base"
+                        style={{ color: "var(--text)" }}
+                      >
+                        {section.label}
+                      </h3>
+                      <div className="col-start-2 flex min-w-0 flex-col gap-2 sm:gap-2 md:gap-2.5 lg:gap-3 [@media(max-height:700px)]:max-lg:gap-1.5">
+                        <FullscreenOverlayNavItems
+                          section={section}
+                          onClose={() => setIsOpen(false)}
+                          openContactModal={openModal}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
               </div>
 
               {/* Bottom: contacts + CTA */}

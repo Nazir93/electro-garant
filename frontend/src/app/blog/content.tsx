@@ -124,7 +124,7 @@ function PostCard({
 
 export function BlogPageContent({ posts }: { posts: PostItem[] }) {
   return (
-    <section className="pt-32 pb-20 md:pt-40 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
+    <section className="pt-16 pb-20 md:pt-20 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto">
         <h1
           className="font-heading text-[20vw] md:text-[14vw] lg:text-[12vw] leading-[0.85] tracking-tighter mb-6"

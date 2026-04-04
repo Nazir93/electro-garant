@@ -77,7 +77,7 @@ export function ServicesPageContent({
   const bannerAlt = `${pageH1} — ${SITE_NAME}`;
 
   return (
-    <section className="pt-20 pb-12 md:pt-24 md:pb-16" style={{ backgroundColor: "var(--bg)" }}>
+    <section className="pt-16 pb-12 md:pt-20 md:pb-16" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto max-w-5xl">
         {bannerUrl ? (
           <figure className="mb-6 md:mb-8">

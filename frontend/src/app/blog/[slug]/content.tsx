@@ -62,12 +62,10 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
       titleClassName="font-heading text-2xl sm:text-3xl md:text-[1.75rem] lg:text-4xl leading-snug tracking-tight mb-6 break-words"
       lead={post.excerpt}
       footer={<BackNavLink href="/blog">Вернуться к статьям</BackNavLink>}
-      fullWidthTop={
-        bannerSlides.length > 0 ? (
-          <EditorialBanner fullBleed slides={bannerSlides} alt={post.title} />
-        ) : null
-      }
     >
+      {bannerSlides.length > 0 ? (
+        <EditorialBanner slides={bannerSlides} alt={post.title} />
+      ) : null}
       <div
         className="prose prose-lg max-w-none"
         style={{ color: "var(--text)" }}

@@ -30,7 +30,7 @@ export function LandingHero({
   }, []);
 
   return (
-    <section ref={ref} className="pt-20 pb-12 sm:pt-24 sm:pb-14 md:pt-28 md:pb-16" style={{ backgroundColor: "var(--bg)" }}>
+    <section ref={ref} className="pt-16 pb-12 sm:pt-20 sm:pb-14 md:pt-20 md:pb-16" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto max-w-5xl">
         {/* Tag */}
         <div

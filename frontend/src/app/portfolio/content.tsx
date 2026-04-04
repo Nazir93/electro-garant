@@ -125,7 +125,7 @@ export function PortfolioPageContent({ projects }: { projects: ProjectListItem[]
   const FILTERS = ["Все", "Электромонтаж", "Умный дом", "Акустика", "Видеонаблюдение", "СКС"];
 
   return (
-    <section className="pt-32 pb-20 md:pt-40 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
+    <section className="pt-16 pb-20 md:pt-20 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
       <div className="container mx-auto">
         {/* Title */}
         <h1
