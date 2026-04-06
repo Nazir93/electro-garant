@@ -21,15 +21,20 @@ interface BlogPost {
   category: string;
   coverImage: string | null;
   coverVideo: string | null;
+  coverVideos?: string[];
   createdAt: string;
 }
 
-function blogBannerSlides(post: Pick<BlogPost, "coverImage" | "coverVideo">) {
+function blogBannerSlides(post: BlogPost) {
   const slides: { type: "image" | "video"; url: string }[] = [];
+  const seen = new Set<string>();
   const img = post.coverImage?.trim();
-  const vid = post.coverVideo?.trim();
-  if (img) slides.push({ type: "image", url: img });
-  if (vid) slides.push({ type: "video", url: vid });
+  if (img) { seen.add(img); slides.push({ type: "image", url: img }); }
+  const videoArr = post.coverVideos?.length ? post.coverVideos : post.coverVideo ? [post.coverVideo] : [];
+  for (const v of videoArr) {
+    const s = v?.trim();
+    if (s && !seen.has(s)) { seen.add(s); slides.push({ type: "video", url: s }); }
+  }
   return slides;
 }
 

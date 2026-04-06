@@ -178,8 +178,10 @@ model Post {
   content    String   @db.Text
   category   String
   coverImage String?
-  /// Видео в карусели баннера (после обложки, если задано)
-  coverVideo String?
+  /// Одно видео (совместимость, дублирует первый элемент coverVideos)
+  coverVideo  String?
+  /// Несколько видео в карусели баннера (после обложки)
+  coverVideos String[] @default([])
   published  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

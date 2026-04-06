@@ -45,12 +45,20 @@ export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   const load = useCallback(() => {
+    setLoadError("");
     fetch("/api/admin/projects")
-      .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d)) setProjects(d); })
-      .catch(() => {})
+      .then(async (r) => {
+        const d = await r.json();
+        if (Array.isArray(d)) {
+          setProjects(d);
+        } else {
+          setLoadError(d?.error || "Сервер вернул неожиданный ответ. Возможно, нужно выполнить prisma db push.");
+        }
+      })
+      .catch(() => setLoadError("Не удалось загрузить проекты (сеть или сервер недоступен)."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -81,6 +89,13 @@ export default function AdminProjectsPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
+      {loadError ? (
+        <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-4 text-sm text-red-300">
+          <p className="font-semibold mb-1">Ошибка загрузки проектов</p>
+          <p className="text-red-400/80">{loadError}</p>
+          <button onClick={load} className="mt-2 text-xs underline text-red-300 hover:text-white">Повторить</button>
+        </div>
+      ) : null}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Портфолио / Кейсы</h1>

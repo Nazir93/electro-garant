@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+function normalizeVideoList(arr: unknown, single: unknown): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (u: unknown) => {
+    if (typeof u !== "string") return;
+    const s = u.trim();
+    if (!s || seen.has(s)) return;
+    seen.add(s);
+    out.push(s);
+  };
+  if (Array.isArray(arr)) arr.forEach(push);
+  push(single);
+  return out;
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
@@ -21,7 +36,14 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { title, slug, excerpt, content, category, coverImage, coverVideo, published } = body;
+    const { title, slug, excerpt, content, category, coverImage, published } = body;
+    const hasVideoChange = body.coverVideos !== undefined || body.coverVideo !== undefined;
+    const videoPatch = hasVideoChange
+      ? (() => {
+          const vids = normalizeVideoList(body.coverVideos, body.coverVideo);
+          return { coverVideos: vids, coverVideo: vids[0] ?? null };
+        })()
+      : null;
 
     const post = await prisma.post.update({
       where: { id: params.id },
@@ -32,9 +54,9 @@ export async function PUT(
         ...(content !== undefined && { content }),
         ...(category !== undefined && { category }),
         ...(coverImage !== undefined && { coverImage }),
-        ...(coverVideo !== undefined && { coverVideo }),
+        ...(videoPatch && videoPatch),
         ...(published !== undefined && { published }),
-      },
+      } as Parameters<typeof prisma.post.update>[0]["data"],
     });
 
     return NextResponse.json(post);

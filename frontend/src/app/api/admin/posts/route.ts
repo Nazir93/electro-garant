@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { generateSlug } from "@/lib/utils";
 
+function normalizeVideoList(arr: unknown, single: unknown): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (u: unknown) => {
+    if (typeof u !== "string") return;
+    const s = u.trim();
+    if (!s || seen.has(s)) return;
+    seen.add(s);
+    out.push(s);
+  };
+  if (Array.isArray(arr)) arr.forEach(push);
+  push(single);
+  return out;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const search = searchParams.get("search");
@@ -32,7 +47,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, content, category, coverImage, coverVideo, published } = body;
+    const { title, excerpt, content, category, coverImage, published } = body;
+    const coverVideos = normalizeVideoList(body.coverVideos, body.coverVideo);
 
     if (!title || !excerpt || !content || !category) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -53,9 +69,10 @@ export async function POST(request: NextRequest) {
         content,
         category,
         coverImage: coverImage || null,
-        coverVideo: coverVideo || null,
+        coverVideos: coverVideos as string[],
+        coverVideo: coverVideos[0] ?? null,
         published: published ?? false,
-      },
+      } as Parameters<typeof prisma.post.create>[0]["data"],
     });
 
     return NextResponse.json(post, { status: 201 });

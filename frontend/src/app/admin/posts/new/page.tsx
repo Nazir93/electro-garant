@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
+import { AdminVideoListUpload } from "@/components/admin/admin-video-list-upload";
 import { RichEditor } from "@/components/admin/rich-editor";
 
 const CATEGORIES = [
@@ -27,7 +28,7 @@ export default function AdminNewPostPage() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [published, setPublished] = useState(false);
   const [coverImage, setCoverImage] = useState("");
-  const [coverVideo, setCoverVideo] = useState("");
+  const [coverVideos, setCoverVideos] = useState<string[]>([]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,7 +46,7 @@ export default function AdminNewPostPage() {
           category,
           published,
           coverImage: coverImage || null,
-          coverVideo: coverVideo || null,
+          coverVideos,
         }),
       });
 
@@ -106,11 +107,10 @@ export default function AdminNewPostPage() {
           onChange={setCoverImage}
         />
 
-        <AdminMediaUpload
-          label="Видео в баннере (опционально, слайд после обложки)"
-          accept="video"
-          value={coverVideo}
-          onChange={setCoverVideo}
+        <AdminVideoListUpload
+          label="Видео в баннере (после обложки)"
+          urls={coverVideos}
+          onChange={setCoverVideos}
         />
 
         <div>

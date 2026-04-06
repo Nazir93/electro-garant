@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
+import { AdminVideoListUpload } from "@/components/admin/admin-video-list-upload";
 import { RichEditor } from "@/components/admin/rich-editor";
 
 const CATEGORIES = [
@@ -30,7 +31,7 @@ export default function AdminEditPostPage() {
   const [category, setCategory] = useState("");
   const [published, setPublished] = useState(false);
   const [coverImage, setCoverImage] = useState("");
-  const [coverVideo, setCoverVideo] = useState("");
+  const [coverVideos, setCoverVideos] = useState<string[]>([]);
 
   useEffect(() => {
     fetch(`/api/admin/posts/${params.id}`)
@@ -46,7 +47,14 @@ export default function AdminEditPostPage() {
           setCategory(data.category);
           setPublished(data.published);
           setCoverImage(data.coverImage || "");
-          setCoverVideo(data.coverVideo || "");
+          {
+            const vids: string[] = [];
+            const seen = new Set<string>();
+            const push = (u?: string | null) => { const s = u?.trim(); if (s && !seen.has(s)) { seen.add(s); vids.push(s); } };
+            if (Array.isArray(data.coverVideos)) data.coverVideos.forEach((u: string) => push(u));
+            push(data.coverVideo);
+            setCoverVideos(vids);
+          }
         }
       })
       .catch(() => setError("Ошибка загрузки"))
@@ -70,7 +78,7 @@ export default function AdminEditPostPage() {
           category,
           published,
           coverImage: coverImage || null,
-          coverVideo: coverVideo || null,
+          coverVideos,
         }),
       });
 
@@ -149,11 +157,10 @@ export default function AdminEditPostPage() {
           onChange={setCoverImage}
         />
 
-        <AdminMediaUpload
-          label="Видео в баннере (опционально, слайд после обложки)"
-          accept="video"
-          value={coverVideo}
-          onChange={setCoverVideo}
+        <AdminVideoListUpload
+          label="Видео в баннере (после обложки)"
+          urls={coverVideos}
+          onChange={setCoverVideos}
         />
 
         <div>

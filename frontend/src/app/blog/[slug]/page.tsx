@@ -61,6 +61,7 @@ export default async function BlogPostPage({ params }: Props) {
         category: post.category,
         coverImage: post.coverImage,
         coverVideo: post.coverVideo,
+        coverVideos: (post as unknown as { coverVideos?: string[] }).coverVideos ?? [],
         createdAt: post.createdAt.toISOString(),
       }}
     />
