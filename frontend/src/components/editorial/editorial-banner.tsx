@@ -34,9 +34,20 @@ type EditorialBannerProps = {
   className?: string;
   /** Без скруглений и с отступом только снизу — для блока на всю ширину экрана */
   fullBleed?: boolean;
+  /** Рамка как у лендинга услуги: rounded-xl + border */
+  borderedFrame?: boolean;
+  /** Клик по фото — открыть галерею (лайтбокс); видео не вызывает */
+  onImageClick?: (slideIndex: number) => void;
 };
 
-export function EditorialBanner({ slides, alt, className = "", fullBleed = false }: EditorialBannerProps) {
+export function EditorialBanner({
+  slides,
+  alt,
+  className = "",
+  fullBleed = false,
+  borderedFrame = false,
+  onImageClick,
+}: EditorialBannerProps) {
   const [index, setIndex] = useState(0);
   const slidesKey = slides.map((s) => `${s.type}:${s.url}`).join("|");
 
@@ -62,14 +73,19 @@ export function EditorialBanner({ slides, alt, className = "", fullBleed = false
     return () => window.removeEventListener("keydown", onKey);
   }, [go, slides.length]);
 
-  const frameRounded = fullBleed ? "rounded-none" : "rounded-2xl";
+  const frameRounded = fullBleed ? "rounded-none" : borderedFrame ? "rounded-xl" : "rounded-2xl";
+  const frameBorder =
+    fullBleed ? "" : borderedFrame ? "border border-[var(--border)]" : "";
   const emptyMb = fullBleed ? "mb-0" : "mb-10";
 
   if (slides.length === 0) {
     return (
       <div
-        className={`relative w-full aspect-[16/9] ${emptyMb} ${frameRounded} overflow-hidden flex items-center justify-center ${className}`}
-        style={{ backgroundColor: "var(--bg-secondary)", border: fullBleed ? undefined : "1px solid var(--border)" }}
+        className={`relative w-full aspect-[16/9] ${emptyMb} ${frameRounded} overflow-hidden flex items-center justify-center ${frameBorder} ${className}`}
+        style={{
+          backgroundColor: "var(--bg-secondary)",
+          ...(fullBleed || borderedFrame ? {} : { border: "1px solid var(--border)" }),
+        }}
       >
         <span className="text-[10px] uppercase tracking-[0.2em] text-center px-4" style={{ color: "var(--text-subtle)" }}>
           Добавьте фото или видео в админке
@@ -82,17 +98,27 @@ export function EditorialBanner({ slides, alt, className = "", fullBleed = false
 
   return (
     <div className={`relative w-full ${fullBleed ? "mb-0" : "mb-10"} ${className}`}>
-      <div className={`relative w-full aspect-[16/9] ${frameRounded} overflow-hidden bg-black`}>
+      <div className={`relative w-full aspect-[16/9] ${frameRounded} overflow-hidden bg-black ${frameBorder}`}>
         {current.type === "image" ? (
-          <Image
-            src={current.url}
-            alt={slides.length > 1 ? `${alt} — ${index + 1}` : alt}
-            fill
-            className="object-cover"
-            sizes={fullBleed ? "100vw" : "(max-width: 768px) 100vw, 720px"}
-            priority
-            unoptimized={current.url.startsWith("/uploads/")}
-          />
+          <>
+            <Image
+              src={current.url}
+              alt={slides.length > 1 ? `${alt} — ${index + 1}` : alt}
+              fill
+              className="object-cover"
+              sizes={fullBleed ? "100vw" : "(max-width: 768px) 100vw, 720px"}
+              priority
+              unoptimized={current.url.startsWith("/uploads/")}
+            />
+            {onImageClick ? (
+              <button
+                type="button"
+                className="absolute inset-0 z-[5] cursor-zoom-in bg-transparent"
+                aria-label="Открыть фото на весь экран"
+                onClick={() => onImageClick(index)}
+              />
+            ) : null}
+          </>
         ) : (
           <video
             src={current.url}
@@ -105,7 +131,7 @@ export function EditorialBanner({ slides, alt, className = "", fullBleed = false
       </div>
       {slides.length > 1 ? (
         <>
-          <div className="absolute inset-y-0 left-0 flex items-center px-2 pointer-events-none">
+          <div className="absolute inset-y-0 left-0 z-20 flex items-center px-2 pointer-events-none">
             <button
               type="button"
               onClick={() => go(-1)}
@@ -115,7 +141,7 @@ export function EditorialBanner({ slides, alt, className = "", fullBleed = false
               <ChevronLeft size={20} />
             </button>
           </div>
-          <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+          <div className="absolute inset-y-0 right-0 z-20 flex items-center px-2 pointer-events-none">
             <button
               type="button"
               onClick={() => go(1)}

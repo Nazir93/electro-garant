@@ -11,8 +11,10 @@ type EditorialPageShellProps = {
   /** Renders between H1 and lead (e.g. case meta grid) */
   belowTitle?: ReactNode;
   lead?: ReactNode;
-  /** Full-width block above the text column (e.g. hero banner on portfolio case) */
+  /** Full-width block above the text column (legacy; prefer mediaAfterTitle) */
   fullWidthTop?: ReactNode;
+  /** Между заголовком (и belowTitle) и лидом: баннер как на лендинге услуги */
+  mediaAfterTitle?: ReactNode;
   /** Content after title/lead (e.g. banner) — still inside max-width column */
   children?: ReactNode;
   /** Full-width blocks below the editorial column (e.g. portfolio extras) */
@@ -35,13 +37,14 @@ export function EditorialPageShell({
   belowTitle,
   lead,
   fullWidthTop,
+  mediaAfterTitle,
   children,
   after,
   footer,
 }: EditorialPageShellProps) {
   const headingClass = titleClassName ?? DEFAULT_TITLE_CLASS;
   return (
-    <article className="pt-16 pb-16 md:pt-20 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
+    <article className="pt-12 pb-16 md:pt-16 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
       {fullWidthTop ? (
         <div className="mb-8 w-full md:mb-10">{fullWidthTop}</div>
       ) : null}
@@ -57,6 +60,8 @@ export function EditorialPageShell({
         </h1>
 
         {belowTitle ? <div className="mb-8">{belowTitle}</div> : null}
+
+        {mediaAfterTitle ? <div className="mb-8 sm:mb-10">{mediaAfterTitle}</div> : null}
 
         {lead ? (
           <div className="text-base md:text-lg leading-relaxed mb-10" style={{ color: "var(--text-muted)" }}>

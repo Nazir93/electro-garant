@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import type { PortfolioCase } from "@/lib/portfolio-data";
 import { EditorialPageShell } from "@/components/editorial/editorial-page-shell";
 import { EditorialBanner, editorialSlidesFromImagesAndVideo } from "@/components/editorial/editorial-banner";
 import { formatArticleBody } from "@/lib/html-content";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 
 function useScrollVisible(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -141,10 +142,29 @@ function NavLink({ href, label, direction }: { href: string; label: string; dire
   );
 }
 
+function lightboxIndexForSlide(
+  slides: { type: "image" | "video"; url: string }[],
+  slideIndex: number
+): number | null {
+  if (slides[slideIndex]?.type !== "image") return null;
+  return slides.slice(0, slideIndex).filter((s) => s.type === "image").length;
+}
+
 export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase; allSlugs?: string[] }) {
   const currentIndex = allSlugs.indexOf(project.slug);
   const prevSlug = currentIndex > 0 ? allSlugs[currentIndex - 1] : null;
   const nextSlug = currentIndex < allSlugs.length - 1 ? allSlugs[currentIndex + 1] : null;
+
+  const bannerSlides = useMemo(
+    () => editorialSlidesFromImagesAndVideo(caseBannerUrls(project), project.videoUrl),
+    [project]
+  );
+  const lightboxUrls = useMemo(
+    () => bannerSlides.filter((s) => s.type === "image").map((s) => s.url),
+    [bannerSlides]
+  );
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const metaPills = (
     <div className="flex flex-wrap items-center gap-4">
@@ -190,12 +210,36 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
 
   return (
     <>
+      <ImageLightbox
+        urls={lightboxUrls}
+        index={lightboxIndex}
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onIndexChange={setLightboxIndex}
+        alt={project.title}
+      />
       <EditorialPageShell
         backHref="/portfolio"
         backLabel="Вернуться к проектам"
         meta={metaPills}
         title={project.title}
         belowTitle={metaGrid}
+        mediaAfterTitle={
+          bannerSlides.length > 0 ? (
+            <EditorialBanner
+              slides={bannerSlides}
+              alt={project.title}
+              fullBleed={false}
+              borderedFrame
+              onImageClick={(slideIdx) => {
+                const li = lightboxIndexForSlide(bannerSlides, slideIdx);
+                if (li === null) return;
+                setLightboxIndex(li);
+                setLightboxOpen(true);
+              }}
+            />
+          ) : null
+        }
         lead={
           project.heroDescription ? (
             <div
@@ -204,13 +248,6 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
               dangerouslySetInnerHTML={{ __html: formatArticleBody(project.heroDescription) }}
             />
           ) : null
-        }
-        fullWidthTop={
-          <EditorialBanner
-            fullBleed
-            slides={editorialSlidesFromImagesAndVideo(caseBannerUrls(project), project.videoUrl)}
-            alt={project.title}
-          />
         }
       />
 

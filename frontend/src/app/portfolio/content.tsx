@@ -124,7 +124,17 @@ const FILTER_MAP: Record<string, string[]> = {
   "СКС": ["скс", "слаботочные", "кабельн"],
 };
 
-export function PortfolioPageContent({ projects }: { projects: ProjectListItem[] }) {
+export function PortfolioPageContent({
+  projects,
+  pageH1,
+  introText,
+  bannerUrl,
+}: {
+  projects: ProjectListItem[];
+  pageH1: string;
+  introText: string;
+  bannerUrl: string | null;
+}) {
   const [showAll, setShowAll] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
@@ -143,16 +153,39 @@ export function PortfolioPageContent({ projects }: { projects: ProjectListItem[]
   const FILTERS = ["Все", "Электромонтаж", "Умный дом", "Акустика", "Видеонаблюдение", "СКС"];
 
   return (
-    <section className="pt-16 pb-20 md:pt-20 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
-      <div className="container mx-auto">
-        {/* Title */}
+    <section className="pt-12 pb-20 md:pt-16 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
+      <div className="container mx-auto max-w-5xl px-5">
+        <span
+          className="inline-block text-[10px] sm:text-xs uppercase tracking-[0.12em] px-3 py-1.5 rounded-full mb-4 sm:mb-5"
+          style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
+        >
+          Портфолио
+        </span>
         <h1
-          className="font-heading text-[20vw] md:text-[14vw] lg:text-[12vw] leading-[0.85] tracking-tighter mb-10 md:mb-14"
+          className="font-heading text-2xl sm:text-3xl md:text-4xl leading-snug tracking-tight mb-6 sm:mb-8 max-w-3xl break-words"
           style={{ color: "var(--text)" }}
         >
-          КЕЙСЫ
+          {pageH1}
         </h1>
+        {bannerUrl ? (
+          <div className="relative mb-8 sm:mb-10 w-full aspect-[16/9] max-h-[min(46vh,420px)] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
+            <Image
+              src={bannerUrl}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, min(1024px, 100vw)"
+              priority
+              unoptimized={bannerUrl.startsWith("/uploads/")}
+            />
+          </div>
+        ) : null}
+        <p className="text-sm md:text-base leading-relaxed max-w-3xl mb-10 md:mb-14" style={{ color: "var(--text-muted)" }}>
+          {introText}
+        </p>
+      </div>
 
+      <div className="container mx-auto px-5">
         {/* Filters toggle */}
         <button
           onClick={() => setFiltersOpen(!filtersOpen)}

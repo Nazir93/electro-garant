@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
 type PostItem = {
@@ -122,20 +123,51 @@ function PostCard({
   );
 }
 
-export function BlogPageContent({ posts }: { posts: PostItem[] }) {
+export function BlogPageContent({
+  posts,
+  pageH1,
+  introText,
+  bannerUrl,
+}: {
+  posts: PostItem[];
+  pageH1: string;
+  introText: string;
+  bannerUrl: string | null;
+}) {
   return (
-    <section className="pt-16 pb-20 md:pt-20 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
-      <div className="container mx-auto">
+    <section className="pt-12 pb-20 md:pt-16 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
+      <div className="container mx-auto max-w-5xl px-5">
+        <span
+          className="inline-block text-[10px] sm:text-xs uppercase tracking-[0.12em] px-3 py-1.5 rounded-full mb-4 sm:mb-5"
+          style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
+        >
+          Блог
+        </span>
         <h1
-          className="font-heading text-[20vw] md:text-[14vw] lg:text-[12vw] leading-[0.85] tracking-tighter mb-6"
+          className="font-heading text-2xl sm:text-3xl md:text-4xl leading-snug tracking-tight mb-6 sm:mb-8 max-w-3xl break-words"
           style={{ color: "var(--text)" }}
         >
-          БЛОГ
+          {pageH1}
         </h1>
-        <p className="text-base md:text-lg mb-14 md:mb-20 max-w-xl" style={{ color: "var(--text-muted)" }}>
-          Полезные статьи, кейсы и новости из мира электромонтажа и автоматизации
+        {bannerUrl ? (
+          <div className="relative mb-8 sm:mb-10 w-full aspect-[16/9] max-h-[min(46vh,420px)] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
+            <Image
+              src={bannerUrl}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, min(1024px, 100vw)"
+              priority
+              unoptimized={bannerUrl.startsWith("/uploads/")}
+            />
+          </div>
+        ) : null}
+        <p className="text-sm md:text-base leading-relaxed max-w-3xl mb-10 md:mb-14" style={{ color: "var(--text-muted)" }}>
+          {introText}
         </p>
+      </div>
 
+      <div className="container mx-auto px-5">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
           {posts.map((post, i) => (
             <PostCard key={post.id} post={post} index={i} />

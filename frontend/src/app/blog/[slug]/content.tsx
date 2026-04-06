@@ -1,10 +1,17 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { Calendar, Tag } from "lucide-react";
 import { BackNavLink } from "@/components/ui/back-nav";
 import { formatArticleBody } from "@/lib/html-content";
 import { EditorialPageShell } from "@/components/editorial/editorial-page-shell";
-import { EditorialBanner } from "@/components/editorial/editorial-banner";
+import { EditorialBanner, type EditorialSlide } from "@/components/editorial/editorial-banner";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
+
+function lightboxIndexForSlide(slides: EditorialSlide[], slideIndex: number): number | null {
+  if (slides[slideIndex]?.type !== "image") return null;
+  return slides.slice(0, slideIndex).filter((s) => s.type === "image").length;
+}
 
 interface BlogPost {
   title: string;
@@ -27,7 +34,13 @@ function blogBannerSlides(post: Pick<BlogPost, "coverImage" | "coverVideo">) {
 }
 
 export function BlogPostContent({ post }: { post: BlogPost }) {
-  const bannerSlides = blogBannerSlides(post);
+  const bannerSlides = useMemo(() => blogBannerSlides(post), [post]);
+  const lightboxUrls = useMemo(
+    () => bannerSlides.filter((s) => s.type === "image").map((s) => s.url),
+    [bannerSlides]
+  );
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const date = new Date(post.createdAt).toLocaleDateString("ru-RU", {
     day: "numeric",
     month: "long",
@@ -54,23 +67,45 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
   );
 
   return (
-    <EditorialPageShell
-      backHref="/blog"
-      backLabel="Все статьи"
-      meta={meta}
-      title={post.title}
-      titleClassName="font-heading text-2xl sm:text-3xl md:text-[1.75rem] lg:text-4xl leading-snug tracking-tight mb-6 break-words"
-      lead={post.excerpt}
-      footer={<BackNavLink href="/blog">Вернуться к статьям</BackNavLink>}
-    >
-      {bannerSlides.length > 0 ? (
-        <EditorialBanner slides={bannerSlides} alt={post.title} />
-      ) : null}
-      <div
-        className="prose prose-lg max-w-none"
-        style={{ color: "var(--text)" }}
-        dangerouslySetInnerHTML={{ __html: formatArticleBody(post.content) }}
+    <>
+      <ImageLightbox
+        urls={lightboxUrls}
+        index={lightboxIndex}
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onIndexChange={setLightboxIndex}
+        alt={post.title}
       />
-    </EditorialPageShell>
+      <EditorialPageShell
+        backHref="/blog"
+        backLabel="Все статьи"
+        meta={meta}
+        title={post.title}
+        titleClassName="font-heading text-2xl sm:text-3xl md:text-[1.75rem] lg:text-4xl leading-snug tracking-tight mb-6 break-words"
+        mediaAfterTitle={
+          bannerSlides.length > 0 ? (
+            <EditorialBanner
+              slides={bannerSlides}
+              alt={post.title}
+              borderedFrame
+              onImageClick={(slideIdx) => {
+                const li = lightboxIndexForSlide(bannerSlides, slideIdx);
+                if (li === null) return;
+                setLightboxIndex(li);
+                setLightboxOpen(true);
+              }}
+            />
+          ) : null
+        }
+        lead={post.excerpt}
+        footer={<BackNavLink href="/blog">Вернуться к статьям</BackNavLink>}
+      >
+        <div
+          className="prose prose-lg max-w-none"
+          style={{ color: "var(--text)" }}
+          dangerouslySetInnerHTML={{ __html: formatArticleBody(post.content) }}
+        />
+      </EditorialPageShell>
+    </>
   );
 }

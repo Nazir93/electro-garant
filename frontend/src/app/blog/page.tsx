@@ -1,6 +1,6 @@
 import { SITE_NAME, CITY } from "@/lib/constants";
 import { prisma } from "@/lib/db";
-import { getPageMeta } from "@/lib/get-page-meta";
+import { getPageMeta, getPageMetaFields } from "@/lib/get-page-meta";
 import { BlogPageContent } from "./content";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +49,18 @@ async function getPosts() {
   return FALLBACK_POSTS;
 }
 
+const BLOG_INTRO_FALLBACK =
+  "Полезные статьи, кейсы и новости из мира электромонтажа и автоматизации.";
+
 export default async function BlogPage() {
-  const posts = await getPosts();
-  return <BlogPageContent posts={posts} />;
+  const [posts, meta] = await Promise.all([getPosts(), getPageMetaFields("/blog")]);
+
+  return (
+    <BlogPageContent
+      posts={posts}
+      pageH1={meta.h1 || "Блог"}
+      introText={meta.description || BLOG_INTRO_FALLBACK}
+      bannerUrl={meta.ogImage}
+    />
+  );
 }
