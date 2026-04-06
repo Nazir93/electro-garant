@@ -30,6 +30,11 @@ export async function POST(request: NextRequest) {
     const slug = body.slug || generateSlug(body.title);
     const { videoUrls, videoUrl } = normalizedProjectVideos(body);
 
+    const galleryUrls: string[] = Array.isArray(body.galleryUrls)
+      ? body.galleryUrls.filter((u: unknown) => typeof u === "string" && (u as string).trim())
+      : [];
+    const coverImage = body.coverImage || galleryUrls[0] || "";
+
     const project = await prisma.project.create({
       data: {
         slug,
@@ -38,27 +43,29 @@ export async function POST(request: NextRequest) {
         service: body.service || "ELECTRICAL",
         area: body.area ? parseInt(body.area) : null,
         description: body.description || "",
-        coverImage: body.coverImage || "",
+        coverImage,
         videoUrls,
         videoUrl,
         location: body.location || null,
         year: body.year || null,
         industry: body.industry || null,
         projectType: body.projectType || null,
-        features: body.features || null,
-        goals: body.goals || null,
-        leftText1: body.leftText1 || null,
-        rightText1: body.rightText1 || null,
-        leftText2: body.leftText2 || null,
-        rightText2: body.rightText2 || null,
-        showcaseLabel1: body.showcaseLabel1 || null,
-        showcaseLabel2: body.showcaseLabel2 || null,
-        showcaseImage1: body.showcaseImage1 || null,
-        showcaseImage2: body.showcaseImage2 || null,
         published: body.published ?? false,
         order: body.order ?? 0,
       },
     });
+
+    if (galleryUrls.length > 0) {
+      await prisma.projectImage.createMany({
+        data: galleryUrls.map((url: string, i: number) => ({
+          projectId: project.id,
+          url,
+          alt: "",
+          order: i,
+        })),
+      });
+    }
+
     return NextResponse.json(project, { status: 201 });
   } catch (error) {
     console.error("[ADMIN PROJECT CREATE]", error);

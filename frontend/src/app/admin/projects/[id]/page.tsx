@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Save, ArrowLeft, Trash2, Plus, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
-import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 import { AdminVideoListUpload } from "@/components/admin/admin-video-list-upload";
 import { mergeProjectVideoUrls } from "@/lib/portfolio-data";
 import { AdminFormSection } from "@/components/admin/admin-form-section";
@@ -124,10 +123,11 @@ export default function EditProjectPage() {
   async function handleSave() {
     setSaving(true);
     try {
+      const coverImage = images.length > 0 ? images[0].url : form.coverImage;
       const res = await fetch(`/api/admin/projects/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, coverImage }),
       });
       if (res.ok) router.push("/admin/projects");
     } catch { /* */ }
@@ -234,13 +234,6 @@ export default function EditProjectPage() {
           />
         </div>
 
-        <AdminMediaUpload
-          label="Обложка проекта (шапка страницы и карусель)"
-          accept="image"
-          value={form.coverImage}
-          onChange={(url) => set("coverImage", url)}
-        />
-
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-white/40 mb-1">Порядок</label>
@@ -257,8 +250,8 @@ export default function EditProjectPage() {
       </AdminFormSection>
 
       <AdminFormSection
-        title={`Галерея (${images.length})`}
-        subtitle="Дополнительные фото в карусели баннера на странице кейса (после обложки)."
+        title={`Фото проекта (${images.length})`}
+        subtitle="Все фото отображаются в баннере. Первое фото — обложка (карточка в списке)."
       >
         <div className="flex flex-col items-end gap-1 -mt-2 mb-2">
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C9A84C]/10 text-[#C9A84C] text-xs font-semibold cursor-pointer hover:bg-[#C9A84C]/20 transition-colors">
@@ -286,9 +279,14 @@ export default function EditProjectPage() {
           </div>
         ) : (
           <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-            {images.map((img) => (
+            {images.map((img, i) => (
               <div key={img.id} className="relative group rounded-lg overflow-hidden aspect-square bg-white/[0.03]">
                 <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
+                {i === 0 && (
+                  <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-[#C9A84C] text-black">
+                    Обложка
+                  </span>
+                )}
                 <button
                   onClick={() => removeImage(img.id)}
                   className="absolute top-1 right-1 p-1 rounded-md bg-black/60 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
