@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { normalizedProjectVideos } from "@/lib/admin-project-videos";
+import { readProjectVideoUrlsArray } from "@/lib/portfolio-data";
 import { prisma } from "@/lib/db";
 import { unlink } from "fs/promises";
 import path from "path";
@@ -99,7 +100,7 @@ export async function DELETE(
       project.showcaseImage1,
       project.showcaseImage2,
       project.videoUrl,
-      ...(project.videoUrls ?? []),
+      ...readProjectVideoUrlsArray(project),
       ...project.images.map((i) => i.url),
     ];
     await Promise.allSettled(urls.map(tryDeleteFile));

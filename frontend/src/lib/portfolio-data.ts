@@ -1,3 +1,11 @@
+/** Читает videoUrls из объекта Prisma/JSON без привязки к сгенерированным типам (после миграции поле есть в БД). */
+export function readProjectVideoUrlsArray(row: unknown): string[] {
+  if (!row || typeof row !== "object") return [];
+  const raw = (row as Record<string, unknown>).videoUrls;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((u): u is string => typeof u === "string" && u.trim().length > 0);
+}
+
 /** Объединяет массив видео и устаревшее поле videoUrl без дубликатов. */
 export function mergeProjectVideoUrls(
   videoUrls: string[] | undefined | null,
