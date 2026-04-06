@@ -26,6 +26,7 @@ export default async function PortfolioPage() {
       pageH1={meta.h1 || "Портфолио"}
       introText={meta.description || PORTFOLIO_INTRO_FALLBACK}
       bannerUrl={meta.ogImage}
+      bodyHtml={meta.bodyHtml}
     />
   );
 }

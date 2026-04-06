@@ -61,6 +61,7 @@ export default async function BlogPage() {
       pageH1={meta.h1 || "Блог"}
       introText={meta.description || BLOG_INTRO_FALLBACK}
       bannerUrl={meta.ogImage}
+      bodyHtml={meta.bodyHtml}
     />
   );
 }

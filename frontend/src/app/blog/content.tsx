@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { formatArticleBody, PAGE_INTRO_PROSE_CLASS } from "@/lib/html-content";
 
 type PostItem = {
   id: string;
@@ -128,11 +129,13 @@ export function BlogPageContent({
   pageH1,
   introText,
   bannerUrl,
+  bodyHtml,
 }: {
   posts: PostItem[];
   pageH1: string;
   introText: string;
   bannerUrl: string | null;
+  bodyHtml?: string | null;
 }) {
   return (
     <section className="pt-12 pb-20 md:pt-16 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>
@@ -162,9 +165,18 @@ export function BlogPageContent({
             />
           </div>
         ) : null}
-        <p className="text-sm md:text-base leading-relaxed max-w-3xl mb-10 md:mb-14" style={{ color: "var(--text-muted)" }}>
-          {introText}
-        </p>
+        <div
+          className={`${PAGE_INTRO_PROSE_CLASS} ${bodyHtml ? "mb-8 md:mb-10" : "mb-10 md:mb-14"}`}
+          style={{ color: "var(--text-muted)" }}
+          dangerouslySetInnerHTML={{ __html: formatArticleBody(introText) }}
+        />
+        {bodyHtml ? (
+          <div
+            className={`${PAGE_INTRO_PROSE_CLASS} mb-10 md:mb-14 max-w-none w-full overflow-x-auto`}
+            style={{ color: "var(--text-muted)" }}
+            dangerouslySetInnerHTML={{ __html: formatArticleBody(bodyHtml) }}
+          />
+        ) : null}
       </div>
 
       <div className="container mx-auto px-5">

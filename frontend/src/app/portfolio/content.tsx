@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ArrowDown, SlidersHorizontal } from "lucide-react";
 import type { ProjectListItem } from "@/lib/get-projects";
+import { formatArticleBody, PAGE_INTRO_PROSE_CLASS } from "@/lib/html-content";
 
 function LoadMoreButton({ onClick }: { onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
@@ -129,11 +130,13 @@ export function PortfolioPageContent({
   pageH1,
   introText,
   bannerUrl,
+  bodyHtml,
 }: {
   projects: ProjectListItem[];
   pageH1: string;
   introText: string;
   bannerUrl: string | null;
+  bodyHtml?: string | null;
 }) {
   const [showAll, setShowAll] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -180,9 +183,18 @@ export function PortfolioPageContent({
             />
           </div>
         ) : null}
-        <p className="text-sm md:text-base leading-relaxed max-w-3xl mb-10 md:mb-14" style={{ color: "var(--text-muted)" }}>
-          {introText}
-        </p>
+        <div
+          className={`${PAGE_INTRO_PROSE_CLASS} ${bodyHtml ? "mb-8 md:mb-10" : "mb-10 md:mb-14"}`}
+          style={{ color: "var(--text-muted)" }}
+          dangerouslySetInnerHTML={{ __html: formatArticleBody(introText) }}
+        />
+        {bodyHtml ? (
+          <div
+            className={`${PAGE_INTRO_PROSE_CLASS} mb-10 md:mb-14 max-w-none w-full overflow-x-auto sm:max-w-full`}
+            style={{ color: "var(--text-muted)" }}
+            dangerouslySetInnerHTML={{ __html: formatArticleBody(bodyHtml) }}
+          />
+        ) : null}
       </div>
 
       <div className="container mx-auto px-5">
