@@ -4,9 +4,10 @@ import { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import type { EditorialSlide } from "@/components/editorial/editorial-banner";
 
-type ImageLightboxProps = {
-  urls: string[];
+type MediaLightboxProps = {
+  slides: EditorialSlide[];
   index: number;
   open: boolean;
   onClose: () => void;
@@ -15,14 +16,14 @@ type ImageLightboxProps = {
 };
 
 export function ImageLightbox({
-  urls,
+  slides,
   index,
   open,
   onClose,
   onIndexChange,
   alt,
-}: ImageLightboxProps) {
-  const n = urls.length;
+}: MediaLightboxProps) {
+  const n = slides.length;
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -49,8 +50,10 @@ export function ImageLightbox({
 
   if (!open || n === 0 || typeof document === "undefined") return null;
 
-  const url = urls[index];
-  if (!url) return null;
+  const slide = slides[index];
+  if (!slide) return null;
+
+  const kindLabel = slide.type === "video" ? "видео" : "фото";
 
   return createPortal(
     <div
@@ -58,7 +61,7 @@ export function ImageLightbox({
       style={{ backgroundColor: "rgba(0,0,0,0.92)" }}
       role="dialog"
       aria-modal="true"
-      aria-label="Просмотр фото"
+      aria-label="Просмотр медиа"
     >
       <button type="button" className="absolute inset-0 cursor-zoom-out" aria-label="Закрыть" onClick={onClose} />
 
@@ -79,7 +82,7 @@ export function ImageLightbox({
           <button
             type="button"
             className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[210] p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-            aria-label="Предыдущее фото"
+            aria-label="Предыдущее"
             onClick={(e) => {
               e.stopPropagation();
               go(-1);
@@ -90,7 +93,7 @@ export function ImageLightbox({
           <button
             type="button"
             className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[210] p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-            aria-label="Следующее фото"
+            aria-label="Следующее"
             onClick={(e) => {
               e.stopPropagation();
               go(1);
@@ -105,15 +108,27 @@ export function ImageLightbox({
         className="relative z-[205] w-full max-w-[min(96vw,1400px)] h-[min(85vh,90vw)] pointer-events-none"
         onClick={(e) => e.stopPropagation()}
       >
-        <Image
-          src={url}
-          alt={`${alt} — ${index + 1}`}
-          fill
-          className="object-contain pointer-events-auto"
-          sizes="100vw"
-          priority
-          unoptimized={url.startsWith("/uploads/")}
-        />
+        {slide.type === "image" ? (
+          <Image
+            src={slide.url}
+            alt={`${alt} — ${kindLabel} ${index + 1}`}
+            fill
+            className="object-contain pointer-events-auto"
+            sizes="100vw"
+            priority
+            unoptimized={slide.url.startsWith("/uploads/")}
+          />
+        ) : (
+          <video
+            key={`${slide.url}-${index}`}
+            src={slide.url}
+            controls
+            playsInline
+            preload="metadata"
+            className="absolute inset-0 w-full h-full object-contain pointer-events-auto bg-black"
+            aria-label={`${alt} — ${kindLabel} ${index + 1}`}
+          />
+        )}
       </div>
 
       {n > 1 && (

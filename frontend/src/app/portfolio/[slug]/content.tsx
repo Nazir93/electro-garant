@@ -73,14 +73,6 @@ function NavLink({ href, label, direction }: { href: string; label: string; dire
   );
 }
 
-function lightboxIndexForSlide(
-  slides: { type: "image" | "video"; url: string }[],
-  slideIndex: number
-): number | null {
-  if (slides[slideIndex]?.type !== "image") return null;
-  return slides.slice(0, slideIndex).filter((s) => s.type === "image").length;
-}
-
 export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase; allSlugs?: string[] }) {
   const currentIndex = allSlugs.indexOf(project.slug);
   const prevSlug = currentIndex > 0 ? allSlugs[currentIndex - 1] : null;
@@ -93,10 +85,6 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
         mergeProjectVideoUrls(project.videoUrls, project.videoUrl)
       ),
     [project]
-  );
-  const lightboxUrls = useMemo(
-    () => bannerSlides.filter((s) => s.type === "image").map((s) => s.url),
-    [bannerSlides]
   );
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -125,7 +113,7 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
   return (
     <>
       <ImageLightbox
-        urls={lightboxUrls}
+        slides={bannerSlides}
         index={lightboxIndex}
         open={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
@@ -144,10 +132,8 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
               alt={project.title}
               fullBleed={false}
               borderedFrame
-              onImageClick={(slideIdx) => {
-                const li = lightboxIndexForSlide(bannerSlides, slideIdx);
-                if (li === null) return;
-                setLightboxIndex(li);
+              onOpenGallery={(slideIdx) => {
+                setLightboxIndex(slideIdx);
                 setLightboxOpen(true);
               }}
             />

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 
 export type EditorialSlide = { type: "image" | "video"; url: string };
 
@@ -51,8 +51,8 @@ type EditorialBannerProps = {
   fullBleed?: boolean;
   /** Рамка как у лендинга услуги: rounded-xl + border */
   borderedFrame?: boolean;
-  /** Клик по фото — открыть галерею (лайтбокс); видео не вызывает */
-  onImageClick?: (slideIndex: number) => void;
+  /** Открыть полноэкранную галерею (фото + видео в одном списке) */
+  onOpenGallery?: (slideIndex: number) => void;
 };
 
 export function EditorialBanner({
@@ -61,7 +61,7 @@ export function EditorialBanner({
   className = "",
   fullBleed = false,
   borderedFrame = false,
-  onImageClick,
+  onOpenGallery,
 }: EditorialBannerProps) {
   const [index, setIndex] = useState(0);
   const slidesKey = slides.map((s) => `${s.type}:${s.url}`).join("|");
@@ -125,24 +125,36 @@ export function EditorialBanner({
               priority
               unoptimized={current.url.startsWith("/uploads/")}
             />
-            {onImageClick ? (
+            {onOpenGallery ? (
               <button
                 type="button"
                 className="absolute inset-0 z-[5] cursor-zoom-in bg-transparent"
-                aria-label="Открыть фото на весь экран"
-                onClick={() => onImageClick(index)}
+                aria-label="Открыть галерею на весь экран"
+                onClick={() => onOpenGallery(index)}
               />
             ) : null}
           </>
         ) : (
-          <video
-            src={current.url}
-            controls
-            playsInline
-            preload="metadata"
-            className="absolute inset-0 w-full h-full object-cover"
-            aria-label={slides.length > 1 ? `${alt} — видео ${index + 1}` : `${alt} — видео`}
-          />
+          <>
+            <video
+              src={current.url}
+              controls
+              playsInline
+              preload="metadata"
+              className="absolute inset-0 w-full h-full object-cover"
+              aria-label={slides.length > 1 ? `${alt} — видео ${index + 1}` : `${alt} — видео`}
+            />
+            {onOpenGallery ? (
+              <button
+                type="button"
+                className="absolute top-2 right-2 z-[25] flex items-center justify-center p-2.5 rounded-lg bg-black/55 text-white hover:bg-black/75 transition-colors pointer-events-auto"
+                aria-label="Открыть галерею с фото и видео"
+                onClick={() => onOpenGallery(index)}
+              >
+                <Maximize2 size={20} strokeWidth={2} />
+              </button>
+            ) : null}
+          </>
         )}
       </div>
       {slides.length > 1 ? (

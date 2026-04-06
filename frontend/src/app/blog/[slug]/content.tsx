@@ -8,11 +8,6 @@ import { EditorialPageShell } from "@/components/editorial/editorial-page-shell"
 import { EditorialBanner, editorialSlidesFromImagesAndVideo } from "@/components/editorial/editorial-banner";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 
-function lightboxIndexForSlide(slides: { type: "image" | "video"; url: string }[], slideIndex: number): number | null {
-  if (slides[slideIndex]?.type !== "image") return null;
-  return slides.slice(0, slideIndex).filter((s) => s.type === "image").length;
-}
-
 interface BlogPost {
   title: string;
   slug: string;
@@ -34,10 +29,6 @@ function blogBannerSlides(post: BlogPost) {
 
 export function BlogPostContent({ post }: { post: BlogPost }) {
   const bannerSlides = useMemo(() => blogBannerSlides(post), [post]);
-  const lightboxUrls = useMemo(
-    () => bannerSlides.filter((s) => s.type === "image").map((s) => s.url),
-    [bannerSlides]
-  );
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const date = new Date(post.createdAt).toLocaleDateString("ru-RU", {
@@ -68,7 +59,7 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
   return (
     <>
       <ImageLightbox
-        urls={lightboxUrls}
+        slides={bannerSlides}
         index={lightboxIndex}
         open={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
@@ -86,10 +77,8 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
               slides={bannerSlides}
               alt={post.title}
               borderedFrame
-              onImageClick={(slideIdx) => {
-                const li = lightboxIndexForSlide(bannerSlides, slideIdx);
-                if (li === null) return;
-                setLightboxIndex(li);
+              onOpenGallery={(slideIdx) => {
+                setLightboxIndex(slideIdx);
                 setLightboxOpen(true);
               }}
             />

@@ -12,17 +12,28 @@ export function sanitizeArticleHtml(html: string): string {
     .replace(/\son\w+\s*=\s*[^\s>]*/gi, "")
     .replace(/javascript\s*:/gi, "blocked:")
     .replace(/data\s*:\s*text\/html/gi, "blocked:")
-    .replace(/<\/?(iframe|object|embed|form|input|textarea|button|select|meta|link|base|applet)[\s>][^>]*>/gi, "");
+    .replace(/<\/?(iframe|object|embed|form|input|textarea|button|select|meta|link|base|applet)[\s>][^>]*>/gi, "")
+    /** Переносы из Word/редактора внутри абзаца — в пробел, иначе «одно слово на строку» и отступы после точки */
+    .replace(/<br\s*\/?>/gi, " ")
+    /** Убираем лишние пробелы в начале/конце абзацев после вставки из документов */
+    .replace(/<p(\s[^>]*)?>\s+/gi, "<p$1>")
+    .replace(/\s+<\/p>/gi, "</p>");
 }
 
 /** Текст статьи или блока: HTML как есть (после sanitize) или абзацы через пустую строку. */
 export function formatArticleBody(raw: string): string {
   const t = raw.trim();
   if (!t) return "";
-  if (t.startsWith("<")) return sanitizeArticleHtml(t);
+  if (t.startsWith("<")) {
+    return sanitizeArticleHtml(t);
+  }
+  /** Пустая строка = новый абзац; одиночный Enter внутри абзаца не даём — склеиваем в нормальный текст */
   return t
-    .split("\n\n")
+    .split(/\n\s*\n+/)
     .filter(Boolean)
-    .map((p) => `<p>${p.replace(/\n/g, "<br/>")}</p>`)
+    .map((block) => {
+      const oneLine = block.replace(/[\s\n\r]+/g, " ").trim();
+      return `<p>${oneLine}</p>`;
+    })
     .join("");
 }
