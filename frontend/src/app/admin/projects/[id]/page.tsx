@@ -7,7 +7,7 @@ import Link from "next/link";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 import { AdminVideoListUpload } from "@/components/admin/admin-video-list-upload";
 import { mergeProjectVideoUrls } from "@/lib/portfolio-data";
-import { AdminFormCollapsible, AdminFormSection } from "@/components/admin/admin-form-section";
+import { AdminFormSection } from "@/components/admin/admin-form-section";
 import { uploadAdminMedia } from "@/lib/admin-upload";
 import { RichEditor } from "@/components/admin/rich-editor";
 
@@ -57,16 +57,6 @@ export default function EditProjectPage() {
     year: "",
     industry: "",
     projectType: "",
-    features: "",
-    goals: "",
-    leftText1: "",
-    rightText1: "",
-    leftText2: "",
-    rightText2: "",
-    showcaseLabel1: "",
-    showcaseLabel2: "",
-    showcaseImage1: "",
-    showcaseImage2: "",
     published: false,
     order: 0,
   });
@@ -89,16 +79,6 @@ export default function EditProjectPage() {
           year: data.year || "",
           industry: data.industry || "",
           projectType: data.projectType || "",
-          features: data.features || "",
-          goals: data.goals || "",
-          leftText1: data.leftText1 || "",
-          rightText1: data.rightText1 || "",
-          leftText2: data.leftText2 || "",
-          rightText2: data.rightText2 || "",
-          showcaseLabel1: data.showcaseLabel1 || "",
-          showcaseLabel2: data.showcaseLabel2 || "",
-          showcaseImage1: data.showcaseImage1 || "",
-          showcaseImage2: data.showcaseImage2 || "",
           published: data.published ?? false,
           order: data.order ?? 0,
         });
@@ -254,23 +234,6 @@ export default function EditProjectPage() {
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-white/40 mb-1">Особенности (каждая с новой строки)</label>
-          <textarea value={form.features} onChange={(e) => set("features", e.target.value)} rows={3}
-            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-            placeholder={"Электромонтаж силовых сетей\nМультизональная акустика"} />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-white/40 mb-1">Ключевые задачи</label>
-          <RichEditor
-            value={form.goals}
-            onChange={(v) => set("goals", v)}
-            placeholder="Создание надёжной электрической инфраструктуры..."
-            minHeight="80px"
-          />
-        </div>
-
         <AdminMediaUpload
           label="Обложка проекта (шапка страницы и карусель)"
           accept="image"
@@ -295,7 +258,7 @@ export default function EditProjectPage() {
 
       <AdminFormSection
         title={`Галерея (${images.length})`}
-        subtitle="Дополнительные фото в карусели на странице кейса. Если не задать фото полос витрин ниже — подставятся 1-е и 2-е из галереи."
+        subtitle="Дополнительные фото в карусели баннера на странице кейса (после обложки)."
       >
         <div className="flex flex-col items-end gap-1 -mt-2 mb-2">
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C9A84C]/10 text-[#C9A84C] text-xs font-semibold cursor-pointer hover:bg-[#C9A84C]/20 transition-colors">
@@ -338,55 +301,16 @@ export default function EditProjectPage() {
         )}
       </AdminFormSection>
 
-      <AdminFormCollapsible
-        title="Дополнительно: витрины, тексты и видео"
-        subtitle="Широкие полосы и две колонки под ними. Можно заполнить позже."
+      <AdminFormSection
+        title="Видео"
+        subtitle="Видео в карусели баннера (после фото обложки и галереи)."
       >
-        <p className="text-[11px] text-white/35 leading-relaxed -mt-1 mb-2">
-          Подпись на полосе — из поля ниже или из alt соответствующего фото в галерее.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-white/40 mb-1">Текст слева (под 1-й полосой)</label>
-            <RichEditor value={form.leftText1} onChange={(v) => set("leftText1", v)} minHeight="120px" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-white/40 mb-1">Текст справа (под 1-й полосой)</label>
-            <RichEditor value={form.rightText1} onChange={(v) => set("rightText1", v)} minHeight="120px" />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-white/40 mb-1">Текст слева (под 2-й полосой)</label>
-            <RichEditor value={form.leftText2} onChange={(v) => set("leftText2", v)} minHeight="120px" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-white/40 mb-1">Текст справа (под 2-й полосой)</label>
-            <RichEditor value={form.rightText2} onChange={(v) => set("rightText2", v)} minHeight="120px" />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-white/40 mb-1">Подпись на 1-й полосе</label>
-            <input type="text" value={form.showcaseLabel1} onChange={(e) => set("showcaseLabel1", e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-              placeholder="Например: Электрощит на объекте" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-white/40 mb-1">Подпись на 2-й полосе</label>
-            <input type="text" value={form.showcaseLabel2} onChange={(e) => set("showcaseLabel2", e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-              placeholder="Например: Акустика зала" />
-          </div>
-        </div>
-        <AdminMediaUpload label="Фото для 1-й полосы (иначе — 1-е в галерее)" accept="image" value={form.showcaseImage1} onChange={(url) => set("showcaseImage1", url)} />
-        <AdminMediaUpload label="Фото для 2-й полосы (иначе — 2-е в галерее)" accept="image" value={form.showcaseImage2} onChange={(url) => set("showcaseImage2", url)} />
         <AdminVideoListUpload
-          label="Видео в баннере (слайды после фото обложки и галереи)"
+          label="Видео проекта"
           urls={form.videoUrls}
           onChange={(videoUrls) => setForm((prev) => ({ ...prev, videoUrls }))}
         />
-      </AdminFormCollapsible>
+      </AdminFormSection>
     </div>
   );
 }
