@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { normalizedProjectVideos } from "@/lib/admin-project-videos";
 import { prisma } from "@/lib/db";
 import { unlink } from "fs/promises";
 import path from "path";
@@ -37,6 +38,11 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
+    const videoPatch =
+      body.videoUrls !== undefined || body.videoUrl !== undefined
+        ? normalizedProjectVideos(body)
+        : null;
+
     const project = await prisma.project.update({
       where: { id: params.id },
       data: {
@@ -47,7 +53,7 @@ export async function PUT(
         ...(body.area !== undefined && { area: body.area ? parseInt(body.area) : null }),
         ...(body.description !== undefined && { description: body.description }),
         ...(body.coverImage !== undefined && { coverImage: body.coverImage }),
-        ...(body.videoUrl !== undefined && { videoUrl: body.videoUrl || null }),
+        ...(videoPatch && { videoUrls: videoPatch.videoUrls, videoUrl: videoPatch.videoUrl }),
         ...(body.location !== undefined && { location: body.location || null }),
         ...(body.year !== undefined && { year: body.year || null }),
         ...(body.industry !== undefined && { industry: body.industry || null }),
@@ -93,6 +99,7 @@ export async function DELETE(
       project.showcaseImage1,
       project.showcaseImage2,
       project.videoUrl,
+      ...(project.videoUrls ?? []),
       ...project.images.map((i) => i.url),
     ];
     await Promise.allSettled(urls.map(tryDeleteFile));

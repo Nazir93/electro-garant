@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { normalizedProjectVideos } from "@/lib/admin-project-videos";
 import { generateSlug } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const slug = body.slug || generateSlug(body.title);
+    const { videoUrls, videoUrl } = normalizedProjectVideos(body);
 
     const project = await prisma.project.create({
       data: {
@@ -37,7 +39,8 @@ export async function POST(request: NextRequest) {
         area: body.area ? parseInt(body.area) : null,
         description: body.description || "",
         coverImage: body.coverImage || "",
-        videoUrl: body.videoUrl || null,
+        videoUrls,
+        videoUrl,
         location: body.location || null,
         year: body.year || null,
         industry: body.industry || null,

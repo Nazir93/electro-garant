@@ -7,6 +7,9 @@ services:
       - "3000:3000"
     env_file:
       - ./frontend/.env.local
+    volumes:
+      # Загрузки из админки переживают пересборку контейнера
+      - ./frontend/public/uploads:/app/public/uploads
     depends_on:
       - postgres
     restart: unless-stopped

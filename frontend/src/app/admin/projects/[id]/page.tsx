@@ -5,6 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import { Save, ArrowLeft, Trash2, Plus, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
+import { AdminVideoListUpload } from "@/components/admin/admin-video-list-upload";
+import { mergeProjectVideoUrls } from "@/lib/portfolio-data";
 import { AdminFormCollapsible, AdminFormSection } from "@/components/admin/admin-form-section";
 import { uploadAdminMedia } from "@/lib/admin-upload";
 import { RichEditor } from "@/components/admin/rich-editor";
@@ -40,6 +42,7 @@ export default function EditProjectPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [galleryError, setGalleryError] = useState("");
   const [images, setImages] = useState<ProjectImage[]>([]);
   const [form, setForm] = useState({
     title: "",
@@ -49,7 +52,7 @@ export default function EditProjectPage() {
     area: "",
     description: "",
     coverImage: "",
-    videoUrl: "",
+    videoUrls: [] as string[],
     location: "",
     year: "",
     industry: "",
@@ -81,7 +84,7 @@ export default function EditProjectPage() {
           area: data.area?.toString() || "",
           description: data.description || "",
           coverImage: data.coverImage || "",
-          videoUrl: data.videoUrl || "",
+          videoUrls: mergeProjectVideoUrls(data.videoUrls, data.videoUrl),
           location: data.location || "",
           year: data.year || "",
           industry: data.industry || "",
@@ -112,19 +115,25 @@ export default function EditProjectPage() {
 
   async function addGalleryImage(file: File) {
     setUploadingGallery(true);
-    const { url } = await uploadAdminMedia(file);
-    if (url) {
-      const res = await fetch(`/api/admin/projects/${id}/images`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, alt: "", order: images.length }),
-      });
-      if (res.ok) {
-        const img = await res.json();
-        setImages((prev) => [...prev, img]);
-      }
-    }
+    setGalleryError("");
+    const { url, error } = await uploadAdminMedia(file);
     setUploadingGallery(false);
+    if (error) {
+      setGalleryError(error);
+      return;
+    }
+    if (!url) return;
+    const res = await fetch(`/api/admin/projects/${id}/images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, alt: "", order: images.length }),
+    });
+    if (res.ok) {
+      const img = await res.json();
+      setImages((prev) => [...prev, img]);
+    } else {
+      setGalleryError("Не удалось сохранить фото в галерее.");
+    }
   }
 
   async function removeImage(imageId: string) {
@@ -288,14 +297,23 @@ export default function EditProjectPage() {
         title={`Галерея (${images.length})`}
         subtitle="Дополнительные фото в карусели на странице кейса. Если не задать фото полос витрин ниже — подставятся 1-е и 2-е из галереи."
       >
-        <div className="flex items-center justify-end -mt-2 mb-2">
+        <div className="flex flex-col items-end gap-1 -mt-2 mb-2">
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C9A84C]/10 text-[#C9A84C] text-xs font-semibold cursor-pointer hover:bg-[#C9A84C]/20 transition-colors">
             <Plus size={14} /> {uploadingGallery ? "Загрузка..." : "Добавить фото"}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
-              const files = e.target.files;
-              if (files) Array.from(files).forEach((f) => addGalleryImage(f));
-            }} />
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              disabled={uploadingGallery}
+              onChange={(e) => {
+                const files = e.target.files;
+                if (files) void Promise.all(Array.from(files).map((f) => addGalleryImage(f)));
+                e.target.value = "";
+              }}
+            />
           </label>
+          {galleryError ? <p className="text-red-400 text-xs text-right max-w-md">{galleryError}</p> : null}
         </div>
 
         {images.length === 0 ? (
@@ -363,11 +381,10 @@ export default function EditProjectPage() {
         </div>
         <AdminMediaUpload label="Фото для 1-й полосы (иначе — 1-е в галерее)" accept="image" value={form.showcaseImage1} onChange={(url) => set("showcaseImage1", url)} />
         <AdminMediaUpload label="Фото для 2-й полосы (иначе — 2-е в галерее)" accept="image" value={form.showcaseImage2} onChange={(url) => set("showcaseImage2", url)} />
-        <AdminMediaUpload
-          label="Видео в баннере (слайд после фото обложки и галереи)"
-          accept="video"
-          value={form.videoUrl}
-          onChange={(url) => set("videoUrl", url)}
+        <AdminVideoListUpload
+          label="Видео в баннере (слайды после фото обложки и галереи)"
+          urls={form.videoUrls}
+          onChange={(videoUrls) => setForm((prev) => ({ ...prev, videoUrls }))}
         />
       </AdminFormCollapsible>
     </div>

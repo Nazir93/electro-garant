@@ -1,3 +1,20 @@
+/** Объединяет массив видео и устаревшее поле videoUrl без дубликатов. */
+export function mergeProjectVideoUrls(
+  videoUrls: string[] | undefined | null,
+  videoUrl: string | null | undefined
+): string[] {
+  const raw = [...(videoUrls ?? []), ...(videoUrl?.trim() ? [videoUrl.trim()] : [])];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const u of raw) {
+    const s = u?.trim();
+    if (!s || seen.has(s)) continue;
+    seen.add(s);
+    out.push(s);
+  }
+  return out;
+}
+
 export interface PortfolioCase {
   id: string;
   slug: string;
@@ -22,6 +39,8 @@ export interface PortfolioCase {
   showcaseImage1?: string | null;
   showcaseImage2?: string | null;
   videoUrl?: string | null;
+  /** Несколько роликов в баннере (после фото) */
+  videoUrls?: string[];
   /** Обложка и галерея (для баннера на странице кейса) */
   coverImage?: string | null;
   galleryUrls?: string[];

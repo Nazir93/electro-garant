@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
-import type { PortfolioCase } from "@/lib/portfolio-data";
+import { mergeProjectVideoUrls, type PortfolioCase } from "@/lib/portfolio-data";
 import { EditorialPageShell } from "@/components/editorial/editorial-page-shell";
 import { EditorialBanner, editorialSlidesFromImagesAndVideo } from "@/components/editorial/editorial-banner";
 import { formatArticleBody } from "@/lib/html-content";
@@ -156,7 +156,11 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
   const nextSlug = currentIndex < allSlugs.length - 1 ? allSlugs[currentIndex + 1] : null;
 
   const bannerSlides = useMemo(
-    () => editorialSlidesFromImagesAndVideo(caseBannerUrls(project), project.videoUrl),
+    () =>
+      editorialSlidesFromImagesAndVideo(
+        caseBannerUrls(project),
+        mergeProjectVideoUrls(project.videoUrls, project.videoUrl)
+      ),
     [project]
   );
   const lightboxUrls = useMemo(

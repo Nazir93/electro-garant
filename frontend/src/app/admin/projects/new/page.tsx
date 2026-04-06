@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
+import { AdminVideoListUpload } from "@/components/admin/admin-video-list-upload";
 import { RichEditor } from "@/components/admin/rich-editor";
 
 const CATEGORIES = [
@@ -33,7 +34,7 @@ export default function NewProjectPage() {
     area: "",
     description: "",
     coverImage: "",
-    videoUrl: "",
+    videoUrls: [] as string[],
     location: "",
     year: new Date().getFullYear().toString(),
     industry: "",
@@ -265,11 +266,10 @@ export default function NewProjectPage() {
           onChange={(url) => set("coverImage", url)}
         />
 
-        <AdminMediaUpload
-          label="Видео в баннере (опционально, последний слайд после фото)"
-          accept="video"
-          value={form.videoUrl}
-          onChange={(url) => set("videoUrl", url)}
+        <AdminVideoListUpload
+          label="Видео в баннере (опционально, после фото)"
+          urls={form.videoUrls}
+          onChange={(videoUrls) => setForm((prev) => ({ ...prev, videoUrls }))}
         />
 
         <label className="flex items-center gap-2 text-sm text-white/60">

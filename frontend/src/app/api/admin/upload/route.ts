@@ -157,6 +157,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: savedPath });
   } catch (error) {
     console.error("[UPLOAD]", error);
+    const err = error as NodeJS.ErrnoException;
+    if (err?.code === "EACCES" || err?.code === "EPERM") {
+      return NextResponse.json(
+        {
+          error:
+            "Нет прав на запись в папку uploads (часто в Docker: смонтируйте volume на public/uploads или проверьте владельца каталога).",
+        },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ error: "Ошибка сохранения файла" }, { status: 500 });
   }
 }

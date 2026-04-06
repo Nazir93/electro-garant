@@ -5,7 +5,11 @@ export async function uploadAdminMedia(file: File): Promise<{ url?: string; erro
   const fd = new FormData();
   fd.append("file", file);
   try {
-    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+    const res = await fetch("/api/admin/upload", {
+      method: "POST",
+      body: fd,
+      credentials: "same-origin",
+    });
     const text = await res.text();
     let data: { url?: string; error?: string } = {};
     try {
@@ -18,6 +22,9 @@ export async function uploadAdminMedia(file: File): Promise<{ url?: string; erro
         };
       }
       return { error: res.status >= 500 ? "Ошибка сервера при загрузке" : "Ошибка загрузки" };
+    }
+    if (res.status === 401) {
+      return { error: "Сессия истекла — войдите в админку снова и повторите загрузку." };
     }
     if (!res.ok) return { error: data.error || "Ошибка загрузки" };
     if (data.url) return { url: data.url };

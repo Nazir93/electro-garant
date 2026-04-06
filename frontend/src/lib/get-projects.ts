@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { PORTFOLIO_CASES, type PortfolioCase } from "@/lib/portfolio-data";
+import { mergeProjectVideoUrls, PORTFOLIO_CASES, type PortfolioCase } from "@/lib/portfolio-data";
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
@@ -129,6 +129,7 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioCase | nu
         showcaseImage1: dbProject.showcaseImage1 || dbProject.images[0]?.url || null,
         showcaseImage2: dbProject.showcaseImage2 || dbProject.images[1]?.url || null,
         videoUrl: dbProject.videoUrl || null,
+        videoUrls: mergeProjectVideoUrls(dbProject.videoUrls, dbProject.videoUrl),
         coverImage: dbProject.coverImage || null,
         galleryUrls,
       };

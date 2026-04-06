@@ -10,10 +10,10 @@ function pickImageUrls(urls: (string | null | undefined)[]): string[] {
   return urls.filter((u): u is string => Boolean(u && u.trim()));
 }
 
-/** Картинки по порядку, затем одно видео в конце (без дубликатов по URL). */
+/** Картинки по порядку, затем видео в конце (без дубликатов по URL). */
 export function editorialSlidesFromImagesAndVideo(
   imageUrls: (string | null | undefined)[],
-  videoUrl?: string | null
+  videoInput?: string | null | (string | null | undefined)[]
 ): EditorialSlide[] {
   const seen = new Set<string>();
   const slides: EditorialSlide[] = [];
@@ -22,8 +22,23 @@ export function editorialSlidesFromImagesAndVideo(
     seen.add(u);
     slides.push({ type: "image", url: u });
   }
-  const v = videoUrl?.trim();
-  if (v && !seen.has(v)) slides.push({ type: "video", url: v });
+  const videoList: string[] = [];
+  if (videoInput != null) {
+    if (Array.isArray(videoInput)) {
+      for (const x of videoInput) {
+        const v = x?.trim();
+        if (v) videoList.push(v);
+      }
+    } else {
+      const v = videoInput.trim();
+      if (v) videoList.push(v);
+    }
+  }
+  for (const v of videoList) {
+    if (seen.has(v)) continue;
+    seen.add(v);
+    slides.push({ type: "video", url: v });
+  }
   return slides;
 }
 

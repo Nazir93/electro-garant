@@ -40,7 +40,10 @@ model Project {
   area           Int?
   description    String         @db.Text
   coverImage     String
+  /// Один ролик (совместимость; при заполнении videoUrls дублируется первый элемент)
   videoUrl       String?
+  /// Несколько видео в карусели баннера (после фото)
+  videoUrls      String[] @default([])
   location       String?
   year           String?
   industry       String?
