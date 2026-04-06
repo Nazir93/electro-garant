@@ -116,11 +116,29 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
 
 const INITIAL_COUNT = 5;
 
+const FILTER_MAP: Record<string, string[]> = {
+  "Электромонтаж": ["электромонтаж"],
+  "Умный дом": ["умный дом"],
+  "Акустика": ["акустика", "мультирум"],
+  "Видеонаблюдение": ["видеонаблюдение", "скуд", "безопасность"],
+  "СКС": ["скс", "слаботочные", "кабельн"],
+};
+
 export function PortfolioPageContent({ projects }: { projects: ProjectListItem[] }) {
   const [showAll, setShowAll] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
-  const visibleProjects = showAll ? projects : projects.slice(0, INITIAL_COUNT);
+
+  const filtered = activeFilter === "Все"
+    ? projects
+    : projects.filter((p) => {
+        const keywords = FILTER_MAP[activeFilter];
+        if (!keywords) return true;
+        const haystack = `${p.type} ${p.tag} ${p.industry}`.toLowerCase();
+        return keywords.some((kw) => haystack.includes(kw));
+      });
+
+  const visibleProjects = showAll ? filtered : filtered.slice(0, INITIAL_COUNT);
 
   const FILTERS = ["Все", "Электромонтаж", "Умный дом", "Акустика", "Видеонаблюдение", "СКС"];
 
@@ -186,7 +204,7 @@ export function PortfolioPageContent({ projects }: { projects: ProjectListItem[]
         </div>
 
         {/* Load more */}
-        {!showAll && projects.length > INITIAL_COUNT && (
+        {!showAll && filtered.length > INITIAL_COUNT && (
           <LoadMoreButton onClick={() => setShowAll(true)} />
         )}
       </div>

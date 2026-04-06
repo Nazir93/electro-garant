@@ -32,39 +32,39 @@ enum LeadStatus {
 }
 
 model Project {
-  id          String      @id @default(cuid())
-  slug        String      @unique
-  title       String
-  category    Category
-  service     ServiceType
-  area        Int?
-  description String      @db.Text
-  coverImage  String
-  videoUrl    String?
-  location    String?
-  year        String?
-  industry    String?
-  projectType String?
-  features    String?     @db.Text
-  goals       String?     @db.Text
+  id             String         @id @default(cuid())
+  slug           String         @unique
+  title          String
+  category       Category
+  service        ServiceType
+  area           Int?
+  description    String         @db.Text
+  coverImage     String
+  videoUrl       String?
+  location       String?
+  year           String?
+  industry       String?
+  projectType    String?
+  features       String?        @db.Text
+  goals          String?        @db.Text
   /// Две колонки текста под первой «витриной» на странице кейса
-  leftText1   String?     @db.Text
-  rightText1  String?     @db.Text
+  leftText1      String?        @db.Text
+  rightText1     String?        @db.Text
   /// Две колонки текста под второй «витриной»
-  leftText2   String?     @db.Text
-  rightText2  String?     @db.Text
+  leftText2      String?        @db.Text
+  rightText2     String?        @db.Text
   /// Подпись на полосе-витрине (если пусто — alt 1-й / 2-й фото галереи)
   showcaseLabel1 String?
   showcaseLabel2 String?
   /// Фон витрины (если пусто — url 1-й / 2-й фото галереи)
   showcaseImage1 String?
   showcaseImage2 String?
-  published   Boolean     @default(false)
-  order       Int         @default(0)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  images      ProjectImage[]
-  hotspots    Hotspot[]
+  published      Boolean        @default(false)
+  order          Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  images         ProjectImage[]
+  hotspots       Hotspot[]
 
   @@index([published, service])
   @@index([published, category])
@@ -82,35 +82,35 @@ model ProjectImage {
 }
 
 model Hotspot {
-  id        String  @id @default(cuid())
-  projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  imageUrl  String
-  xPercent  Float
-  yPercent  Float
-  label     String
-  description String @db.Text
+  id          String  @id @default(cuid())
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  imageUrl    String
+  xPercent    Float
+  yPercent    Float
+  label       String
+  description String  @db.Text
 
   @@index([projectId])
 }
 
 model Lead {
-  id        String     @id @default(cuid())
-  name      String
-  phone     String
-  email     String?
-  service   String?
-  pageUrl   String?
-  source    String?
-  utmSource String?
-  utmMedium String?
+  id          String     @id @default(cuid())
+  name        String
+  phone       String
+  email       String?
+  service     String?
+  pageUrl     String?
+  source      String?
+  utmSource   String?
+  utmMedium   String?
   utmCampaign String?
-  utmTerm   String?
-  calcData  Json?
-  status    LeadStatus @default(NEW)
-  notes     String?    @db.Text
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  utmTerm     String?
+  calcData    Json?
+  status      LeadStatus @default(NEW)
+  notes       String?    @db.Text
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@index([status])
   @@index([createdAt])
@@ -137,26 +137,26 @@ model TeamMember {
 }
 
 model Review {
-  id         String      @id @default(cuid())
-  authorName String
+  id          String       @id @default(cuid())
+  authorName  String
   authorPhoto String?
-  objectName String?
-  service    ServiceType?
-  rating     Int         @default(5)
-  text       String      @db.Text
-  videoUrl   String?
-  visible    Boolean     @default(true)
-  order      Int         @default(0)
-  createdAt  DateTime    @default(now())
+  objectName  String?
+  service     ServiceType?
+  rating      Int          @default(5)
+  text        String       @db.Text
+  videoUrl    String?
+  visible     Boolean      @default(true)
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
 }
 
 model Faq {
-  id       String      @id @default(cuid())
+  id       String       @id @default(cuid())
   question String
-  answer   String      @db.Text
+  answer   String       @db.Text
   service  ServiceType?
-  visible  Boolean     @default(true)
-  order    Int         @default(0)
+  visible  Boolean      @default(true)
+  order    Int          @default(0)
 }
 
 model AdminUser {
@@ -185,24 +185,24 @@ model Post {
 }
 
 model Service {
-  id               String      @id @default(cuid())
-  slug             String      @unique
-  title            String
-  shortDescription String      @db.Text
-  serviceType      ServiceType
-  icon             String      @default("zap")
-  coverImage       String?
-  videoUrl         String?
+  id                 String      @id @default(cuid())
+  slug               String      @unique
+  title              String
+  shortDescription   String      @db.Text
+  serviceType        ServiceType
+  icon               String      @default("zap")
+  coverImage         String?
+  videoUrl           String?
   /// Баннер под заголовком H1: широкий экран (отображается от md и выше).
   bannerImageDesktop String?
   /// Баннер для узких экранов (мобильные). Если пусто — на мобиле показывается desktop.
   bannerImageMobile  String?
   /// Блоки лендинга услуги (hero, тексты, FAQ и т.д.). null = шаблон из кода.
-  landingJson      Json?
-  published        Boolean     @default(true)
-  order            Int         @default(0)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  landingJson        Json?
+  published          Boolean     @default(true)
+  order              Int         @default(0)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
   @@index([published, order])
 }
@@ -232,18 +232,18 @@ model ErrorLog {
 }
 
 model PageMeta {
-  id          String  @id @default(cuid())
-  path        String  @unique
-  title       String?
-  description String? @db.Text
-  keywords    String?
-  ogTitle     String?
+  id            String  @id @default(cuid())
+  path          String  @unique
+  title         String?
+  description   String? @db.Text
+  keywords      String?
+  ogTitle       String?
   ogDescription String? @db.Text
-  ogImage     String?
-  h1          String?
+  ogImage       String?
+  h1            String?
   /// Доп. HTML под мета-описанием (напр. страница «Услуги»): теги как в блоге, можно картинки и style
-  bodyHtml    String? @db.Text
-  noindex     Boolean @default(false)
+  bodyHtml      String? @db.Text
+  noindex       Boolean @default(false)
 
   @@index([path])
 }

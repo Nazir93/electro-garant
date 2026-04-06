@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
+import { RichEditor } from "@/components/admin/rich-editor";
 
 const CATEGORIES = [
   "Электромонтаж",
@@ -126,13 +127,11 @@ export default function AdminNewPostPage() {
 
         <div>
           <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Содержание</label>
-          <textarea
+          <RichEditor
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            required
-            rows={12}
-            className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 resize-y focus:outline-none focus:border-[#C9A84C]/40 transition-colors font-mono"
-            placeholder="Текст статьи (поддерживается HTML)"
+            onChange={setContent}
+            placeholder="Текст статьи..."
+            minHeight="300px"
           />
         </div>
 

@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { unlink } from "fs/promises";
+import path from "path";
+
+async function tryDeleteFile(url: string) {
+  if (!url || !url.startsWith("/uploads/")) return;
+  try {
+    const filePath = path.join(process.cwd(), "public", url);
+    await unlink(filePath);
+  } catch { /* file may not exist */ }
+}
 
 export async function POST(
   request: NextRequest,
@@ -35,6 +45,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
     await prisma.projectImage.delete({ where: { id: imageId } });
+    await tryDeleteFile(image.url);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[PROJECT IMAGE DELETE]", error);

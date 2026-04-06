@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
+import { RichEditor } from "@/components/admin/rich-editor";
 
 const CATEGORIES = [
   { value: "RESTAURANT", label: "Ресторан" },
@@ -187,12 +188,11 @@ export default function NewProjectPage() {
 
         <div>
           <label className="block text-xs font-medium text-white/40 mb-1">Описание</label>
-          <textarea
+          <RichEditor
             value={form.description}
-            onChange={(e) => set("description", e.target.value)}
-            rows={4}
-            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+            onChange={(v) => set("description", v)}
             placeholder="Подробное описание проекта..."
+            minHeight="150px"
           />
         </div>
 
@@ -209,12 +209,11 @@ export default function NewProjectPage() {
 
         <div>
           <label className="block text-xs font-medium text-white/40 mb-1">Ключевые задачи</label>
-          <textarea
+          <RichEditor
             value={form.goals}
-            onChange={(e) => set("goals", e.target.value)}
-            rows={2}
-            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+            onChange={(v) => set("goals", v)}
             placeholder="Создание надёжной электрической инфраструктуры..."
+            minHeight="80px"
           />
         </div>
 
@@ -226,25 +225,21 @@ export default function NewProjectPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-white/40 mb-1">Текст слева (под 1-й полосой)</label>
-              <textarea value={form.leftText1} onChange={(e) => set("leftText1", e.target.value)} rows={4}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+              <RichEditor value={form.leftText1} onChange={(v) => set("leftText1", v)} minHeight="120px" />
             </div>
             <div>
               <label className="block text-xs font-medium text-white/40 mb-1">Текст справа (под 1-й полосой)</label>
-              <textarea value={form.rightText1} onChange={(e) => set("rightText1", e.target.value)} rows={4}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+              <RichEditor value={form.rightText1} onChange={(v) => set("rightText1", v)} minHeight="120px" />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-white/40 mb-1">Текст слева (под 2-й полосой)</label>
-              <textarea value={form.leftText2} onChange={(e) => set("leftText2", e.target.value)} rows={4}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+              <RichEditor value={form.leftText2} onChange={(v) => set("leftText2", v)} minHeight="120px" />
             </div>
             <div>
               <label className="block text-xs font-medium text-white/40 mb-1">Текст справа (под 2-й полосой)</label>
-              <textarea value={form.rightText2} onChange={(e) => set("rightText2", e.target.value)} rows={4}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white resize-none focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
+              <RichEditor value={form.rightText2} onChange={(v) => set("rightText2", v)} minHeight="120px" />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

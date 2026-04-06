@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import type { PortfolioCase } from "@/lib/portfolio-data";
 import { EditorialPageShell } from "@/components/editorial/editorial-page-shell";
 import { EditorialBanner, editorialSlidesFromImagesAndVideo } from "@/components/editorial/editorial-banner";
+import { formatArticleBody } from "@/lib/html-content";
 
 function useScrollVisible(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -64,9 +65,11 @@ function TextBlock({ leftText, rightText, accent }: { leftText: string; rightTex
               transform: visible ? "translateX(0)" : "translateX(-30px)",
             }}
           >
-            <p className="text-sm md:text-base leading-[1.8]" style={{ color: "var(--text-muted)" }}>
-              {leftText}
-            </p>
+            <div
+              className="prose prose-sm max-w-none text-sm md:text-base leading-[1.8]"
+              style={{ color: "var(--text-muted)" }}
+              dangerouslySetInnerHTML={{ __html: formatArticleBody(leftText) }}
+            />
           </div>
           <div
             className="transition-all duration-700 ease-out"
@@ -76,9 +79,11 @@ function TextBlock({ leftText, rightText, accent }: { leftText: string; rightTex
               transitionDelay: "100ms",
             }}
           >
-            <p className="text-sm md:text-base leading-[1.8]" style={{ color: "var(--text-muted)" }}>
-              {rightText}
-            </p>
+            <div
+              className="prose prose-sm max-w-none text-sm md:text-base leading-[1.8]"
+              style={{ color: "var(--text-muted)" }}
+              dangerouslySetInnerHTML={{ __html: formatArticleBody(rightText) }}
+            />
           </div>
         </div>
       </div>
@@ -191,7 +196,15 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
         meta={metaPills}
         title={project.title}
         belowTitle={metaGrid}
-        lead={project.heroDescription}
+        lead={
+          project.heroDescription ? (
+            <div
+              className="prose prose-sm md:prose-base max-w-none"
+              style={{ color: "var(--text-muted)" }}
+              dangerouslySetInnerHTML={{ __html: formatArticleBody(project.heroDescription) }}
+            />
+          ) : null
+        }
         fullWidthTop={
           <EditorialBanner
             fullBleed
@@ -201,36 +214,44 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
         }
       />
 
-      <section className="pb-16 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
-        <div className="container mx-auto max-w-3xl px-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
-            <div>
-              <ul className="space-y-3">
-                {project.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm" style={{ color: "var(--text-muted)" }}>
-                    <span
-                      className="mt-1.5 w-1 h-1 rounded-full shrink-0"
-                      style={{ backgroundColor: "var(--accent)" }}
-                    />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="border-t md:border-t-0 md:border-l pt-8 md:pt-0 md:pl-12" style={{ borderColor: "var(--border)" }}>
-              <p
-                className="text-[10px] uppercase tracking-[0.15em] font-bold mb-2"
-                style={{ color: "var(--text)" }}
-              >
-                Ключевые задачи
-              </p>
-              <p className="text-sm md:text-base leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                {project.goals}
-              </p>
+      {(project.features.length > 0 || project.goals.trim()) && (
+        <section className="pb-16 md:pb-24" style={{ backgroundColor: "var(--bg)" }}>
+          <div className="container mx-auto max-w-3xl px-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+              {project.features.length > 0 && (
+                <div>
+                  <ul className="space-y-3">
+                    {project.features.map((f, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm" style={{ color: "var(--text-muted)" }}>
+                        <span
+                          className="mt-1.5 w-1 h-1 rounded-full shrink-0"
+                          style={{ backgroundColor: "var(--accent)" }}
+                        />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {project.goals.trim() && (
+                <div className="border-t md:border-t-0 md:border-l pt-8 md:pt-0 md:pl-12" style={{ borderColor: "var(--border)" }}>
+                  <p
+                    className="text-[10px] uppercase tracking-[0.15em] font-bold mb-2"
+                    style={{ color: "var(--text)" }}
+                  >
+                    Ключевые задачи
+                  </p>
+                  <div
+                    className="prose prose-sm max-w-none text-sm md:text-base leading-relaxed"
+                    style={{ color: "var(--text-muted)" }}
+                    dangerouslySetInnerHTML={{ __html: formatArticleBody(project.goals) }}
+                  />
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {project.leftText1.trim() || project.rightText1.trim() ? (
         <TextBlock leftText={project.leftText1} rightText={project.rightText1} />

@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { unlink } from "fs/promises";
+import path from "path";
+
+async function tryDeleteFile(url: string | null | undefined) {
+  if (!url || !url.startsWith("/uploads/")) return;
+  try {
+    const filePath = path.join(process.cwd(), "public", url);
+    await unlink(filePath);
+  } catch { /* file may not exist */ }
+}
 
 export async function GET(
   _request: NextRequest,
@@ -68,7 +78,25 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const project = await prisma.project.findUnique({
+      where: { id: params.id },
+      include: { images: { select: { url: true } } },
+    });
+    if (!project) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     await prisma.project.delete({ where: { id: params.id } });
+
+    const urls = [
+      project.coverImage,
+      project.showcaseImage1,
+      project.showcaseImage2,
+      project.videoUrl,
+      ...project.images.map((i) => i.url),
+    ];
+    await Promise.allSettled(urls.map(tryDeleteFile));
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[ADMIN PROJECT DELETE]", error);

@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/db";
 import { PORTFOLIO_CASES, type PortfolioCase } from "@/lib/portfolio-data";
 
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+
 export interface ProjectListItem {
   id: string;
   slug: string;
@@ -67,7 +71,7 @@ export async function getProjectsList(): Promise<ProjectListItem[]> {
         year: p.year || "",
         area: p.area ? `${p.area} м²` : "",
         coverImage: p.coverImage,
-        shortDescription: p.description.substring(0, 200),
+        shortDescription: stripHtml(p.description).substring(0, 200),
       }));
     }
   } catch {
@@ -112,7 +116,7 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioCase | nu
         year: dbProject.year || new Date(dbProject.createdAt).getFullYear().toString(),
         area: dbProject.area ? `${dbProject.area} м²` : "",
         location: dbProject.location || "",
-        shortDescription: dbProject.description.substring(0, 200),
+        shortDescription: stripHtml(dbProject.description).substring(0, 200),
         heroDescription: dbProject.description,
         features,
         goals: dbProject.goals || "",

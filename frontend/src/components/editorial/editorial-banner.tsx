@@ -91,6 +91,7 @@ export function EditorialBanner({ slides, alt, className = "", fullBleed = false
             className="object-cover"
             sizes={fullBleed ? "100vw" : "(max-width: 768px) 100vw, 720px"}
             priority
+            unoptimized={current.url.startsWith("/uploads/")}
           />
         ) : (
           <video
