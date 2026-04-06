@@ -38,7 +38,7 @@ export function AdminVideoListUpload({
           key={`${url}-${i}`}
           className="flex gap-2 items-start rounded-xl border border-white/[0.08] p-2 bg-white/[0.02]"
         >
-          <video src={url} controls className="max-h-40 flex-1 rounded-lg bg-black/40 w-full max-w-lg" />
+          <video src={url} controls playsInline preload="metadata" className="max-h-40 flex-1 rounded-lg bg-black/40 w-full max-w-lg" />
           <button
             type="button"
             onClick={() => remove(i)}
