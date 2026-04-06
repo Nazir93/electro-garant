@@ -48,6 +48,7 @@ interface PortfolioProject {
   year: string;
   shortDescription: string;
   coverImage?: string | null;
+  videoUrl?: string | null;
 }
 
 function PortfolioRow({ project, index, isOpen, onToggle }: { project: PortfolioProject; index: number; isOpen: boolean; onToggle: () => void }) {
@@ -135,7 +136,16 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
               className="aspect-[4/3] md:aspect-[16/10] flex items-center justify-center rounded-lg overflow-hidden relative"
               style={{ backgroundColor: "var(--bg-secondary)" }}
             >
-              {project.coverImage ? (
+              {project.videoUrl ? (
+                <video
+                  src={project.videoUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : project.coverImage ? (
                 <Image
                   src={project.coverImage}
                   alt={project.title}
@@ -169,6 +179,7 @@ export function PortfolioSection({ projects: propProjects }: { projects?: Projec
         year: p.year,
         shortDescription: p.shortDescription,
         coverImage: p.coverImage,
+        videoUrl: p.videoUrl,
       }))
     : PORTFOLIO_CASES.map((c) => ({
         id: c.id,
@@ -178,6 +189,7 @@ export function PortfolioSection({ projects: propProjects }: { projects?: Projec
         year: c.year,
         shortDescription: c.shortDescription,
         coverImage: null,
+        videoUrl: c.videoUrl ?? null,
       }));
 
   return (

@@ -49,6 +49,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, excerpt, content, category, coverImage, published } = body;
     const coverVideos = normalizeVideoList(body.coverVideos, body.coverVideo);
+    const galleryUrls = Array.isArray(body.galleryUrls)
+      ? body.galleryUrls.filter((u: unknown) => typeof u === "string" && (u as string).trim())
+      : [];
 
     if (!title || !excerpt || !content || !category) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -71,6 +74,7 @@ export async function POST(request: NextRequest) {
         coverImage: coverImage || null,
         coverVideos: coverVideos as string[],
         coverVideo: coverVideos[0] ?? null,
+        galleryUrls: galleryUrls as string[],
         published: published ?? false,
       } as Parameters<typeof prisma.post.create>[0]["data"],
     });

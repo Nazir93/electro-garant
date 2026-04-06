@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Plus, Image as ImageIcon } from "lucide-react";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 import { AdminVideoListUpload } from "@/components/admin/admin-video-list-upload";
 import { RichEditor } from "@/components/admin/rich-editor";
+import { uploadAdminMedia } from "@/lib/admin-upload";
 
 const CATEGORIES = [
   "Электромонтаж",
@@ -32,6 +33,9 @@ export default function AdminEditPostPage() {
   const [published, setPublished] = useState(false);
   const [coverImage, setCoverImage] = useState("");
   const [coverVideos, setCoverVideos] = useState<string[]>([]);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [galleryError, setGalleryError] = useState("");
 
   useEffect(() => {
     fetch(`/api/admin/posts/${params.id}`)
@@ -47,6 +51,7 @@ export default function AdminEditPostPage() {
           setCategory(data.category);
           setPublished(data.published);
           setCoverImage(data.coverImage || "");
+          setGalleryUrls(Array.isArray(data.galleryUrls) ? data.galleryUrls : []);
           {
             const vids: string[] = [];
             const seen = new Set<string>();
@@ -60,6 +65,19 @@ export default function AdminEditPostPage() {
       .catch(() => setError("Ошибка загрузки"))
       .finally(() => setLoading(false));
   }, [params.id]);
+
+  async function addGalleryImage(file: File) {
+    setUploadingGallery(true);
+    setGalleryError("");
+    const { url, error: uploadError } = await uploadAdminMedia(file);
+    setUploadingGallery(false);
+    if (uploadError) { setGalleryError(uploadError); return; }
+    if (url) setGalleryUrls((prev) => [...prev, url]);
+  }
+
+  function removeGalleryImage(index: number) {
+    setGalleryUrls((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -79,6 +97,7 @@ export default function AdminEditPostPage() {
           published,
           coverImage: coverImage || null,
           coverVideos,
+          galleryUrls,
         }),
       });
 
@@ -151,14 +170,61 @@ export default function AdminEditPostPage() {
         </div>
 
         <AdminMediaUpload
-          label="Обложка статьи (фото в баннере)"
+          label="Обложка (первое фото в баннере)"
           accept="image"
           value={coverImage}
           onChange={setCoverImage}
         />
 
+        {/* Галерея фото */}
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-white/50 uppercase tracking-wider">Галерея ({galleryUrls.length})</p>
+              <p className="text-[11px] text-white/30 mt-0.5">Дополнительные фото в баннере (после обложки, перед видео)</p>
+            </div>
+            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C9A84C]/10 text-[#C9A84C] text-xs font-semibold cursor-pointer hover:bg-[#C9A84C]/20 transition-colors">
+              <Plus size={14} /> {uploadingGallery ? "Загрузка..." : "Добавить фото"}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={uploadingGallery}
+                onChange={(e) => {
+                  const files = e.target.files;
+                  if (files) void Promise.all(Array.from(files).map((f) => addGalleryImage(f)));
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          </div>
+          {galleryError && <p className="text-red-400 text-xs">{galleryError}</p>}
+          {galleryUrls.length === 0 ? (
+            <div className="text-center py-6">
+              <ImageIcon size={28} className="mx-auto mb-1.5 text-white/10" />
+              <p className="text-xs text-white/20">Нет изображений</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+              {galleryUrls.map((url, i) => (
+                <div key={`${url}-${i}`} className="relative group rounded-lg overflow-hidden aspect-square bg-white/[0.03]">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeGalleryImage(i)}
+                    className="absolute top-1 right-1 p-1 rounded-md bg-black/60 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <AdminVideoListUpload
-          label="Видео в баннере (после обложки)"
+          label="Видео в баннере (после фото)"
           urls={coverVideos}
           onChange={setCoverVideos}
         />

@@ -51,6 +51,7 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
+  const raw = post as unknown as { coverVideos?: string[]; galleryUrls?: string[] };
   return (
     <BlogPostContent
       post={{
@@ -61,7 +62,8 @@ export default async function BlogPostPage({ params }: Props) {
         category: post.category,
         coverImage: post.coverImage,
         coverVideo: post.coverVideo,
-        coverVideos: (post as unknown as { coverVideos?: string[] }).coverVideos ?? [],
+        coverVideos: raw.coverVideos ?? [],
+        galleryUrls: raw.galleryUrls ?? [],
         createdAt: post.createdAt.toISOString(),
       }}
     />

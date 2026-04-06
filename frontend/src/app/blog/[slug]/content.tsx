@@ -5,10 +5,10 @@ import { Calendar, Tag } from "lucide-react";
 import { BackNavLink } from "@/components/ui/back-nav";
 import { formatArticleBody } from "@/lib/html-content";
 import { EditorialPageShell } from "@/components/editorial/editorial-page-shell";
-import { EditorialBanner, type EditorialSlide } from "@/components/editorial/editorial-banner";
+import { EditorialBanner, editorialSlidesFromImagesAndVideo } from "@/components/editorial/editorial-banner";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 
-function lightboxIndexForSlide(slides: EditorialSlide[], slideIndex: number): number | null {
+function lightboxIndexForSlide(slides: { type: "image" | "video"; url: string }[], slideIndex: number): number | null {
   if (slides[slideIndex]?.type !== "image") return null;
   return slides.slice(0, slideIndex).filter((s) => s.type === "image").length;
 }
@@ -22,20 +22,14 @@ interface BlogPost {
   coverImage: string | null;
   coverVideo: string | null;
   coverVideos?: string[];
+  galleryUrls?: string[];
   createdAt: string;
 }
 
 function blogBannerSlides(post: BlogPost) {
-  const slides: { type: "image" | "video"; url: string }[] = [];
-  const seen = new Set<string>();
-  const img = post.coverImage?.trim();
-  if (img) { seen.add(img); slides.push({ type: "image", url: img }); }
+  const imageUrls: (string | null | undefined)[] = [post.coverImage, ...(post.galleryUrls ?? [])];
   const videoArr = post.coverVideos?.length ? post.coverVideos : post.coverVideo ? [post.coverVideo] : [];
-  for (const v of videoArr) {
-    const s = v?.trim();
-    if (s && !seen.has(s)) { seen.add(s); slides.push({ type: "video", url: s }); }
-  }
-  return slides;
+  return editorialSlidesFromImagesAndVideo(imageUrls, videoArr);
 }
 
 export function BlogPostContent({ post }: { post: BlogPost }) {
@@ -86,7 +80,6 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
         backLabel="Все статьи"
         meta={meta}
         title={post.title}
-        titleClassName="font-heading text-2xl sm:text-3xl md:text-[1.75rem] lg:text-4xl leading-snug tracking-tight mb-6 break-words"
         mediaAfterTitle={
           bannerSlides.length > 0 ? (
             <EditorialBanner

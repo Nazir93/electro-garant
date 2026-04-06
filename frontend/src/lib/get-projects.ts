@@ -20,6 +20,7 @@ export interface ProjectListItem {
   year: string;
   area: string;
   coverImage: string | null;
+  videoUrl: string | null;
   shortDescription: string;
 }
 
@@ -58,6 +59,7 @@ export async function getProjectsList(): Promise<ProjectListItem[]> {
         service: true,
         area: true,
         coverImage: true,
+        videoUrl: true,
         description: true,
         industry: true,
         projectType: true,
@@ -76,6 +78,7 @@ export async function getProjectsList(): Promise<ProjectListItem[]> {
         year: p.year || "",
         area: p.area ? `${p.area} м²` : "",
         coverImage: p.coverImage,
+        videoUrl: p.videoUrl || null,
         shortDescription: stripHtml(p.description).substring(0, 200),
       }));
     }
@@ -93,6 +96,7 @@ export async function getProjectsList(): Promise<ProjectListItem[]> {
     year: c.year,
     area: c.area,
     coverImage: null,
+    videoUrl: c.videoUrl ?? null,
     shortDescription: c.shortDescription,
   }));
 }

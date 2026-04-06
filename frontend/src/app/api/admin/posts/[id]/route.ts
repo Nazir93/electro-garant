@@ -44,6 +44,9 @@ export async function PUT(
           return { coverVideos: vids, coverVideo: vids[0] ?? null };
         })()
       : null;
+    const galleryPatch = body.galleryUrls !== undefined
+      ? { galleryUrls: Array.isArray(body.galleryUrls) ? body.galleryUrls.filter((u: unknown) => typeof u === "string" && (u as string).trim()) : [] }
+      : null;
 
     const post = await prisma.post.update({
       where: { id: params.id },
@@ -55,6 +58,7 @@ export async function PUT(
         ...(category !== undefined && { category }),
         ...(coverImage !== undefined && { coverImage }),
         ...(videoPatch && videoPatch),
+        ...(galleryPatch && galleryPatch),
         ...(published !== undefined && { published }),
       } as Parameters<typeof prisma.post.update>[0]["data"],
     });
