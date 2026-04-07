@@ -7,6 +7,7 @@ export const LEAD_SOURCE_OPTIONS: { value: string; label: string; hint?: string 
   { value: "calculator", label: "Ориентировочный расчёт", hint: "Модалка: калькулятор стоимости" },
   { value: "offer-page", label: "Оффер: обратная связь", hint: "/offer/form" },
   { value: "offer-pizza", label: "Оффер: пицца / комментарий", hint: "Бонус после таймера" },
+  { value: "calculator-pizza", label: "Расчёт: пицца / комментарий", hint: "Бонус после ориентировочного расчёта" },
   { value: "partner-partner", label: "Партнёры: подряд", hint: "/partners/partner" },
   { value: "partner-supplier", label: "Партнёры: поставщик", hint: "/partners/supplier" },
 ];

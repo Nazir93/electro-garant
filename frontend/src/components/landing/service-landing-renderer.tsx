@@ -59,7 +59,9 @@ export async function ServiceLandingRenderer({
               />
             );
           case "showcase":
-            return <LandingShowcase key={i} label={section.label} dark={section.dark} />;
+            return (
+              <LandingShowcase key={i} label={section.label} dark={section.dark} imageUrl={"imageUrl" in section ? section.imageUrl : undefined} />
+            );
           case "textBlock":
             return (
               <LandingTextBlock

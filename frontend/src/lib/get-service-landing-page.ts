@@ -5,6 +5,7 @@ import {
   getDefaultMetaForServiceSlug,
   isServicePageSlug,
   resolveServiceLandingDocument,
+  stripShowcaseSections,
   type ServicePageSlug,
   SERVICE_PAGE_SLUG_TO_TYPE,
 } from "@/lib/service-landing-defaults";
@@ -141,11 +142,13 @@ export async function getServiceLandingPageData(slug: string): Promise<ServiceLa
     if (!knownType) return null;
     let document = mergeHeroBannersFromDb(resolveServiceLandingDocument(null, knownType), null, null);
     document = fillMissingHeroBannersFromSiteAssets(slug, document);
+    document = stripShowcaseSections(document);
     return { serviceType: knownType, published: true, document };
   }
 
   let document = resolveServiceLandingDocument(row.landingJson, row.serviceType);
   document = mergeHeroBannersFromDb(document, row.bannerImageDesktop, row.bannerImageMobile);
   document = fillMissingHeroBannersFromSiteAssets(slug, document);
+  document = stripShowcaseSections(document);
   return { serviceType: row.serviceType, published: row.published, document };
 }

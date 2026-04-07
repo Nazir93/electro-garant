@@ -1,13 +1,20 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import Image from "next/image";
 
 interface LandingShowcaseProps {
   label?: string;
   dark?: boolean;
+  /** Фон секции (например то же фото, что в hero услуги) */
+  imageUrl?: string;
 }
 
-export function LandingShowcase({ label = "Фото / Видео объекта", dark = true }: LandingShowcaseProps) {
+export function LandingShowcase({
+  label = "Фото / Видео объекта",
+  dark = true,
+  imageUrl,
+}: LandingShowcaseProps) {
   const ref = useRef<HTMLElement>(null);
   const [offset, setOffset] = useState(0);
 
@@ -40,10 +47,30 @@ export function LandingShowcase({ label = "Фото / Видео объекта"
           transform: `translateY(${offset}px) scale(1.1)`,
         }}
       >
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="relative w-full h-full flex items-center justify-center">
+          {imageUrl ? (
+            <>
+              <Image
+                src={imageUrl}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="100vw"
+                unoptimized={imageUrl.startsWith("/uploads/")}
+              />
+              <div
+                className="absolute inset-0 z-[1]"
+                style={{
+                  background: dark
+                    ? "linear-gradient(to bottom, rgba(0,0,0,0.45), rgba(0,0,0,0.55))"
+                    : "linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(0,0,0,0.35))",
+                }}
+              />
+            </>
+          ) : null}
           <span
-            className="text-[10px] uppercase tracking-[0.2em]"
-            style={{ color: dark ? "rgba(255,255,255,0.3)" : "var(--text-subtle)" }}
+            className={`relative z-[2] text-[10px] uppercase tracking-[0.2em] px-4 text-center ${imageUrl ? "text-white/95 drop-shadow-md" : ""}`}
+            style={imageUrl ? undefined : { color: dark ? "rgba(255,255,255,0.3)" : "var(--text-subtle)" }}
           >
             {label}
           </span>

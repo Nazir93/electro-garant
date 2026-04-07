@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
 
     const smartCaptchaSecret = process.env.YANDEX_SMARTCAPTCHA_SERVER_KEY?.trim();
     const pizzaFollowupOk =
-      body?.source === "offer-pizza" && (await verifyOfferPizzaPreviousLead(body.calcData));
+      (body?.source === "offer-pizza" || body?.source === "calculator-pizza") &&
+      (await verifyOfferPizzaPreviousLead(body.calcData));
 
     if (smartCaptchaSecret && parsed.data.recaptchaToken) {
       try {

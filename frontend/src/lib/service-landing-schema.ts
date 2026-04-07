@@ -24,6 +24,8 @@ export const serviceLandingSectionSchema = z.discriminatedUnion("type", [
     type: z.literal("showcase"),
     label: z.string().optional(),
     dark: z.boolean().optional(),
+    /** Если задано — фон секции (та же логика, что баннер hero услуги) */
+    imageUrl: z.string().optional(),
   }),
   z.object({
     type: z.literal("textBlock"),

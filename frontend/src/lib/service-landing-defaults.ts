@@ -612,10 +612,13 @@ function architecturalLightingDoc(): ServiceLandingDocument {
   };
 }
 
-/** Убираем декоративные «витрины» с картинками — на странице услуги один баннер в hero + SEO-тексты. */
-function stripShowcaseSections(doc: ServiceLandingDocument): ServiceLandingDocument {
+/** Убираем витрины без фото (только подпись). С imageUrl секция остаётся — отдельный визуальный блок под hero. */
+export function stripShowcaseSections(doc: ServiceLandingDocument): ServiceLandingDocument {
   return {
-    sections: doc.sections.filter((s) => s.type !== "showcase"),
+    sections: doc.sections.filter((s) => {
+      if (s.type !== "showcase") return true;
+      return Boolean(s.imageUrl?.trim());
+    }),
   };
 }
 

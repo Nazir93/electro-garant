@@ -14,6 +14,7 @@ import { CustomCursor } from "../ui/custom-cursor";
 import { ContactModal } from "../ui/contact-modal";
 import { CookieBanner } from "../ui/cookie-banner";
 import { SmartCaptchaGate } from "../smartcaptcha-provider";
+import { FloatingCallButton } from "./floating-call-button";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -33,6 +34,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         <>
           <CustomCursor />
           <ContactModal />
+          <FloatingCallButton />
           <main
             className="theme-bg theme-text fixed inset-0 z-[85] h-[100dvh] max-h-[100dvh] overflow-hidden overflow-x-hidden overscroll-none border-0 bg-[var(--bg)] outline-none ring-0 transition-colors duration-500"
           >
@@ -51,6 +53,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <RouteScrollReset />
       <CustomCursor />
       <ContactModal />
+      <FloatingCallButton />
       <Header />
       {isHome ? <DesktopSideNav /> : null}
       <ConditionalNavBar />
