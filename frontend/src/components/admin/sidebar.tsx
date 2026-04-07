@@ -18,6 +18,7 @@ import {
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { LEAD_SOURCE_OPTIONS } from "@/lib/lead-sources";
+import { useAdminNewLeadsNotify } from "@/hooks/use-admin-new-leads-notify";
 
 const LEADS_SUBLINKS: { href: string; label: string }[] = [
   { href: "/admin/leads", label: "Все формы" },
@@ -42,6 +43,7 @@ export function AdminSidebar() {
   const searchParams = useSearchParams();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { highlight: leadsHighlight, badgeCount: leadsBadge } = useAdminNewLeadsNotify();
 
   const leadsSourceFilter = searchParams.get("source");
 
@@ -105,17 +107,43 @@ export function AdminSidebar() {
                     href="/admin/leads"
                     onClick={() => setMobileOpen(false)}
                     className={`
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium
+                      relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium
                       transition-all duration-150
                       ${isActive
                         ? "bg-[#C9A84C]/10 text-[#C9A84C]"
                         : "text-white/50 hover:text-white/80 hover:bg-white/[0.06]"
                       }
+                      ${leadsHighlight ? "ring-2 ring-[#C9A84C]/50 shadow-[0_0_18px_rgba(201,168,76,0.12)] motion-safe:animate-pulse" : ""}
                     `}
-                    title={collapsed ? item.label : undefined}
+                    title={
+                      collapsed
+                        ? leadsBadge > 0
+                          ? `${item.label}: ${leadsBadge} новых`
+                          : item.label
+                        : undefined
+                    }
                   >
-                    <Icon size={18} className="flex-shrink-0" />
-                    {!collapsed && <span>{item.label}</span>}
+                    <span className="relative flex-shrink-0">
+                      <Icon size={18} />
+                      {collapsed && leadsBadge > 0 && (
+                        <span
+                          className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-red-500 text-[9px] font-bold text-white flex items-center justify-center tabular-nums"
+                          aria-hidden
+                        >
+                          {leadsBadge > 99 ? "99+" : leadsBadge}
+                        </span>
+                      )}
+                    </span>
+                    {!collapsed && (
+                      <span className="flex items-center gap-2 min-w-0">
+                        <span>{item.label}</span>
+                        {leadsBadge > 0 && (
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-red-400 shrink-0">
+                            +{leadsBadge > 99 ? "99+" : leadsBadge}
+                          </span>
+                        )}
+                      </span>
+                    )}
                   </Link>
                   {!collapsed && (
                     <div className="pl-2 ml-2 border-l border-white/[0.06] space-y-0.5 py-0.5">
