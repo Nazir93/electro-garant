@@ -35,7 +35,7 @@ export function AdminMediaUpload({
   const acceptAttr =
     accept === "image"
       ? "image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/avif,.jpg,.jpeg,.png,.webp,.gif,.svg,.avif"
-      : "video/*,video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.mkv,.m4v,.avi";
+      : "video/*,video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.mkv,.m4v,.avi,image/gif,.gif";
 
   const btnLabel =
     uploading ? "Загрузка…" : accept === "image" ? "Выбрать изображение" : "Выбрать видеофайл";
@@ -85,11 +85,20 @@ export function AdminMediaUpload({
         />
       ) : null}
       {value && accept === "video" ? (
-        <video
-          src={value}
-          controls
-          className="mt-2 max-h-52 rounded-lg border border-white/[0.08] w-full max-w-lg bg-black/40"
-        />
+        /\.gif($|\?)/i.test(value) ? (
+          // eslint-disable-next-line @next/next/no-img-element -- админ-превью GIF
+          <img
+            src={value}
+            alt="GIF"
+            className="mt-2 max-h-52 rounded-lg border border-white/[0.08] w-full max-w-lg object-contain bg-black/20"
+          />
+        ) : (
+          <video
+            src={value}
+            controls
+            className="mt-2 max-h-52 rounded-lg border border-white/[0.08] w-full max-w-lg bg-black/40"
+          />
+        )
       ) : null}
     </div>
   );

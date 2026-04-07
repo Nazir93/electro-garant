@@ -61,14 +61,15 @@ const inspectionFormSchema = z.object({
 type InspectionFormData = z.infer<typeof inspectionFormSchema>;
 
 const calculatorSchema = z.object({
-  objectType: z.string().min(1, "Выберите тип объекта"),
+  /** Необязательно: заявку можно отправить только с именем и телефоном */
+  objectType: z.string().optional(),
   workMode: z.enum(["rough", "finish", "design"]),
-  area: z.string().min(1, "Укажите площадь"),
+  area: z.string().optional(),
   rooms: z.string().optional(),
   floors: z.string().optional(),
   tier: z.enum(["econom", "standard", "premium"]),
   withMaterials: z.boolean(),
-  services: z.array(z.string()).min(1, "Выберите хотя бы одну услугу"),
+  services: z.array(z.string()),
   name: z.string().min(2, "Минимум 2 символа"),
   phone: z.string().min(10, "Введите корректный номер"),
   privacy: z.boolean().refine((v) => v === true, { message: "Необходимо согласие" }),
@@ -746,7 +747,7 @@ function CalculatorForm({ onBack: _onBack, onSuccess, getRecaptchaToken }: { onB
   const watchWorkMode = watch("workMode");
   const watchFloors = watch("floors");
 
-  const showFloorsByObject = ["Квартира", "Частный дом", "Гостиница"].includes(watchObjectType);
+  const showFloorsByObject = ["Квартира", "Частный дом", "Гостиница"].includes(watchObjectType ?? "");
   const showFloorField = showFloorsByObject || watchServices.includes("lighting");
   const isDesignMode = watchWorkMode === "design";
 
@@ -862,8 +863,8 @@ function CalculatorForm({ onBack: _onBack, onSuccess, getRecaptchaToken }: { onB
               </div>
             </div>
 
-            {/* ── Тип объекта ── */}
-            <InputField label="Тип объекта" error={errors.objectType?.message}>
+            {/* ── Тип объекта (по желанию) ── */}
+            <InputField label="Тип объекта">
               <Controller
                 name="objectType"
                 control={control}
@@ -875,7 +876,6 @@ function CalculatorForm({ onBack: _onBack, onSuccess, getRecaptchaToken }: { onB
                     value={field.value ?? ""}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
-                    invalid={!!errors.objectType}
                   />
                 )}
               />
@@ -901,12 +901,11 @@ function CalculatorForm({ onBack: _onBack, onSuccess, getRecaptchaToken }: { onB
               </InputField>
             )}
 
-            {/* ── Тип услуги ── */}
+            {/* ── Тип услуги (по желанию) ── */}
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] mb-4" style={{ color: "var(--text-subtle)" }}>
                 Тип услуги
               </p>
-              {errors.services && <p className="text-[11px] text-red-400 mb-2">{errors.services.message}</p>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {SERVICE_OPTIONS.map((service) => {
                   const isSelected = watchServices.includes(service.id);
@@ -934,12 +933,12 @@ function CalculatorForm({ onBack: _onBack, onSuccess, getRecaptchaToken }: { onB
               </div>
             </div>
 
-            {/* ── Площадь ── */}
-            <InputField label="Площадь (м²)" error={errors.area?.message}>
-              <input type="text" placeholder="от 30" inputMode="numeric" className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: errors.area ? "#ef4444" : "var(--border)", color: "var(--text)" }} {...register("area")} />
+            {/* ── Площадь (по желанию) ── */}
+            <InputField label="Площадь (м²)">
+              <input type="text" placeholder="от 30" inputMode="numeric" className="funnel-text-input w-full px-0 py-3 bg-transparent border-b text-base sm:text-sm focus:outline-none" style={{ borderColor: "var(--border)", color: "var(--text)" }} {...register("area")} />
             </InputField>
             <p className="text-[9px] -mt-3" style={{ color: "var(--text-subtle)" }}>
-              Минимальная площадь расчёта — 30 м²
+              Для показа ориентировочной суммы ниже используется не меньше 30 м²; заявку можно отправить и без площади — мы перезвоним и уточним параметры.
             </p>
 
             {/* ── Ценовой сегмент ── */}

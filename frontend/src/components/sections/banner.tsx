@@ -93,6 +93,9 @@ const ANNOTATIONS: AnnotationItem[] = [
   },
 ];
 
+/** Тот же кадр, что и баннер услуги «Архитектурная подсветка» */
+const BANNER_HERO_IMAGE = "/images/hero/architectural-lighting.png";
+
 const ICONS: Record<string, React.ReactNode> = {
   eye: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
@@ -268,7 +271,7 @@ export function BannerSection() {
           }}
         >
           <Image
-            src={isDark ? "/IMG_0980.PNG" : "/logo/photo_2026-03-20_15-02-09.jpg"}
+            src={BANNER_HERO_IMAGE}
             alt="Гарант Монтаж"
             fill
             className="object-contain object-left"
@@ -328,7 +331,7 @@ export function BannerSection() {
       >
         <div className="relative h-full w-full">
           <Image
-            src={isDark ? "/IMG_0980.PNG" : "/logo/photo_2026-03-20_15-02-09.jpg"}
+            src={BANNER_HERO_IMAGE}
             alt="Гарант Монтаж — полный цикл электромонтажных работ"
             fill
             className="object-contain"

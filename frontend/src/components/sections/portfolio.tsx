@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { PORTFOLIO_CASES } from "@/lib/portfolio-data";
 import type { ProjectListItem } from "@/lib/get-projects";
+import { isGifUrl } from "@/components/editorial/editorial-banner";
 
 function FillLink({ href, label }: { href: string; label: string }) {
   const [hovered, setHovered] = useState(false);
@@ -136,7 +137,13 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
               className="aspect-[4/3] md:aspect-[16/10] flex items-center justify-center rounded-lg overflow-hidden relative"
               style={{ backgroundColor: "var(--bg-secondary)" }}
             >
-              {project.videoUrl ? (
+              {project.videoUrl && isGifUrl(project.videoUrl) ? (
+                <img
+                  src={visible && isOpen ? project.videoUrl : undefined}
+                  alt={project.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : project.videoUrl ? (
                 <video
                   src={visible && isOpen ? project.videoUrl : undefined}
                   autoPlay

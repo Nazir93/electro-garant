@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now().toString(36);
     const fileName = `${baseStem}-${timestamp}`;
 
-    const useSharp = isImageType && ext !== "svg";
+    const useSharp = isImageType && ext !== "svg" && ext !== "gif";
 
     let savedPath: string;
 

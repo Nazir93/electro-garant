@@ -158,17 +158,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    sendTelegramNotification(
-      formatLeadMessage({
-        name: parsed.data.name,
-        phone: parsed.data.phone,
-        email: parsed.data.email,
-        service: parsed.data.service,
-        source,
-        pageUrl: body.pageUrl,
-        calcData: body.calcData,
-      })
-    );
+    try {
+      await sendTelegramNotification(
+        formatLeadMessage({
+          name: parsed.data.name,
+          phone: parsed.data.phone,
+          email: parsed.data.email,
+          service: parsed.data.service,
+          source,
+          pageUrl: body.pageUrl,
+          calcData: body.calcData,
+        })
+      );
+    } catch (tgErr) {
+      console.error("[leads] Telegram notification failed:", tgErr);
+    }
 
     console.log("[LEAD]", {
       id: createdLead.id,

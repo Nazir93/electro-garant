@@ -6,6 +6,10 @@ import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 
 export type EditorialSlide = { type: "image" | "video"; url: string };
 
+export function isGifUrl(url: string): boolean {
+  return /\.gif($|\?)/i.test(url);
+}
+
 function pickImageUrls(urls: (string | null | undefined)[]): string[] {
   return urls.filter((u): u is string => Boolean(u && u.trim()));
 }
@@ -37,7 +41,7 @@ export function editorialSlidesFromImagesAndVideo(
   for (const v of videoList) {
     if (seen.has(v)) continue;
     seen.add(v);
-    slides.push({ type: "video", url: v });
+    slides.push({ type: isGifUrl(v) ? "image" : "video", url: v });
   }
   return slides;
 }

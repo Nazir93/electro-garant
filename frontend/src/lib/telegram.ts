@@ -1,22 +1,115 @@
-export async function sendTelegramNotification(message: string) {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+function getTelegramChatIds(): string[] {
+  const multi = process.env.TELEGRAM_CHAT_IDS?.trim();
+  if (multi) {
+    return multi
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  const single = process.env.TELEGRAM_CHAT_ID?.trim();
+  return single ? [single] : [];
+}
 
-  if (!botToken || !chatId) return;
+function getMessageThreadId(): number | undefined {
+  const t = process.env.TELEGRAM_MESSAGE_THREAD_ID?.trim();
+  if (!t) return undefined;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : undefined;
+}
 
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+type TelegramApiResult = {
+  ok?: boolean;
+  description?: string;
+  parameters?: { retry_after?: number };
+};
+
+async function sendMessageOnce(
+  botToken: string,
+  payload: Record<string, unknown>
+): Promise<{ ok: boolean; retryAfterMs?: number; description?: string }> {
+  const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  let data: TelegramApiResult = {};
   try {
-    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-      }),
-    });
-  } catch (error) {
-    console.error("[TELEGRAM] Failed to send notification:", error);
+    data = (await res.json()) as TelegramApiResult;
+  } catch {
+    return { ok: false, description: `HTTP ${res.status}, invalid JSON` };
+  }
+
+  if (data.ok) return { ok: true };
+  const retryAfterSec = data.parameters?.retry_after;
+  const retryAfterMs =
+    typeof retryAfterSec === "number" && retryAfterSec > 0
+      ? Math.min(retryAfterSec * 1000, 60_000)
+      : undefined;
+  return {
+    ok: false,
+    description: data.description ?? `HTTP ${res.status}`,
+    retryAfterMs: retryAfterMs ?? (res.status >= 500 || res.status === 429 ? 1500 : undefined),
+  };
+}
+
+/** Отправка во все настроенные чаты (один TELEGRAM_CHAT_ID или несколько в TELEGRAM_CHAT_IDS). */
+export async function sendTelegramNotification(message: string) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const chatIds = getTelegramChatIds();
+  const threadId = getMessageThreadId();
+
+  if (!botToken || chatIds.length === 0) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[TELEGRAM] Уведомления отключены: задайте TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID (или TELEGRAM_CHAT_IDS)"
+      );
+    }
+    return;
+  }
+
+  const basePayload: Record<string, unknown> = {
+    text: message,
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+  };
+  if (threadId !== undefined) basePayload.message_thread_id = threadId;
+
+  for (const chatId of chatIds) {
+    const payload = { ...basePayload, chat_id: chatId };
+    let lastError: string | undefined;
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const r = await sendMessageOnce(botToken, payload);
+        if (r.ok) {
+          lastError = undefined;
+          break;
+        }
+        lastError = r.description;
+        if (attempt === 0 && r.retryAfterMs != null) {
+          await sleep(r.retryAfterMs);
+          continue;
+        }
+        if (attempt === 0) {
+          await sleep(1000);
+          continue;
+        }
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error);
+        console.error("[TELEGRAM] sendMessage error:", error);
+        if (attempt === 0) await sleep(1000);
+      }
+    }
+
+    if (lastError) {
+      console.error(`[TELEGRAM] Не удалось отправить в chat_id=${chatId}:`, lastError);
+    }
   }
 }
 
@@ -45,6 +138,15 @@ function normalizeCalcData(raw: unknown): unknown {
   }
   return raw;
 }
+
+const CALC_SERVICE_LABELS: Record<string, string> = {
+  electrical: "Электромонтажные работы",
+  lighting: "Архитектурная подсветка",
+  acoustics: "Коммерческая акустика",
+  cabling: "Слаботочные системы",
+  "smart-home": "Умный дом",
+  security: "Видеонаблюдение и безопасность",
+};
 
 export function formatLeadMessage(lead: {
   name: string;
@@ -115,6 +217,51 @@ export function formatLeadMessage(lead: {
     });
     if (smeta.lines.length > max) {
       lines.push(`… и ещё <b>${smeta.lines.length - max}</b> поз. (полный список в админке / БД)`);
+    }
+  }
+
+  if (lead.source === "calculator" && rawCalc && typeof rawCalc === "object" && !("kind" in rawCalc)) {
+    const c = rawCalc as Record<string, unknown>;
+    const workMode = typeof c.workMode === "string" ? c.workMode : "";
+    const workModeLabel =
+      workMode === "rough"
+        ? "Черновой этап"
+        : workMode === "finish"
+          ? "Чистовой этап"
+          : workMode === "design"
+            ? "Проектирование"
+            : workMode || "—";
+    const tier = typeof c.tier === "string" ? c.tier : "";
+    const tierLabel =
+      tier === "econom" ? "Эконом" : tier === "standard" ? "Стандарт" : tier === "premium" ? "Премиум" : tier || "—";
+    const objectType = typeof c.objectType === "string" ? c.objectType.trim() : "";
+    const area = typeof c.area === "string" ? c.area.trim() : "";
+    const rooms = c.rooms != null && String(c.rooms).trim() !== "" ? String(c.rooms) : "";
+    const floors = c.floors != null && String(c.floors).trim() !== "" ? String(c.floors) : "";
+    const servicesRaw = Array.isArray(c.services) ? c.services : [];
+    const serviceLabels = servicesRaw
+      .filter((id): id is string => typeof id === "string")
+      .map((id) => CALC_SERVICE_LABELS[id] ?? id);
+    const estimate = typeof c.estimate === "number" && Number.isFinite(c.estimate) ? c.estimate : null;
+    const withMat = c.withMaterials === true;
+
+    lines.push(``, `<b>Ориентировочный расчёт (модалка)</b>`);
+    lines.push(`<b>Этап:</b> ${escapeHtml(workModeLabel)}`);
+    lines.push(`<b>Сегмент:</b> ${escapeHtml(tierLabel)}`);
+    if (workMode !== "design") {
+      lines.push(`<b>С материалом:</b> ${withMat ? "да" : "нет"}`);
+    }
+    if (objectType) lines.push(`<b>Тип объекта:</b> ${escapeHtml(objectType)}`);
+    if (area) lines.push(`<b>Площадь:</b> ${escapeHtml(area)} м²`);
+    if (rooms) lines.push(`<b>Комнаты:</b> ${escapeHtml(rooms)}`);
+    if (floors) lines.push(`<b>Этажи:</b> ${escapeHtml(floors)}`);
+    if (serviceLabels.length > 0) {
+      lines.push(`<b>Услуги:</b> ${escapeHtml(serviceLabels.join(", "))}`);
+    }
+    if (estimate != null) {
+      lines.push(`<b>Ориентировочная сумма:</b> от ${estimate.toLocaleString("ru-RU")} ₽`);
+    } else {
+      lines.push(`<i>Сумма не считалась (нет площади и/или услуг)</i>`);
     }
   }
 
