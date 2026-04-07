@@ -222,6 +222,17 @@ function ImagePanel({
   );
 }
 
+/**
+ * На iOS/Android видео нельзя seek'ать, пока оно не было "активировано".
+ * play()+pause() "прогревает" декодер — после этого currentTime работает.
+ */
+function warmUpVideo(v: HTMLVideoElement) {
+  if ((v as unknown as { _warmedUp?: boolean })._warmedUp) return;
+  (v as unknown as { _warmedUp?: boolean })._warmedUp = true;
+  const p = v.play();
+  if (p) p.then(() => v.pause()).catch(() => {/* autoplay blocked */});
+}
+
 export function AboutSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -245,7 +256,11 @@ export function AboutSection() {
     const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
 
     const seekVideo = (v: HTMLVideoElement | null) => {
-      if (!v || !v.duration || Number.isNaN(v.duration) || !Number.isFinite(v.duration)) return;
+      if (!v) return;
+      if (!v.duration || Number.isNaN(v.duration) || !Number.isFinite(v.duration)) {
+        warmUpVideo(v);
+        return;
+      }
       const t = progress * v.duration;
       try {
         v.pause();
@@ -340,13 +355,19 @@ export function AboutSection() {
     if (!videoReady) return;
     const desktop = document.getElementById("about-video-desktop") as HTMLVideoElement | null;
     const mobile = document.getElementById("about-video-mobile") as HTMLVideoElement | null;
-    const onMeta = () => syncScrollToVideos();
-    desktop?.addEventListener("loadedmetadata", onMeta);
-    mobile?.addEventListener("loadedmetadata", onMeta);
+    const onReady = () => syncScrollToVideos();
+    const events = ["loadedmetadata", "loadeddata", "canplay"] as const;
+    events.forEach((evt) => {
+      desktop?.addEventListener(evt, onReady);
+      mobile?.addEventListener(evt, onReady);
+    });
+    [desktop, mobile].forEach((v) => { if (v) warmUpVideo(v); });
     syncScrollToVideos();
     return () => {
-      desktop?.removeEventListener("loadedmetadata", onMeta);
-      mobile?.removeEventListener("loadedmetadata", onMeta);
+      events.forEach((evt) => {
+        desktop?.removeEventListener(evt, onReady);
+        mobile?.removeEventListener(evt, onReady);
+      });
     };
   }, [videoReady, isDesktop, syncScrollToVideos]);
 

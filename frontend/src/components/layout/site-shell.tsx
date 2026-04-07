@@ -8,6 +8,7 @@ import { Footer } from "./footer";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { FixedStatsBar } from "./fixed-stats-bar";
 import { SmoothScroll } from "./smooth-scroll";
+import { RouteScrollReset } from "./route-scroll-reset";
 import { PageTransition } from "./page-transition";
 import { CustomCursor } from "../ui/custom-cursor";
 import { ContactModal } from "../ui/contact-modal";
@@ -47,6 +48,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     <SmartCaptchaGate>
     <>
       <SmoothScroll />
+      <RouteScrollReset />
       <CustomCursor />
       <ContactModal />
       <Header />

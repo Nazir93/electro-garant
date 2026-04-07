@@ -24,9 +24,8 @@ export function SmoothScroll() {
       smoothWheel: true,
       wheelMultiplier: 0.9,
       touchMultiplier: 1.5,
-      /** Тач-скролл через Lenis — иначе scroll-события и rAF-синхронизация секций (about, hero) на мобилке «теряются» */
       syncTouch: coarsePointer,
-      syncTouchLerp: coarsePointer ? 0.12 : undefined,
+      syncTouchLerp: coarsePointer ? 0.075 : undefined,
     });
 
     window.__lenis = lenis;

@@ -1,6 +1,6 @@
 import { SITE_NAME, CITY } from "@/lib/constants";
 import { getPageMeta } from "@/lib/get-page-meta";
-import { Section, SectionTitle } from "@/components/ui/section";
+import { Section } from "@/components/ui/section";
 import { BackNavLink } from "@/components/ui/back-nav";
 import Link from "next/link";
 import { Construction } from "lucide-react";
@@ -23,9 +23,26 @@ export default function PartnersRentRepairPage() {
             <BackNavLink href="/">На главную</BackNavLink>
           </div>
 
-          <SectionTitle subtitle="Оборудование и сервис" className="!mb-8 md:!mb-10">
-            Аренда и ремонт
-          </SectionTitle>
+          <header className="mb-8 md:mb-10">
+            <p
+              className="text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-heading mb-2.5"
+              style={{ color: "var(--text-subtle)" }}
+            >
+              Партнёрам
+            </p>
+            <h1
+              className="font-heading text-xl sm:text-2xl md:text-[1.7rem] lg:text-[1.85rem] tracking-tight leading-[1.18] max-w-xl"
+              style={{ color: "var(--text)" }}
+            >
+              Аренда и ремонт
+            </h1>
+            <p
+              className="mt-3 text-sm sm:text-[0.9375rem] md:text-base max-w-lg leading-relaxed"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Оборудование и сервис для объекта — раздел скоро пополним материалами.
+            </p>
+          </header>
 
           <div
             className="rounded-2xl px-6 py-10 sm:px-10 sm:py-12 text-center"
@@ -45,10 +62,10 @@ export default function PartnersRentRepairPage() {
                 <Construction size={26} style={{ color: "var(--accent)" }} aria-hidden />
               </div>
             </div>
-            <p className="font-heading text-xl sm:text-2xl mb-2" style={{ color: "var(--text)" }}>
+            <p className="font-heading text-lg sm:text-xl md:text-2xl mb-2 tracking-tight" style={{ color: "var(--text)" }}>
               Страница в разработке
             </p>
-            <p className="text-sm sm:text-base max-w-md mx-auto mb-6" style={{ color: "var(--text-muted)" }}>
+            <p className="text-sm sm:text-base max-w-md mx-auto mb-6 leading-relaxed" style={{ color: "var(--text-muted)" }}>
               Скоро здесь появится информация об аренде и ремонте. По срочным вопросам свяжитесь с нами.
             </p>
             <Link

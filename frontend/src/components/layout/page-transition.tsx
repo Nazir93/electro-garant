@@ -1,28 +1,9 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
-
+/**
+ * Раньше здесь был fade с opacity:0 при каждом pathname — из‑за этого при переходах
+ * мигал пустой кадр и казалось, что «сначала главная, потом страница». Контент без лишней анимации.
+ */
 export function PageTransition({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    el.style.opacity = "0";
-
-    const raf = requestAnimationFrame(() => {
-      el.style.transition = "opacity 0.5s ease";
-      el.style.opacity = "1";
-    });
-
-    return () => cancelAnimationFrame(raf);
-  }, [pathname]);
-
-  return (
-    <div ref={containerRef}>
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }
