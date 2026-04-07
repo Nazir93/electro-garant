@@ -4,11 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X, Inbox, ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  LEAD_SOURCE_EMPTY,
-  LEAD_SOURCE_OPTIONS,
-  getLeadSourceLabel,
-} from "@/lib/lead-sources";
+import { LEAD_SOURCE_OPTIONS, getLeadSourceLabel } from "@/lib/lead-sources";
 
 type Lead = {
   id: string;
@@ -45,7 +41,6 @@ const STATUS_LABELS: Record<string, string> = {
 
 const SOURCE_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "Все формы" },
-  { value: LEAD_SOURCE_EMPTY, label: "Без источника" },
   ...LEAD_SOURCE_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
 ];
 

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { LEAD_SOURCE_EMPTY } from "@/lib/lead-sources";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -19,11 +18,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (sourceParam) {
-    if (sourceParam === LEAD_SOURCE_EMPTY) {
-      and.push({ OR: [{ source: null }, { source: "unknown" }] });
-    } else {
-      and.push({ source: sourceParam });
-    }
+    and.push({ source: sourceParam });
   }
 
   if (search) {

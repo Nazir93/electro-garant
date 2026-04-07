@@ -34,6 +34,18 @@ type PriceSmetaCalc = {
   }>;
 };
 
+function normalizeCalcData(raw: unknown): unknown {
+  if (raw == null) return raw;
+  if (typeof raw === "string") {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }
+  return raw;
+}
+
 export function formatLeadMessage(lead: {
   name: string;
   phone: string;
@@ -55,7 +67,23 @@ export function formatLeadMessage(lead: {
   if (lead.source) lines.push(`<b>Источник:</b> ${escapeHtml(lead.source)}`);
   if (lead.pageUrl) lines.push(`<b>Страница:</b> ${lead.pageUrl}`);
 
-  const rawCalc = lead.calcData;
+  const rawCalc = normalizeCalcData(lead.calcData);
+  if (
+    rawCalc &&
+    typeof rawCalc === "object" &&
+    "kind" in rawCalc &&
+    (rawCalc as { kind?: string }).kind === "offer-pizza" &&
+    "comment" in rawCalc &&
+    typeof (rawCalc as { comment: unknown }).comment === "string"
+  ) {
+    const p = rawCalc as { comment: string; previousLeadId?: string };
+    lines.push(``, `<b>Пожелание по пицце (оффер)</b>`);
+    lines.push(escapeHtml(p.comment.slice(0, 2000)));
+    if (p.previousLeadId) {
+      lines.push(`<i>Первая заявка: ${escapeHtml(p.previousLeadId)}</i>`);
+    }
+  }
+
   if (
     rawCalc &&
     typeof rawCalc === "object" &&
@@ -70,7 +98,7 @@ export function formatLeadMessage(lead: {
     lines.push(`<b>Сообщение:</b> ${escapeHtml(partner.message.slice(0, 2000))}`);
   }
 
-  const smeta = lead.calcData as PriceSmetaCalc | null | undefined;
+  const smeta = rawCalc as PriceSmetaCalc | null | undefined;
   if (smeta?.kind === "price-smeta" && Array.isArray(smeta.lines)) {
     lines.push(``, `<b>Смета (калькулятор прайса)</b>`);
     const nds = smeta.withVat ? "с НДС 22%" : "без НДС";

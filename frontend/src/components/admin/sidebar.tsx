@@ -17,11 +17,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { LEAD_SOURCE_EMPTY, LEAD_SOURCE_OPTIONS } from "@/lib/lead-sources";
+import { LEAD_SOURCE_OPTIONS } from "@/lib/lead-sources";
 
 const LEADS_SUBLINKS: { href: string; label: string }[] = [
   { href: "/admin/leads", label: "Все формы" },
-  { href: `/admin/leads?source=${encodeURIComponent(LEAD_SOURCE_EMPTY)}`, label: "Без источника" },
   ...LEAD_SOURCE_OPTIONS.map((o) => ({
     href: `/admin/leads?source=${encodeURIComponent(o.value)}`,
     label: o.label,

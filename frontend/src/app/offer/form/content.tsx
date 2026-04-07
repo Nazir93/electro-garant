@@ -36,6 +36,8 @@ const PIZZA_SPIN_PNG = "/images/offer/pizza-spin.png";
 export function OfferFormPageContent() {
   const [stage, setStage] = useState<"form" | "timer" | "pizza">("form");
   const [leadId, setLeadId] = useState<string | null>(null);
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [timerSec, setTimerSec] = useState(300);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -94,14 +96,18 @@ export function OfferFormPageContent() {
       <div className="relative z-10 mx-auto flex w-full max-w-2xl flex-1 min-h-0 flex-col justify-center">
         {stage === "form" && (
           <FormSection
-            onSubmitted={(id) => {
+            onSubmitted={(id, name, phone) => {
               setLeadId(id);
+              setContactName(name);
+              setContactPhone(phone);
               startTimer();
             }}
           />
         )}
         {stage === "timer" && <TimerSection seconds={timerSec} />}
-        {stage === "pizza" && <PizzaSection leadId={leadId} />}
+        {stage === "pizza" && (
+          <PizzaSection leadId={leadId} contactName={contactName} contactPhone={contactPhone} />
+        )}
       </div>
     </div>
   );
@@ -119,7 +125,12 @@ function TrustLine() {
   );
 }
 
-function FormSection({ onSubmitted }: { onSubmitted: (id: string) => void }) {
+function FormSection({
+  onSubmitted,
+}: {
+  onSubmitted: (id: string, name: string, phone: string) => void;
+}) {
+  const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -127,19 +138,28 @@ function FormSection({ onSubmitted }: { onSubmitted: (id: string) => void }) {
   } = useForm<ContactForm>({ resolver: zodResolver(contactFormSchema) });
 
   const onSubmit = async (data: ContactForm) => {
-    const res = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: data.name,
-        phone: data.phone,
-        service: "Оффер: обратная связь",
-        source: "offer-page",
-        honeypot: data.honeypot,
-      }),
-    });
-    const json = await res.json();
-    onSubmitted(json.leadId ?? "unknown");
+    setFormError(null);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          phone: data.phone,
+          service: "Оффер: обратная связь",
+          source: "offer-page",
+          honeypot: data.honeypot,
+        }),
+      });
+      const json = (await res.json()) as { leadId?: string; error?: string };
+      if (!res.ok) {
+        setFormError(json.error || "Не удалось отправить заявку");
+        return;
+      }
+      onSubmitted(json.leadId ?? "", data.name, data.phone);
+    } catch {
+      setFormError("Ошибка сети. Проверьте подключение.");
+    }
   };
 
   return (
@@ -184,6 +204,11 @@ function FormSection({ onSubmitted }: { onSubmitted: (id: string) => void }) {
           />
         </FunnelInputField>
 
+        {formError && (
+          <p className="text-sm text-center" style={{ color: "#f87171" }}>
+            {formError}
+          </p>
+        )}
         <FunnelFillButton type="submit" disabled={isSubmitting} icon={<Clock size={20} strokeWidth={2} />}>
           {isSubmitting ? "Отправка..." : "Связаться за 5 минут"}
         </FunnelFillButton>
@@ -300,8 +325,17 @@ function SpinningPizzaAsset({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   );
 }
 
-function PizzaSection({ leadId }: { leadId: string | null }) {
+function PizzaSection({
+  leadId,
+  contactName,
+  contactPhone,
+}: {
+  leadId: string | null;
+  contactName: string;
+  contactPhone: string;
+}) {
   const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -309,17 +343,27 @@ function PizzaSection({ leadId }: { leadId: string | null }) {
   } = useForm<PizzaComment>({ resolver: zodResolver(pizzaCommentSchema) });
 
   const onSubmit = async (data: PizzaComment) => {
-    await fetch("/api/leads", {
+    setSubmitError(null);
+    const res = await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: "Пицца-оффер",
-        phone: leadId ?? "-",
-        service: "pizza-bonus",
+        name: contactName.trim() || "Оффер",
+        phone: contactPhone,
+        service: "Пицца: пожелание",
         source: "offer-pizza",
-        calcData: JSON.stringify({ comment: data.comment, leadId }),
+        calcData: {
+          kind: "offer-pizza",
+          comment: data.comment,
+          previousLeadId: leadId ?? undefined,
+        },
       }),
     });
+    const json = (await res.json()) as { error?: string };
+    if (!res.ok) {
+      setSubmitError(json.error || "Не удалось отправить. Попробуйте ещё раз.");
+      return;
+    }
     setSent(true);
   };
 
@@ -376,6 +420,7 @@ function PizzaSection({ leadId }: { leadId: string | null }) {
               {...register("comment")}
             />
             {errors.comment && <p className="text-xs text-red-400">{errors.comment.message}</p>}
+            {submitError && <p className="text-xs text-red-400">{submitError}</p>}
             <button
               type="submit"
               disabled={isSubmitting}
