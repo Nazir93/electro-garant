@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SITE_NAME } from "@/lib/constants";
 import { getPageMeta } from "@/lib/get-page-meta";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata() {
   return getPageMeta({

@@ -11,7 +11,7 @@ import { AboutSection } from "@/components/sections/about";
 import { PortfolioSection } from "@/components/sections/portfolio";
 import { PartnersSection } from "@/components/sections/partners";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata() {
   return getPageMeta({

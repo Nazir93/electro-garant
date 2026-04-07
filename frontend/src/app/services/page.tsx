@@ -3,7 +3,7 @@ import { getPageMeta, getPageMetaFields } from "@/lib/get-page-meta";
 import { getServicesList } from "@/lib/get-services";
 import { ServicesPageContent } from "./content";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const SERVICES_INTRO_FALLBACK = `Полный спектр электромонтажных работ в ${CITY}: электромонтаж, умный дом, видеонаблюдение, акустика и слаботочные системы — от проекта до сдачи объекта.`;
 

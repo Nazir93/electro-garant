@@ -5,7 +5,7 @@ import { getProjectBySlug, getAllProjectSlugs } from "@/lib/get-projects";
 import { getPageMeta } from "@/lib/get-page-meta";
 import { CaseContent } from "./content";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface Props {
   params: { slug: string };

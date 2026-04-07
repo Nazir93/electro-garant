@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { SITE_NAME, SITE_URL } from "@/lib/constants";
 import { BlogPostContent } from "./content";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface Props {
   params: { slug: string };

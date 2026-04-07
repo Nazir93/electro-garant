@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { getPageMeta, getPageMetaFields } from "@/lib/get-page-meta";
 import { BlogPageContent } from "./content";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata() {
   return getPageMeta({

@@ -4,7 +4,7 @@ import { getServiceLandingPageData, getServiceMetadataDefaults } from "@/lib/get
 import { ServiceLandingRenderer } from "@/components/landing/service-landing-renderer";
 
 /** Свежие данные из БД и SEO из админки без ожидания ребилда. */
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 type Props = { params: { slug: string } };
 

@@ -3,7 +3,7 @@ import { getProjectsList } from "@/lib/get-projects";
 import { SITE_NAME } from "@/lib/constants";
 import { PortfolioPageContent } from "./content";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata() {
   return getPageMeta({
