@@ -229,8 +229,6 @@ export function AboutSection() {
   const [videoReady, setVideoReady] = useState(false);
   const isDesktop = useIsDesktop();
 
-  const lastSeekTs = useRef(0);
-
   const syncScrollToVideos = useCallback(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -246,18 +244,12 @@ export function AboutSection() {
 
     const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
 
-    const now = performance.now();
-    const cooldown = now - lastSeekTs.current < 80;
-
     const seekVideo = (v: HTMLVideoElement | null) => {
       if (!v || !v.duration || Number.isNaN(v.duration) || !Number.isFinite(v.duration)) return;
       const t = progress * v.duration;
-      if (Math.abs(v.currentTime - t) < 0.04) return;
-      if (cooldown) return;
-      if (!v.paused) v.pause();
       try {
+        v.pause();
         v.currentTime = t;
-        lastSeekTs.current = now;
       } catch {
         /* ignore */
       }
@@ -311,20 +303,15 @@ export function AboutSection() {
     };
   }, [syncScrollToVideos]);
 
-  /** Пока секция в зоне видимости — периодический sync для iOS / Lenis (throttled ~20 fps) */
+  /** Пока секция в зоне видимости — кадр за кадром (iOS / Lenis) */
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
     let raf = 0;
     let active = false;
-    let lastTick = 0;
-    const FRAME_BUDGET = 50;
-    const tick = (now: number) => {
+    const tick = () => {
       if (!active) return;
-      if (now - lastTick >= FRAME_BUDGET) {
-        lastTick = now;
-        syncScrollToVideos();
-      }
+      syncScrollToVideos();
       raf = requestAnimationFrame(tick);
     };
     const io = new IntersectionObserver(
@@ -353,17 +340,13 @@ export function AboutSection() {
     if (!videoReady) return;
     const desktop = document.getElementById("about-video-desktop") as HTMLVideoElement | null;
     const mobile = document.getElementById("about-video-mobile") as HTMLVideoElement | null;
-    const onReady = () => syncScrollToVideos();
-    desktop?.addEventListener("loadedmetadata", onReady);
-    desktop?.addEventListener("seeked", onReady);
-    mobile?.addEventListener("loadedmetadata", onReady);
-    mobile?.addEventListener("seeked", onReady);
+    const onMeta = () => syncScrollToVideos();
+    desktop?.addEventListener("loadedmetadata", onMeta);
+    mobile?.addEventListener("loadedmetadata", onMeta);
     syncScrollToVideos();
     return () => {
-      desktop?.removeEventListener("loadedmetadata", onReady);
-      desktop?.removeEventListener("seeked", onReady);
-      mobile?.removeEventListener("loadedmetadata", onReady);
-      mobile?.removeEventListener("seeked", onReady);
+      desktop?.removeEventListener("loadedmetadata", onMeta);
+      mobile?.removeEventListener("loadedmetadata", onMeta);
     };
   }, [videoReady, isDesktop, syncScrollToVideos]);
 
