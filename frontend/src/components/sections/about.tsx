@@ -229,6 +229,8 @@ export function AboutSection() {
   const [videoReady, setVideoReady] = useState(false);
   const isDesktop = useIsDesktop();
 
+  const lastSeekTs = useRef(0);
+
   const syncScrollToVideos = useCallback(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -244,14 +246,18 @@ export function AboutSection() {
 
     const progress = Math.max(0, Math.min(scrolled / scrollRange, 1));
 
+    const now = performance.now();
+    const cooldown = now - lastSeekTs.current < 80;
+
     const seekVideo = (v: HTMLVideoElement | null) => {
       if (!v || !v.duration || Number.isNaN(v.duration) || !Number.isFinite(v.duration)) return;
-      if (v.seeking) return;
       const t = progress * v.duration;
       if (Math.abs(v.currentTime - t) < 0.04) return;
+      if (cooldown) return;
       if (!v.paused) v.pause();
       try {
         v.currentTime = t;
+        lastSeekTs.current = now;
       } catch {
         /* ignore */
       }

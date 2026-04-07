@@ -52,8 +52,24 @@ function ServiceCard({
   /** LCP: первый боковой кадр при открытии главной */
   imagePriority?: boolean;
 }) {
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const [loadVideo, setLoadVideo] = useState(false);
+
+  useEffect(() => {
+    if (!videoUrl || loadVideo) return;
+    const el = cardRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setLoadVideo(true); io.disconnect(); } },
+      { rootMargin: "200px 0px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [videoUrl, loadVideo]);
+
   return (
     <Link
+      ref={cardRef}
       href={slug}
       className="group relative flex h-full w-full flex-col items-center justify-end overflow-hidden px-1 pb-3 pt-14 transition-colors duration-300"
       style={{
@@ -65,11 +81,12 @@ function ServiceCard({
     >
       {videoUrl ? (
         <video
-          src={videoUrl}
+          src={loadVideo ? videoUrl : undefined}
           autoPlay
           loop
           muted
           playsInline
+          preload="none"
           aria-hidden="true"
           className="absolute inset-0 z-0 h-full w-full object-cover"
         />

@@ -138,11 +138,12 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
             >
               {project.videoUrl ? (
                 <video
-                  src={project.videoUrl}
+                  src={visible && isOpen ? project.videoUrl : undefined}
                   autoPlay
                   loop
                   muted
                   playsInline
+                  preload="none"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : project.coverImage ? (
