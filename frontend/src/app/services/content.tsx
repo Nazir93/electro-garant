@@ -95,7 +95,7 @@ export function ServicesPageContent({
           </figure>
         ) : null}
 
-        <h1 className="font-heading text-xl font-semibold tracking-tight text-[var(--text)] sm:text-2xl md:text-[1.65rem]">
+        <h1 className="font-heading text-lg font-semibold tracking-tight leading-[1.22] text-[var(--text)] sm:text-xl md:text-[1.5rem]">
           {pageH1}
         </h1>
 

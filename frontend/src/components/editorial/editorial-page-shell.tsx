@@ -25,8 +25,9 @@ type EditorialPageShellProps = {
 /**
  * Shared article layout for blog posts and portfolio cases: padding, max width, typography scale.
  */
+/** Спокойная шкала как у редакционных статей — без «билборд»-размеров */
 const DEFAULT_TITLE_CLASS =
-  "font-heading text-3xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mb-8";
+  "font-heading text-2xl sm:text-[1.65rem] md:text-[1.85rem] lg:text-[2rem] leading-[1.18] tracking-tight mb-6 md:mb-7 max-w-[min(100%,42rem)]";
 
 export function EditorialPageShell({
   backHref,
