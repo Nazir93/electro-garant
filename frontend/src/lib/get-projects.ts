@@ -22,6 +22,8 @@ export interface ProjectListItem {
   coverImage: string | null;
   videoUrl: string | null;
   shortDescription: string;
+  /** Prisma ServiceType — для фильтра на /portfolio */
+  service?: string;
 }
 
 function serviceTypeToLabel(st: string): string {
@@ -31,6 +33,7 @@ function serviceTypeToLabel(st: string): string {
     STRUCTURED_CABLING: "СКС",
     SMART_HOME: "Умный дом",
     SECURITY: "Видеонаблюдение",
+    ARCHITECTURAL_LIGHTING: "Архитектурная подсветка",
   };
   return map[st] || st;
 }
@@ -80,6 +83,7 @@ export async function getProjectsList(): Promise<ProjectListItem[]> {
         coverImage: p.coverImage,
         videoUrl: p.videoUrl || null,
         shortDescription: stripHtml(p.description).substring(0, 200),
+        service: p.service,
       }));
     }
   } catch {

@@ -8,6 +8,7 @@ import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 import { AdminVideoListUpload } from "@/components/admin/admin-video-list-upload";
 import { RichEditor } from "@/components/admin/rich-editor";
 import { uploadAdminMedia } from "@/lib/admin-upload";
+import { AdminNativeSelect, AdminSelectOption } from "@/components/admin/admin-native-select";
 
 const CATEGORIES = [
   "Электромонтаж",
@@ -15,6 +16,7 @@ const CATEGORIES = [
   "Безопасность",
   "Акустика",
   "Слаботочные системы",
+  "Архитектурная подсветка",
   "Новости компании",
 ];
 
@@ -107,15 +109,13 @@ export default function AdminNewPostPage() {
 
         <div>
           <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">Категория</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
-          >
+          <AdminNativeSelect value={category} onChange={(e) => setCategory(e.target.value)}>
             {CATEGORIES.map((c) => (
-              <option key={c} value={c} className="bg-[#111111]">{c}</option>
+              <AdminSelectOption key={c} value={c}>
+                {c}
+              </AdminSelectOption>
             ))}
-          </select>
+          </AdminNativeSelect>
         </div>
 
         <AdminMediaUpload

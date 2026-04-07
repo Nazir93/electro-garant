@@ -117,13 +117,36 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
 
 const INITIAL_COUNT = 5;
 
+/** Совпадение с полем service в БД (приоритет при фильтрации). */
+const FILTER_TO_SERVICE: Record<string, string> = {
+  "Электромонтаж": "ELECTRICAL",
+  "Умный дом": "SMART_HOME",
+  "Акустика": "ACOUSTICS",
+  "Видеонаблюдение": "SECURITY",
+  "СКС": "STRUCTURED_CABLING",
+  "Архитектурная подсветка": "ARCHITECTURAL_LIGHTING",
+};
+
 const FILTER_MAP: Record<string, string[]> = {
   "Электромонтаж": ["электромонтаж"],
   "Умный дом": ["умный дом"],
   "Акустика": ["акустика", "мультирум"],
   "Видеонаблюдение": ["видеонаблюдение", "скуд", "безопасность"],
   "СКС": ["скс", "слаботочные", "кабельн"],
+  "Архитектурная подсветка": ["архитектурн", "подсвет", "фасадн", "illumina"],
 };
+
+function projectMatchesFilter(p: ProjectListItem, filterLabel: string): boolean {
+  if (filterLabel === "Все") return true;
+  const wantService = FILTER_TO_SERVICE[filterLabel];
+  if (wantService && p.service === wantService) return true;
+  const keywords = FILTER_MAP[filterLabel];
+  if (keywords?.length) {
+    const haystack = `${p.type} ${p.tag} ${p.industry}`.toLowerCase();
+    if (keywords.some((kw) => haystack.includes(kw))) return true;
+  }
+  return false;
+}
 
 export function PortfolioPageContent({
   projects,
@@ -142,18 +165,20 @@ export function PortfolioPageContent({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
 
-  const filtered = activeFilter === "Все"
-    ? projects
-    : projects.filter((p) => {
-        const keywords = FILTER_MAP[activeFilter];
-        if (!keywords) return true;
-        const haystack = `${p.type} ${p.tag} ${p.industry}`.toLowerCase();
-        return keywords.some((kw) => haystack.includes(kw));
-      });
+  const filtered =
+    activeFilter === "Все" ? projects : projects.filter((p) => projectMatchesFilter(p, activeFilter));
 
   const visibleProjects = showAll ? filtered : filtered.slice(0, INITIAL_COUNT);
 
-  const FILTERS = ["Все", "Электромонтаж", "Умный дом", "Акустика", "Видеонаблюдение", "СКС"];
+  const FILTERS = [
+    "Все",
+    "Электромонтаж",
+    "Умный дом",
+    "Акустика",
+    "Видеонаблюдение",
+    "СКС",
+    "Архитектурная подсветка",
+  ];
 
   return (
     <section className="pt-12 pb-20 md:pt-16 md:pb-28" style={{ backgroundColor: "var(--bg)" }}>

@@ -9,6 +9,8 @@ import { mergeProjectVideoUrls } from "@/lib/portfolio-data";
 import { AdminFormSection } from "@/components/admin/admin-form-section";
 import { uploadAdminMedia } from "@/lib/admin-upload";
 import { RichEditor } from "@/components/admin/rich-editor";
+import { AdminNativeSelect, AdminSelectOption } from "@/components/admin/admin-native-select";
+import { ADMIN_PROJECT_SERVICE_OPTIONS } from "@/lib/admin-service-options";
 
 const CATEGORIES = [
   { value: "RESTAURANT", label: "Ресторан" },
@@ -16,14 +18,6 @@ const CATEGORIES = [
   { value: "APARTMENT", label: "Квартира" },
   { value: "SHOP", label: "Магазин" },
   { value: "OTHER", label: "Другое" },
-];
-
-const SERVICES = [
-  { value: "ELECTRICAL", label: "Электрика" },
-  { value: "ACOUSTICS", label: "Акустика" },
-  { value: "STRUCTURED_CABLING", label: "СКС" },
-  { value: "SMART_HOME", label: "Умный дом" },
-  { value: "SECURITY", label: "Безопасность" },
 ];
 
 interface ProjectImage {
@@ -172,20 +166,26 @@ export default function EditProjectPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-medium text-white/40 mb-1">Категория</label>
-            <select value={form.category} onChange={(e) => set("category", e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors">
-              {CATEGORIES.map((c) => <option key={c.value} value={c.value} className="bg-[#111111]">{c.label}</option>)}
-            </select>
+            <AdminNativeSelect value={form.category} onChange={(e) => set("category", e.target.value)}>
+              {CATEGORIES.map((c) => (
+                <AdminSelectOption key={c.value} value={c.value}>
+                  {c.label}
+                </AdminSelectOption>
+              ))}
+            </AdminNativeSelect>
           </div>
           <div>
             <label className="block text-xs font-medium text-white/40 mb-1">Услуга</label>
-            <select value={form.service} onChange={(e) => set("service", e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors">
-              {SERVICES.map((s) => <option key={s.value} value={s.value} className="bg-[#111111]">{s.label}</option>)}
-            </select>
+            <AdminNativeSelect value={form.service} onChange={(e) => set("service", e.target.value)}>
+              {ADMIN_PROJECT_SERVICE_OPTIONS.map((s) => (
+                <AdminSelectOption key={s.value} value={s.value}>
+                  {s.label}
+                </AdminSelectOption>
+              ))}
+            </AdminNativeSelect>
           </div>
           <div>
             <label className="block text-xs font-medium text-white/40 mb-1">Площадь (м²)</label>

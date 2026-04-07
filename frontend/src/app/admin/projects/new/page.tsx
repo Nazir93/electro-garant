@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import { Save, ArrowLeft, Plus, Image as ImageIcon, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { AdminVideoListUpload } from "@/components/admin/admin-video-list-upload";
+import { AdminFormSection } from "@/components/admin/admin-form-section";
+import { AdminNativeSelect, AdminSelectOption } from "@/components/admin/admin-native-select";
 import { RichEditor } from "@/components/admin/rich-editor";
 import { uploadAdminMedia } from "@/lib/admin-upload";
+import { ADMIN_PROJECT_SERVICE_OPTIONS } from "@/lib/admin-service-options";
 
 const CATEGORIES = [
   { value: "RESTAURANT", label: "Ресторан" },
@@ -14,14 +17,6 @@ const CATEGORIES = [
   { value: "APARTMENT", label: "Квартира" },
   { value: "SHOP", label: "Магазин" },
   { value: "OTHER", label: "Другое" },
-];
-
-const SERVICES = [
-  { value: "ELECTRICAL", label: "Электрика" },
-  { value: "ACOUSTICS", label: "Акустика" },
-  { value: "STRUCTURED_CABLING", label: "СКС" },
-  { value: "SMART_HOME", label: "Умный дом" },
-  { value: "SECURITY", label: "Безопасность" },
 ];
 
 export default function NewProjectPage() {
@@ -100,7 +95,10 @@ export default function NewProjectPage() {
         </button>
       </div>
 
-      <div className="space-y-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5">
+      <AdminFormSection
+        title="Обязательно для публикации"
+        subtitle="Название, категория объекта, услуга и описание — как на странице кейса и в списке портфолио."
+      >
         <div>
           <label className="block text-xs font-medium text-white/40 mb-1">Название проекта</label>
           <input
@@ -112,20 +110,26 @@ export default function NewProjectPage() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-white/40 mb-1">Категория</label>
-            <select value={form.category} onChange={(e) => set("category", e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors">
-              {CATEGORIES.map((c) => <option key={c.value} value={c.value} className="bg-[#111111]">{c.label}</option>)}
-            </select>
+            <AdminNativeSelect value={form.category} onChange={(e) => set("category", e.target.value)}>
+              {CATEGORIES.map((c) => (
+                <AdminSelectOption key={c.value} value={c.value}>
+                  {c.label}
+                </AdminSelectOption>
+              ))}
+            </AdminNativeSelect>
           </div>
           <div>
             <label className="block text-xs font-medium text-white/40 mb-1">Услуга</label>
-            <select value={form.service} onChange={(e) => set("service", e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors">
-              {SERVICES.map((s) => <option key={s.value} value={s.value} className="bg-[#111111]">{s.label}</option>)}
-            </select>
+            <AdminNativeSelect value={form.service} onChange={(e) => set("service", e.target.value)}>
+              {ADMIN_PROJECT_SERVICE_OPTIONS.map((s) => (
+                <AdminSelectOption key={s.value} value={s.value}>
+                  {s.label}
+                </AdminSelectOption>
+              ))}
+            </AdminNativeSelect>
           </div>
         </div>
 
@@ -180,7 +184,7 @@ export default function NewProjectPage() {
           <input type="checkbox" checked={form.published} onChange={(e) => set("published", e.target.checked)} className="rounded" />
           Опубликовать сразу
         </label>
-      </div>
+      </AdminFormSection>
 
       {/* Фото проекта */}
       <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5 space-y-3">

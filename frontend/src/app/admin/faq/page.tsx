@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
+import { ADMIN_PROJECT_SERVICE_OPTIONS } from "@/lib/admin-service-options";
 
 interface FaqItem {
   id: string;
@@ -24,11 +25,7 @@ interface FaqItem {
 
 const SERVICE_OPTIONS = [
   { value: "", label: "Общий" },
-  { value: "ELECTRICAL", label: "Электрика" },
-  { value: "ACOUSTICS", label: "Акустика" },
-  { value: "STRUCTURED_CABLING", label: "СКС" },
-  { value: "SMART_HOME", label: "Умный дом" },
-  { value: "SECURITY", label: "Безопасность" },
+  ...ADMIN_PROJECT_SERVICE_OPTIONS,
 ];
 
 const emptyForm = { question: "", answer: "", service: "", visible: true, order: 0 };

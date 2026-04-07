@@ -13,7 +13,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white/90">
+    <div className="min-h-screen bg-[#0A0A0A] text-white/90 [color-scheme:dark]">
       <Suspense
         fallback={
           <aside className="fixed top-0 left-0 h-full z-[70] w-[240px] flex-shrink-0 bg-[#111111] border-r border-white/[0.08]" />
