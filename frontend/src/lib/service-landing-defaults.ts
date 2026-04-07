@@ -1,5 +1,6 @@
 import type { ServiceType } from "@prisma/client";
 import { CITY, SITE_NAME } from "@/lib/constants";
+import { getServiceLandingHeroBannerFields } from "@/lib/service-card-media";
 import { parseServiceLandingDocument, type ServiceLandingDocument } from "@/lib/service-landing-schema";
 
 export const SERVICE_PAGE_SLUGS = [
@@ -92,6 +93,7 @@ function electricalDoc(): ServiceLandingDocument {
         title: `Электромонтажные работы премиум-класса в ${C}`,
         subtitle: `Компания ${S} выполняет полный цикл электромонтажных работ для квартир, ресторанов и коммерческих объектов. Мы проектируем надёжные силовые сети, устанавливаем щитовое оборудование ABB и Schneider Electric, прокладываем кабельные трассы по ГОСТ. Каждый объект получает проектную документацию и 5-летнюю гарантию.`,
         serviceKey: "electrical",
+        ...(getServiceLandingHeroBannerFields(path) ?? {}),
         tag: "Электромонтаж",
         features: [
           "Проектирование силовых сетей по ГОСТ",
@@ -182,6 +184,7 @@ function acousticsDoc(): ServiceLandingDocument {
         title: `Коммерческая акустика и звук для бизнеса в ${C}`,
         subtitle: `${S} проектирует и устанавливает мультизональные звуковые системы для ресторанов, кафе, магазинов и коммерческих объектов. Мы создаём звуковую среду, которая работает на атмосферу вашего заведения — каждая зона получает свой источник, свою громкость и свой контент.`,
         serviceKey: "acoustics",
+        ...(getServiceLandingHeroBannerFields(path) ?? {}),
         tag: "Коммерческая акустика",
         features: [
           "Мультизональное управление звуком",
@@ -272,6 +275,7 @@ function structuredCablingDoc(): ServiceLandingDocument {
         title: `Слаботочные системы и IT-инфраструктура в ${C}`,
         subtitle: `${S} строит IT-инфраструктуру, которая работает без сбоев и масштабируется вместе с бизнесом. Структурированные кабельные сети (СКС), серверные комнаты, бесшовный Wi-Fi, телефония — всё под ключ с сертификацией каждой линии оборудованием Fluke.`,
         serviceKey: "structured-cabling",
+        ...(getServiceLandingHeroBannerFields(path) ?? {}),
         tag: "Слаботочные системы",
         features: [
           "Кабель Cat 6A — скорость до 10 Гбит/с",
@@ -362,6 +366,7 @@ function smartHomeDoc(): ServiceLandingDocument {
         title: `Монтаж умного дома в ${C} — полная автоматизация`,
         subtitle: `${S} проектирует и устанавливает системы умного дома для квартир и коммерческих объектов. Мы объединяем освещение, климат, шторы, мультимедиа и безопасность в единую экосистему с управлением через телефон, голосовые ассистенты или настенные панели.`,
         serviceKey: "smart-home",
+        ...(getServiceLandingHeroBannerFields(path) ?? {}),
         tag: "Умный дом",
         features: [
           "Автоматизация освещения, климата и штор",
@@ -452,6 +457,7 @@ function securityDoc(): ServiceLandingDocument {
         title: `Видеонаблюдение и безопасность под ключ в ${C}`,
         subtitle: `${S} проектирует и устанавливает комплексные системы безопасности для бизнеса и частных объектов. IP-камеры с разрешением до 4K, видеоаналитика с распознаванием лиц, контроль доступа (СКУД), охранная сигнализация — всё интегрировано в единую систему с удалённым доступом через телефон.`,
         serviceKey: "security",
+        ...(getServiceLandingHeroBannerFields(path) ?? {}),
         tag: "Видеонаблюдение",
         features: [
           "IP-камеры 4K с ИК-подсветкой до 80 метров",
@@ -542,8 +548,7 @@ function architecturalLightingDoc(): ServiceLandingDocument {
         title: `Архитектурная подсветка премиум-класса в ${C}`,
         subtitle: `Компания ${S} проектирует и монтирует архитектурную подсветку фасадов, входных групп, парковок и ландшафта. Подбираем LED-светильники с нужной цветопередачей и степенью защиты, рассчитываем освещённость и блики, настраиваем сценарии «будний / выходной / праздник». Результат — узнаваемый объект и безопасная эксплуатация.`,
         serviceKey: "architectural-lighting",
-        bannerImageDesktop: "/images/hero/architectural-lighting.png",
-        bannerImageMobile: "/images/hero/architectural-lighting.png",
+        ...(getServiceLandingHeroBannerFields(path) ?? {}),
         tag: "Архитектурная подсветка",
         features: [
           "Светотехнический расчёт и 3D-визуализация по желанию",

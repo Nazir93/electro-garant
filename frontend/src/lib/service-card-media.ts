@@ -18,6 +18,19 @@ function normalizeSlugPath(slug: string): string {
 }
 
 /**
+ * Картинки баннера под H1 на странице услуги — те же файлы, что у карточки на главной.
+ */
+export function getServiceLandingHeroBannerFields(slugPath: string): {
+  bannerImageDesktop: string;
+  bannerImageMobile: string;
+} | null {
+  const path = normalizeSlugPath(slugPath);
+  const img = FALLBACK_SIDE_IMAGE_BY_SLUG[path];
+  if (!img) return null;
+  return { bannerImageDesktop: img, bannerImageMobile: img };
+}
+
+/**
  * Медиа для карточки услуги: сначала данные из админки (обложка / видео), иначе картинка из макета.
  */
 export function resolveServiceCardMedia(s: ServiceItem): {

@@ -10,6 +10,7 @@ import {
 } from "@/lib/service-landing-defaults";
 import type { ServiceLandingDocument } from "@/lib/service-landing-schema";
 import { ensureDefaultServicesIfNeeded } from "@/lib/seed-default-services";
+import { getServiceLandingHeroBannerFields } from "@/lib/service-card-media";
 
 function mergeHeroBannersFromDb(
   document: ServiceLandingDocument,
@@ -27,6 +28,21 @@ function mergeHeroBannersFromDb(
         bannerImageDesktop: section.bannerImageDesktop ?? d,
         bannerImageMobile: section.bannerImageMobile ?? m,
       };
+    }),
+  };
+}
+
+/** Если в hero нет баннера (старый JSON из админки) — те же картинки, что на главной в карточке услуги. */
+function fillMissingHeroBannersFromSiteAssets(slug: string, document: ServiceLandingDocument): ServiceLandingDocument {
+  const fallback = getServiceLandingHeroBannerFields(`/services/${slug}`);
+  if (!fallback) return document;
+  return {
+    sections: document.sections.map((section) => {
+      if (section.type !== "hero") return section;
+      const has =
+        Boolean(section.bannerImageDesktop?.trim()) || Boolean(section.bannerImageMobile?.trim());
+      if (has) return section;
+      return { ...section, ...fallback };
     }),
   };
 }
@@ -130,11 +146,13 @@ export async function getServiceLandingPageData(slug: string): Promise<ServiceLa
 
   if (!row) {
     if (!knownType) return null;
-    const document = mergeHeroBannersFromDb(resolveServiceLandingDocument(null, knownType), null, null);
+    let document = mergeHeroBannersFromDb(resolveServiceLandingDocument(null, knownType), null, null);
+    document = fillMissingHeroBannersFromSiteAssets(slug, document);
     return { serviceType: knownType, published: true, document };
   }
 
   let document = resolveServiceLandingDocument(row.landingJson, row.serviceType);
   document = mergeHeroBannersFromDb(document, row.bannerImageDesktop, row.bannerImageMobile);
+  document = fillMissingHeroBannersFromSiteAssets(slug, document);
   return { serviceType: row.serviceType, published: row.published, document };
 }
