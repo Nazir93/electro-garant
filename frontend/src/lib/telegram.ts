@@ -1,4 +1,6 @@
-function getTelegramChatIds(): string[] {
+import { prisma } from "@/lib/db";
+
+function getTelegramChatIdsFromEnv(): string[] {
   const multi = process.env.TELEGRAM_CHAT_IDS?.trim();
   if (multi) {
     return multi
@@ -10,11 +12,63 @@ function getTelegramChatIds(): string[] {
   return single ? [single] : [];
 }
 
-function getMessageThreadId(): number | undefined {
+function getMessageThreadIdFromEnv(): number | undefined {
   const t = process.env.TELEGRAM_MESSAGE_THREAD_ID?.trim();
   if (!t) return undefined;
   const n = Number(t);
   return Number.isFinite(n) ? n : undefined;
+}
+
+/** Env имеет приоритет; если чего-то не хватает — подставляем из SiteSettings (админка → Telegram-уведомления). */
+async function resolveTelegramConfig(): Promise<{
+  botToken: string | null;
+  chatIds: string[];
+  threadId?: number;
+}> {
+  let botToken = process.env.TELEGRAM_BOT_TOKEN?.trim() || null;
+  let chatIds = getTelegramChatIdsFromEnv();
+  let threadId = getMessageThreadIdFromEnv();
+
+  const needDb = !botToken || chatIds.length === 0;
+  if (needDb) {
+    try {
+      const rows = await prisma.siteSettings.findMany({
+        where: {
+          key: {
+            in: [
+              "telegram_bot_token",
+              "telegram_chat_id",
+              "telegram_chat_ids",
+              "telegram_message_thread_id",
+            ],
+          },
+        },
+      });
+      const m = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+      if (!botToken && m.telegram_bot_token?.trim()) {
+        botToken = m.telegram_bot_token.trim();
+      }
+      if (chatIds.length === 0) {
+        const multi = m.telegram_chat_ids?.trim();
+        if (multi) {
+          chatIds = multi
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        } else if (m.telegram_chat_id?.trim()) {
+          chatIds = [m.telegram_chat_id.trim()];
+        }
+      }
+      if (threadId === undefined && m.telegram_message_thread_id?.trim()) {
+        const n = Number(m.telegram_message_thread_id.trim());
+        if (Number.isFinite(n)) threadId = n;
+      }
+    } catch (e) {
+      console.error("[TELEGRAM] Не удалось прочитать настройки из БД:", e);
+    }
+  }
+
+  return { botToken, chatIds, threadId };
 }
 
 function sleep(ms: number) {
@@ -57,18 +111,15 @@ async function sendMessageOnce(
   };
 }
 
-/** Отправка во все настроенные чаты (один TELEGRAM_CHAT_ID или несколько в TELEGRAM_CHAT_IDS). */
+/** Отправка во все настроенные чаты (env и/или админка: telegram_bot_token, telegram_chat_id). */
 export async function sendTelegramNotification(message: string) {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
-  const chatIds = getTelegramChatIds();
-  const threadId = getMessageThreadId();
+  const { botToken, chatIds, threadId } = await resolveTelegramConfig();
 
   if (!botToken || chatIds.length === 0) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(
-        "[TELEGRAM] Уведомления отключены: задайте TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID (или TELEGRAM_CHAT_IDS)"
-      );
-    }
+    console.warn(
+      "[TELEGRAM] Уведомления пропущены: нет токена или chat id. Проверьте .env (TELEGRAM_*) и/или админку → Настройки → Telegram (ключи telegram_bot_token, telegram_chat_id). Сейчас:",
+      { hasToken: Boolean(botToken), chatCount: chatIds.length }
+    );
     return;
   }
 
@@ -174,12 +225,15 @@ export function formatLeadMessage(lead: {
     rawCalc &&
     typeof rawCalc === "object" &&
     "kind" in rawCalc &&
-    (rawCalc as { kind?: string }).kind === "offer-pizza" &&
+    ((rawCalc as { kind?: string }).kind === "offer-pizza" ||
+      (rawCalc as { kind?: string }).kind === "calculator-pizza") &&
     "comment" in rawCalc &&
     typeof (rawCalc as { comment: unknown }).comment === "string"
   ) {
-    const p = rawCalc as { comment: string; previousLeadId?: string };
-    lines.push(``, `<b>Пожелание по пицце (оффер)</b>`);
+    const p = rawCalc as { comment: string; previousLeadId?: string; kind?: string };
+    const label =
+      p.kind === "calculator-pizza" ? "Пожелание по пицце (ориентировочный расчёт)" : "Пожелание по пицце (оффер)";
+    lines.push(``, `<b>${label}</b>`);
     lines.push(escapeHtml(p.comment.slice(0, 2000)));
     if (p.previousLeadId) {
       lines.push(`<i>Первая заявка: ${escapeHtml(p.previousLeadId)}</i>`);

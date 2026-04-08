@@ -71,9 +71,11 @@ const SETTINGS_GROUPS: SettingsGroup[] = [
   },
   {
     title: "Telegram-уведомления",
+    description:
+      "Сохраняются в БД и используются для POST /api/leads, если в .env на сервере не заданы TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID. Приоритет у переменных окружения.",
     fields: [
       { key: "telegram_bot_token", label: "Bot Token", placeholder: "123456:ABC-DEF..." },
-      { key: "telegram_chat_id", label: "Chat ID", placeholder: "-100123456789" },
+      { key: "telegram_chat_id", label: "Chat ID", placeholder: "-100123456789 или личный id" },
     ],
   },
 ];

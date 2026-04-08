@@ -78,6 +78,11 @@ cd frontend && npm ci && npx prisma generate && npx prisma db push && npm run bu
 
 Заявки с сайта сохраняются в БД и дублируются сообщением в Telegram через `POST /api/leads` → [`src/lib/telegram.ts`](src/lib/telegram.ts).
 
+**Где задать токен и chat id**
+
+1. **Переменные окружения на сервере** (приоритетнее) — таблица ниже.
+2. **Админка** → Настройки → «Telegram-уведомления» (ключи `telegram_bot_token`, `telegram_chat_id` в БД). Подхватывается, если в `.env` не заданы `TELEGRAM_BOT_TOKEN` и нет ни `TELEGRAM_CHAT_ID`, ни `TELEGRAM_CHAT_IDS`.
+
 | Переменная | Зачем |
 |------------|--------|
 | `TELEGRAM_BOT_TOKEN` | Токен бота от @BotFather |
@@ -87,4 +92,4 @@ cd frontend && npm ci && npx prisma generate && npx prisma db push && npm run bu
 
 Без токена и хотя бы одного chat id уведомления **не отправляются** (ошибка в ответе API не ломает сохранение заявки).
 
-После изменения переменных — перезапуск процесса Node.
+После изменения **переменных окружения** — перезапуск процесса Node. Если задано только в админке, перезапуск не обязателен.
