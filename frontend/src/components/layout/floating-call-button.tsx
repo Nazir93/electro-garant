@@ -1,8 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useContactConfig } from "@/lib/contact-config-context";
+
+/**
+ * Иконка кнопки: файл из `frontend/public/images/` — отдаётся с корня сайта как `/images/...`.
+ * PNG по умолчанию; чтобы использовать SVG, положите файл рядом и поменяйте имя ниже.
+ */
+const FLOATING_CALL_ICON_SRC = "/images/floating-call-smartphone.png";
 
 /**
  * Быстрый звонок: тот же номер, что в шапке (phone2Raw / phone2).
@@ -37,12 +42,15 @@ export function FloatingCallButton() {
       }}
       aria-label={`Позвонить: ${contact.phone2}`}
     >
-      <Image
-        src="/images/floating-call-smartphone.png"
+      {/* Обычный img — без оптимизатора next/image, стабильно для локальных png/svg из public */}
+      <img
+        src={FLOATING_CALL_ICON_SRC}
         alt=""
         width={42}
         height={42}
         className="h-[42px] w-[42px] object-contain select-none pointer-events-none"
+        decoding="async"
+        draggable={false}
         aria-hidden
       />
     </a>
