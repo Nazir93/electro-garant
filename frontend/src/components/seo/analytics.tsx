@@ -14,15 +14,27 @@ async function getAnalyticsIds() {
   }
 }
 
+function pickYandexMetrikaId(raw: string | undefined): string {
+  const s = raw?.trim() ?? "";
+  return /^\d{5,20}$/.test(s) ? s : "";
+}
+
+function pickGaId(raw: string | undefined): string {
+  const s = raw?.trim() ?? "";
+  if (/^G-[A-Z0-9]+$/.test(s)) return s;
+  if (/^UA-\d+-\d+$/.test(s)) return s;
+  return "";
+}
+
 export async function AnalyticsScripts() {
   const ids = await getAnalyticsIds();
   const ymId =
-    ids.yandex_metrika_id?.trim() ||
-    process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID?.trim() ||
+    pickYandexMetrikaId(ids.yandex_metrika_id) ||
+    pickYandexMetrikaId(process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID) ||
     "";
   const gaId =
-    ids.google_analytics_id?.trim() ||
-    process.env.NEXT_PUBLIC_GA_ID?.trim() ||
+    pickGaId(ids.google_analytics_id) ||
+    pickGaId(process.env.NEXT_PUBLIC_GA_ID) ||
     "";
 
   return (

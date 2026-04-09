@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+
+/** Чтобы Метрика/контакты из БД подставлялись при каждом запросе, а не при сборке. */
+export const dynamic = "force-dynamic";
 import { SiteShell } from "@/components/layout/site-shell";
 import { ThemeProvider } from "@/lib/theme-context";
 import { ModalProvider } from "@/lib/modal-context";
