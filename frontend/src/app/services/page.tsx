@@ -1,26 +1,20 @@
-import { SITE_NAME, CITY } from "@/lib/constants";
+import { getHeroGeoSubtitle } from "@/lib/constants";
 import { getPageMeta, getPageMetaFields } from "@/lib/get-page-meta";
 import { getServicesList } from "@/lib/get-services";
+import { getServicesIndexSeo } from "@/lib/seo/service-seo-defaults";
 import { ServicesPageContent } from "./content";
 
 export const revalidate = 60;
 
-const SERVICES_INTRO_FALLBACK = `Полный спектр электромонтажных работ в ${CITY}: электромонтаж, умный дом, видеонаблюдение, акустика и слаботочные системы — от проекта до сдачи объекта.`;
+const SERVICES_INTRO_FALLBACK = `${getHeroGeoSubtitle()} Полный спектр: электромонтаж, умный дом, видеонаблюдение, акустика и слаботочные системы — от проекта до сдачи объекта.`;
 
 export async function generateMetadata() {
+  const seo = getServicesIndexSeo();
   return getPageMeta({
-    title: `Услуги — электромонтаж, умный дом, слаботочные системы в ${CITY} | ${SITE_NAME}`,
-    description: `Электромонтаж под ключ, умный дом, видеонаблюдение, коммерческая акустика и СКС в ${CITY}. Проектирование, монтаж, гарантия. Список услуг на странице.`,
+    title: seo.title,
+    description: seo.description,
     path: "/services",
-    keywords: [
-      `услуги электромонтаж ${CITY}`,
-      `электромонтажные работы ${CITY}`,
-      "умный дом монтаж",
-      "видеонаблюдение установка",
-      "слаботочные системы СКС",
-      "коммерческая акустика",
-      SITE_NAME,
-    ],
+    keywords: seo.keywords,
   });
 }
 

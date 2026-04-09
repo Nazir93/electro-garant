@@ -109,6 +109,11 @@ export async function getServiceMetadataDefaults(slug: string): Promise<{
   description: string;
   keywords?: string[];
 } | null> {
+  /** Известные slug услуг: полноценное семантическое ядро из кода (перекрывается PageMeta). */
+  if (isServicePageSlug(slug)) {
+    return getDefaultMetaForServiceSlug(slug as ServicePageSlug);
+  }
+
   try {
     const s = await prisma.service.findUnique({
       where: { slug },
@@ -123,11 +128,7 @@ export async function getServiceMetadataDefaults(slug: string): Promise<{
       };
     }
   } catch {
-    // БД недоступна — ниже шаблон из кода для известных slug
-  }
-
-  if (isServicePageSlug(slug)) {
-    return getDefaultMetaForServiceSlug(slug as ServicePageSlug);
+    // БД недоступна
   }
 
   return null;

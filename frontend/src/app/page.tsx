@@ -1,4 +1,4 @@
-import { SITE_NAME, CITY } from "@/lib/constants";
+import { SITE_NAME, CITY, getDefaultSiteGeoDescription } from "@/lib/constants";
 import { getPageMeta } from "@/lib/get-page-meta";
 import { getServicesList } from "@/lib/get-services";
 import { getProjectsList } from "@/lib/get-projects";
@@ -16,7 +16,7 @@ export const revalidate = 60;
 export async function generateMetadata() {
   return getPageMeta({
     title: `${SITE_NAME} — электромонтаж премиум-класса в ${CITY} под ключ`,
-    description: `Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в ${CITY}. 280+ объектов. Гарантия 5 лет. Допуск СРО.`,
+    description: getDefaultSiteGeoDescription(),
     path: "/",
     keywords: ["электромонтаж", CITY, "электрик", "умный дом", "видеонаблюдение", SITE_NAME],
   });

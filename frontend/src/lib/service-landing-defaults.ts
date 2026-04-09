@@ -28,52 +28,7 @@ export function isServicePageSlug(s: string): s is ServicePageSlug {
 }
 
 /** SEO по умолчанию (перекрывается PageMeta в админке). */
-export function getDefaultMetaForServiceSlug(slug: ServicePageSlug): {
-  title: string;
-  description: string;
-  keywords: string[];
-} {
-  const C = CITY;
-  const S = SITE_NAME;
-  switch (slug) {
-    case "electrical":
-      return {
-        title: `Электромонтажные работы под ключ в ${C} — от проекта до пусконаладки | ${S}`,
-        description: `Электромонтаж квартир, ресторанов и офисов в ${C}. Проектирование, щитовое оборудование, силовые сети. Допуск СРО. Гарантия 5 лет.`,
-        keywords: [`электромонтаж ${C}`, `электромонтажные работы ${C}`, `электрик ${C}`, "электромонтаж под ключ", S],
-      };
-    case "acoustics":
-      return {
-        title: `Коммерческая акустика для ресторанов и магазинов в ${C} — мультизональный звук | ${S}`,
-        description: `Проектирование и монтаж звуковых систем для ресторанов, кафе, магазинов и офисов в ${C}. Bose, JBL. Гарантия 5 лет.`,
-        keywords: [`акустика ресторан ${C}`, `коммерческий звук ${C}`, "мультизональный звук", S],
-      };
-    case "structured-cabling":
-      return {
-        title: `Слаботочные системы и СКС под ключ в ${C} — IT-инфраструктура для бизнеса | ${S}`,
-        description: `Проектирование и монтаж СКС в ${C}. Интернет, телефония, серверные. Cat 6A, 10 Гбит/с. Гарантия 5 лет.`,
-        keywords: [`СКС ${C}`, `слаботочные системы ${C}`, "структурированные кабельные сети", "Cat 6A", S],
-      };
-    case "smart-home":
-      return {
-        title: `Умный дом под ключ в ${C} — монтаж и автоматизация | ${S}`,
-        description: `Монтаж систем умного дома в ${C}. KNX, Z-Wave, автоматизация света, климата и мультимедиа. Гарантия 5 лет.`,
-        keywords: [`умный дом ${C}`, `KNX монтаж ${C}`, "автоматизация света", "Z-Wave", S],
-      };
-    case "security":
-      return {
-        title: `Видеонаблюдение и системы безопасности в ${C} — установка под ключ | ${S}`,
-        description: `Монтаж IP-видеонаблюдения, контроля доступа и охранных систем в ${C}. Hikvision, Dahua. 4K-камеры, видеоаналитика. Гарантия 5 лет.`,
-        keywords: [`видеонаблюдение ${C}`, `установка камер ${C}`, "СКУД контроль доступа", "Hikvision", S],
-      };
-    case "architectural-lighting":
-      return {
-        title: `Архитектурная подсветка фасадов и интерьеров в ${C} — проект и монтаж | ${S}`,
-        description: `Проектирование и монтаж архитектурной и ландшафтной подсветки в ${C}. LED, DMX, управление сценариями. Гарантия на оборудование и работы.`,
-        keywords: [`архитектурная подсветка ${C}`, `подсветка фасада ${C}`, "LED архитектурная подсветка", "DMX управление светом", S],
-      };
-  }
-}
+export { getDefaultMetaForServiceSlug } from "@/lib/seo/service-seo-defaults";
 
 function electricalDoc(): ServiceLandingDocument {
   const C = CITY;

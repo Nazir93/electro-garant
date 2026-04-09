@@ -1,7 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Phone } from "lucide-react";
 import { useContactConfig } from "@/lib/contact-config-context";
 
 /**
@@ -37,7 +37,14 @@ export function FloatingCallButton() {
       }}
       aria-label={`Позвонить: ${contact.phone2}`}
     >
-      <Phone className="h-6 w-6" strokeWidth={2} aria-hidden />
+      <Image
+        src="/images/floating-call-smartphone.png"
+        alt=""
+        width={42}
+        height={42}
+        className="h-[42px] w-[42px] object-contain select-none pointer-events-none"
+        aria-hidden
+      />
     </a>
   );
 }

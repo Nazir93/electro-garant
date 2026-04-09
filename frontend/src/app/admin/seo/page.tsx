@@ -103,16 +103,25 @@ export default function AdminSeoPage() {
 function MetaTab() {
   const [pages, setPages] = useState<PageMetaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, Partial<PageMetaItem>>>({});
 
   useEffect(() => {
+    setLoadError(null);
     fetch("/api/admin/meta")
-      .then((r) => r.json())
-      .then((data) => {
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) {
+          setLoadError(typeof data?.error === "string" ? data.error : `Ошибка загрузки (${r.status})`);
+          return;
+        }
         if (Array.isArray(data)) setPages(data);
+        else setLoadError("Некорректный ответ сервера");
       })
+      .catch(() => setLoadError("Сеть или сервер недоступны"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -140,6 +149,7 @@ function MetaTab() {
 
   async function saveMeta(path: string) {
     setSaving(path);
+    setSaveError(null);
     const draft = drafts[path] || {};
     const existing = pages.find((p) => p.path === path);
     const body = { path, ...existing, ...draft };
@@ -150,8 +160,9 @@ function MetaTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      const payload = await res.json().catch(() => ({}));
       if (res.ok) {
-        const updated = await res.json();
+        const updated = payload as PageMetaItem;
         setPages((prev) => {
           const idx = prev.findIndex((p) => p.path === path);
           if (idx >= 0) {
@@ -166,15 +177,34 @@ function MetaTab() {
           delete next[path];
           return next;
         });
+      } else {
+        setSaveError(
+          typeof payload?.error === "string" ? payload.error : `Сохранение не удалось (${res.status})`
+        );
       }
-    } catch { /* */ }
+    } catch {
+      setSaveError("Сеть или сервер недоступны");
+    }
     setSaving(null);
   }
 
   if (loading) return <div className="p-8 text-center text-white/30">Загрузка...</div>;
 
+  if (loadError) {
+    return (
+      <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-300/90">
+        Не удалось загрузить мета-теги: {loadError}. Проверьте авторизацию, доступ к БД и откройте раздел снова.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
+      {saveError && (
+        <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs text-red-300/90 mb-2">
+          {saveError}
+        </div>
+      )}
       <p className="text-xs text-white/30 mb-2">
         Задайте уникальные мета-теги для каждой страницы. Незаполненные поля используют значения по умолчанию из кода.
       </p>

@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { CITY, SERVICES } from "@/lib/constants";
+import { getHeroGeoSubtitle, SERVICES } from "@/lib/constants";
 import { useContactConfig } from "@/lib/contact-config-context";
 import type { ServiceItem } from "@/lib/get-services";
 import { resolveServiceCardMedia, serviceCardHasVisualMedia } from "@/lib/service-card-media";
@@ -368,7 +368,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                       className="mt-5 max-w-3xl text-[clamp(10px,1.05vw,14px)] uppercase leading-relaxed tracking-[0.28em]"
                       style={{ color: "var(--text-muted)" }}
                     >
-                      Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в {CITY}
+                      {getHeroGeoSubtitle()}
                     </p>
                   </div>
                 </div>
@@ -507,7 +507,7 @@ export function HeroSection({ services: propServices }: { services?: ServiceItem
                 className="mt-4 text-[10px] sm:text-[11px] uppercase tracking-[0.2em] leading-relaxed"
                 style={{ color: "var(--text-muted)" }}
               >
-                Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в {CITY}
+                {getHeroGeoSubtitle()}
               </p>
             </Link>
             <div className="mt-8 flex flex-col gap-4">

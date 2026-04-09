@@ -1,4 +1,4 @@
-import { SITE_NAME, CITY, SITE_URL } from "@/lib/constants";
+import { SITE_NAME, CITY, SITE_URL, buildSchemaAreaServed, getDefaultSiteGeoDescription } from "@/lib/constants";
 import { OFFICE_OPENING_HOURS_JSON_LD } from "@/lib/contact-config";
 import { loadContactConfig } from "@/lib/load-contact-config";
 import { prisma } from "@/lib/db";
@@ -23,7 +23,7 @@ export async function JsonLd() {
     "@context": "https://schema.org",
     "@type": "ElectricalContractor",
     name: SITE_NAME,
-    description: `Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир в ${CITY}. 280+ объектов. Гарантия 5 лет.`,
+    description: getDefaultSiteGeoDescription(),
     url: SITE_URL,
     telephone: [contact.phoneRaw, contact.phone2Raw],
     email: contact.email,
@@ -33,7 +33,7 @@ export async function JsonLd() {
       addressCountry: "RU",
       streetAddress: contact.address,
     },
-    areaServed: { "@type": "City", name: CITY },
+    areaServed: buildSchemaAreaServed(),
     openingHoursSpecification: [OFFICE_OPENING_HOURS_JSON_LD],
     hasOfferCatalog: {
       "@type": "OfferCatalog",

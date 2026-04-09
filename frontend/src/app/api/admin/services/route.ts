@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { ensureDefaultServicePageMetaIfNeeded } from "@/lib/seed-default-page-meta";
 import { ensureDefaultServicesIfNeeded } from "@/lib/seed-default-services";
 import { generateSlug } from "@/lib/utils";
 
 export async function GET() {
   try {
     await ensureDefaultServicesIfNeeded();
+    await ensureDefaultServicePageMetaIfNeeded();
     const services = await prisma.service.findMany({
       orderBy: { order: "asc" },
     });

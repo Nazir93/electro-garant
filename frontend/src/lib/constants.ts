@@ -1,5 +1,46 @@
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Гарант Монтаж";
-export const CITY = process.env.NEXT_PUBLIC_CITY || "Сочи";
+/** Якорный город (офис на карте, локальные формулировки в мета). Без env — Сочи. */
+export const CITY = process.env.NEXT_PUBLIC_CITY?.trim() || "Сочи";
+/**
+ * Зона работ в маркетинговых текстах — перечень через запятую.
+ * Задаётся на сервере: NEXT_PUBLIC_SERVICE_REGIONS
+ */
+export const SERVICE_REGIONS =
+  process.env.NEXT_PUBLIC_SERVICE_REGIONS?.trim() ||
+  "Краснодарский край, Ростовская область, Москва";
+
+/** Подзаголовок hero и похожие блоки: офис + регионы без перегруза title. */
+export function getHeroGeoSubtitle(): string {
+  return `Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир. Офис в ${CITY}, работаем в: ${SERVICE_REGIONS}.`;
+}
+
+/** Доп. фраза для meta description на главной и в layout. */
+export function getDefaultSiteGeoDescription(): string {
+  return `Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир. Офис в ${CITY}, проекты в ${SERVICE_REGIONS}. 280+ объектов. Гарантия 5 лет. Допуск СРО.`;
+}
+
+type SchemaPlace = { "@type": "City" | "AdministrativeArea"; name: string };
+
+/** Несколько зон для schema.org areaServed (организация и услуги). */
+export function buildSchemaAreaServed(): SchemaPlace[] {
+  const seen = new Set<string>();
+  const out: SchemaPlace[] = [];
+  const push = (name: string, t: "City" | "AdministrativeArea") => {
+    const k = `${t}:${name}`;
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push({ "@type": t, name });
+  };
+  push(CITY, "City");
+  for (const raw of SERVICE_REGIONS.split(/[,;]+/)) {
+    const name = raw.trim();
+    if (!name || name === CITY) continue;
+    const t = /край|область|округ|федеральный/i.test(name) ? "AdministrativeArea" : "City";
+    push(name, t);
+  }
+  return out;
+}
+
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://gmont.ru";
 
 export const PHONE = "8 (928) 455-45-59";
@@ -66,7 +107,7 @@ export const SERVICES = [
     slug: "/services/acoustics",
     title: "Коммерческая акустика",
     shortDescription:
-      "Проектирование и монтаж звуковых систем для ресторанов, магазинов и офисов. Чистый звук в каждой зоне.",
+      "Мультизональный звук для ресторанов, ритейла и офисов: проект, монтаж, Bose и JBL. Гарантия 5 лет.",
     icon: "speaker" as const,
     coverImage: null as string | null,
     videoUrl: null as string | null,
@@ -76,7 +117,7 @@ export const SERVICES = [
     slug: "/services/electrical",
     title: "Электромонтажные работы",
     shortDescription:
-      "Силовые сети, щитовое оборудование, освещение. Полный цикл от проекта до пусконаладки.",
+      "Электромонтаж под ключ: проект, щиты, силовые линии, освещение, пусконаладка. СРО, гарантия 5 лет.",
     icon: "zap" as const,
     coverImage: null as string | null,
     videoUrl: null as string | null,
@@ -86,7 +127,7 @@ export const SERVICES = [
     slug: "/services/structured-cabling",
     title: "Слаботочные системы",
     shortDescription:
-      "Структурированные кабельные сети, интернет, телефония. Надёжная IT-инфраструктура для бизнеса.",
+      "СКС и слаботочка для офиса: Cat 6A, серверная, ЛВС и телефония. Проект и монтаж под ключ.",
     icon: "network" as const,
     coverImage: null as string | null,
     videoUrl: null as string | null,
@@ -96,7 +137,7 @@ export const SERVICES = [
     slug: "/services/smart-home",
     title: "Умный дом",
     shortDescription:
-      "Автоматизация освещения, климата и мультимедиа. Управление всем домом с одного экрана.",
+      "Умный дом под ключ: KNX, Z-Wave, свет, климат и мультимедиа. Проект и гарантия 5 лет.",
     icon: "home" as const,
     coverImage: null as string | null,
     videoUrl: null as string | null,
@@ -106,7 +147,7 @@ export const SERVICES = [
     slug: "/services/security",
     title: "Видеонаблюдение и безопасность",
     shortDescription:
-      "IP-камеры, контроль доступа, охранные системы. Круглосуточный контроль объекта с телефона.",
+      "IP-видеонаблюдение и СКУД: проект, монтаж, настройка приложений. Офис и частный дом.",
     icon: "shield" as const,
     coverImage: null as string | null,
     videoUrl: null as string | null,
@@ -116,7 +157,7 @@ export const SERVICES = [
     slug: "/services/architectural-lighting",
     title: "Архитектурная подсветка",
     shortDescription:
-      "Проект и монтаж фасадной и ландшафтной подсветки. LED, сценарии, управление со смартфона.",
+      "Архитектурная и ландшафтная подсветка: LED, DMX, сценарии. Проект и монтаж под ключ.",
     icon: "sun" as const,
     coverImage: null as string | null,
     videoUrl: null as string | null,

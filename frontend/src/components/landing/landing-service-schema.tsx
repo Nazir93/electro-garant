@@ -1,4 +1,4 @@
-import { SITE_NAME, CITY, SITE_URL } from "@/lib/constants";
+import { SITE_NAME, SITE_URL, buildSchemaAreaServed } from "@/lib/constants";
 
 interface LandingServiceSchemaProps {
   serviceName: string;
@@ -25,15 +25,9 @@ export function LandingServiceSchema({
       name: SITE_NAME,
       telephone,
       url: SITE_URL,
-      areaServed: {
-        "@type": "City",
-        name: CITY,
-      },
+      areaServed: buildSchemaAreaServed(),
     },
-    areaServed: {
-      "@type": "City",
-      name: CITY,
-    },
+    areaServed: buildSchemaAreaServed(),
     url: `${SITE_URL}${slug}`,
     offers: {
       "@type": "Offer",
