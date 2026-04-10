@@ -53,6 +53,8 @@ export async function POST(request: NextRequest) {
         projectType: body.projectType || null,
         published: body.published ?? false,
         order: body.order ?? 0,
+        featuredOnHome: body.featuredOnHome ?? false,
+        homeOrder: body.homeOrder != null ? parseInt(String(body.homeOrder), 10) || 0 : 0,
       },
     });
 

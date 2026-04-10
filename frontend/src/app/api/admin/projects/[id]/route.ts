@@ -72,6 +72,8 @@ export async function PUT(
         ...(body.showcaseImage2 !== undefined && { showcaseImage2: body.showcaseImage2 || null }),
         ...(body.published !== undefined && { published: body.published }),
         ...(body.order !== undefined && { order: body.order }),
+        ...(body.featuredOnHome !== undefined && { featuredOnHome: Boolean(body.featuredOnHome) }),
+        ...(body.homeOrder !== undefined && { homeOrder: parseInt(String(body.homeOrder), 10) || 0 }),
       },
     });
     return NextResponse.json(project);

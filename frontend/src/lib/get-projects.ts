@@ -49,6 +49,45 @@ function categoryToLabel(cat: string): string {
   return map[cat] || cat;
 }
 
+type ProjectListRow = {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  service: string;
+  area: number | null;
+  coverImage: string | null;
+  videoUrl: string | null;
+  description: string;
+  seoDescription: string | null;
+  industry: string | null;
+  projectType: string | null;
+  year: string | null;
+};
+
+function mapProjectRowToListItem(p: ProjectListRow): ProjectListItem {
+  const seo = p.seoDescription?.trim();
+  const shortDescription = seo
+    ? seo.length > 200
+      ? `${seo.slice(0, 200)}…`
+      : seo
+    : stripHtml(p.description).substring(0, 200);
+  return {
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    tag: categoryToLabel(p.category),
+    industry: p.industry || categoryToLabel(p.category).toUpperCase(),
+    type: p.projectType || serviceTypeToLabel(p.service),
+    year: p.year || "",
+    area: p.area ? `${p.area} м²` : "",
+    coverImage: p.coverImage,
+    videoUrl: p.videoUrl || null,
+    shortDescription,
+    service: p.service,
+  };
+}
+
 export async function getProjectsList(): Promise<ProjectListItem[]> {
   try {
     const dbProjects = await prisma.project.findMany({
@@ -72,28 +111,7 @@ export async function getProjectsList(): Promise<ProjectListItem[]> {
     });
 
     if (dbProjects.length > 0) {
-      return dbProjects.map((p) => {
-        const seo = p.seoDescription?.trim();
-        const shortDescription = seo
-          ? seo.length > 200
-            ? `${seo.slice(0, 200)}…`
-            : seo
-          : stripHtml(p.description).substring(0, 200);
-        return {
-          id: p.id,
-          slug: p.slug,
-          title: p.title,
-          tag: categoryToLabel(p.category),
-          industry: p.industry || categoryToLabel(p.category).toUpperCase(),
-          type: p.projectType || serviceTypeToLabel(p.service),
-          year: p.year || "",
-          area: p.area ? `${p.area} м²` : "",
-          coverImage: p.coverImage,
-          videoUrl: p.videoUrl || null,
-          shortDescription,
-          service: p.service,
-        };
-      });
+      return dbProjects.map(mapProjectRowToListItem);
     }
   } catch {
     // DB unavailable
@@ -112,6 +130,44 @@ export async function getProjectsList(): Promise<ProjectListItem[]> {
     videoUrl: c.videoUrl ?? null,
     shortDescription: c.shortDescription,
   }));
+}
+
+const HOME_PORTFOLIO_MAX = 5;
+
+/** Проекты для блока «Портфолио» на главной: отмеченные в админке (до 5), иначе первые 5 из общего списка. */
+export async function getHomePortfolioProjects(): Promise<ProjectListItem[]> {
+  const fallback = async () => (await getProjectsList()).slice(0, HOME_PORTFOLIO_MAX);
+
+  try {
+    const featured = await prisma.project.findMany({
+      where: { published: true, featuredOnHome: true },
+      orderBy: [{ homeOrder: "asc" }, { order: "asc" }],
+      take: HOME_PORTFOLIO_MAX,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        category: true,
+        service: true,
+        area: true,
+        coverImage: true,
+        videoUrl: true,
+        description: true,
+        seoDescription: true,
+        industry: true,
+        projectType: true,
+        year: true,
+      },
+    });
+
+    if (featured.length > 0) {
+      return featured.map(mapProjectRowToListItem);
+    }
+  } catch {
+    // DB unavailable
+  }
+
+  return fallback();
 }
 
 export async function getProjectBySlug(slug: string): Promise<PortfolioCase | null> {

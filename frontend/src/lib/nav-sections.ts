@@ -28,7 +28,6 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         label: "Услуги",
         children: [
-          { href: "/services", label: "Все услуги" },
           { href: "/services/electrical", label: "Электромонтаж" },
           { href: "/services/acoustics", label: "Акустика" },
           { href: "/services/smart-home", label: "Умный дом" },

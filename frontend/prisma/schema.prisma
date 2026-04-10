@@ -66,6 +66,9 @@ model Project {
   showcaseImage2 String?
   published      Boolean        @default(false)
   order          Int            @default(0)
+  /// Блок «Портфолио» на главной: до 5 проектов с галочкой, порядок — homeOrder по возрастанию
+  featuredOnHome Boolean        @default(false)
+  homeOrder      Int            @default(0)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   images         ProjectImage[]
@@ -73,6 +76,7 @@ model Project {
 
   @@index([published, service])
   @@index([published, category])
+  @@index([published, featuredOnHome, homeOrder])
 }
 
 model ProjectImage {

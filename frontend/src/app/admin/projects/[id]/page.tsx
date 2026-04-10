@@ -53,6 +53,8 @@ export default function EditProjectPage() {
     projectType: "",
     published: false,
     order: 0,
+    featuredOnHome: false,
+    homeOrder: 0,
   });
 
   const loadProject = useCallback(() => {
@@ -76,6 +78,8 @@ export default function EditProjectPage() {
           projectType: data.projectType || "",
           published: data.published ?? false,
           order: data.order ?? 0,
+          featuredOnHome: data.featuredOnHome ?? false,
+          homeOrder: data.homeOrder ?? 0,
         });
         setImages(data.images || []);
       })
@@ -255,7 +259,7 @@ export default function EditProjectPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-white/40 mb-1">Порядок</label>
+            <label className="block text-xs font-medium text-white/40 mb-1">Порядок в списке портфолио</label>
             <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)}
               className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors" />
           </div>
@@ -264,6 +268,31 @@ export default function EditProjectPage() {
               <input type="checkbox" checked={form.published} onChange={(e) => set("published", e.target.checked)} className="rounded" />
               Опубликован
             </label>
+          </div>
+        </div>
+
+        <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4 space-y-3">
+          <p className="text-xs font-medium text-white/50">Главная страница</p>
+          <p className="text-[11px] text-white/25 leading-relaxed">
+            Отметьте до пяти проектов для блока «Портфолио» на главной. Порядок на главной — по полю ниже (меньше число — выше в списке).
+          </p>
+          <label className="flex items-center gap-2 text-sm text-white/70">
+            <input
+              type="checkbox"
+              checked={form.featuredOnHome}
+              onChange={(e) => set("featuredOnHome", e.target.checked)}
+              className="rounded"
+            />
+            Показывать в блоке «Портфолио» на главной
+          </label>
+          <div>
+            <label className="block text-xs font-medium text-white/40 mb-1">Порядок на главной</label>
+            <input
+              type="number"
+              value={form.homeOrder}
+              onChange={(e) => set("homeOrder", parseInt(e.target.value, 10) || 0)}
+              className="w-full max-w-[140px] px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white focus:outline-none focus:border-[#C9A84C]/40 transition-colors"
+            />
           </div>
         </div>
       </AdminFormSection>

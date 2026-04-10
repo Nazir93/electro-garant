@@ -103,6 +103,7 @@ export default function AdminSeoPage() {
 function MetaTab() {
   const [pages, setPages] = useState<PageMetaItem[]>([]);
   const [portfolioCases, setPortfolioCases] = useState<{ slug: string; title: string }[]>([]);
+  const [blogPosts, setBlogPosts] = useState<{ slug: string; title: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -116,6 +117,19 @@ function MetaTab() {
         const data = await r.json();
         if (r.ok && Array.isArray(data)) {
           setPortfolioCases(
+            data.map((p: { slug: string; title: string }) => ({ slug: p.slug, title: p.title || p.slug }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/admin/posts")
+      .then(async (r) => {
+        const data = await r.json();
+        if (r.ok && Array.isArray(data)) {
+          setBlogPosts(
             data.map((p: { slug: string; title: string }) => ({ slug: p.slug, title: p.title || p.slug }))
           );
         }
@@ -223,13 +237,18 @@ function MetaTab() {
         Задайте уникальные мета-теги для каждой страницы. Незаполненные поля используют значения по умолчанию из кода.
       </p>
       <p className="text-xs text-white/20 mb-4">
-        Блог: title/description — в разделе «Новости». Кейсы: блоки ниже (путь{" "}
+        «Новости» и «Портфолио»: тексты и обложки в соответствующих разделах. Ниже — блоки по URL для{" "}
+        <code className="text-white/40">/blog/slug</code> и{" "}
         <code className="text-white/40">/portfolio/slug</code>
-        ), плюс в «Портфолио» задаются название и HTML-описание — из них по умолчанию собираются сниппет и ключевые слова на странице кейса. Полное переопределение title/description/H1/OG — здесь, в PageMeta.
+        : сниппет и H1 по умолчанию из статьи/проекта; полное переопределение title/description/H1/OG — здесь (PageMeta).
       </p>
 
       {[
         ...KNOWN_PAGES.map(({ path, label }) => ({ path, label })),
+        ...blogPosts.map((p) => ({
+          path: `/blog/${p.slug}`,
+          label: `Статья: ${p.title}`,
+        })),
         ...portfolioCases.map((c) => ({
           path: `/portfolio/${c.slug}`,
           label: `Кейс: ${c.title}`,

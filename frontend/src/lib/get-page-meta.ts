@@ -8,6 +8,8 @@ interface MetaDefaults {
   keywords?: string[];
   path: string;
   ogImage?: string;
+  /** Open Graph: для статей блога — article, иначе website */
+  openGraphType?: "website" | "article";
 }
 
 export async function getPageMeta(defaults: MetaDefaults): Promise<Metadata> {
@@ -46,7 +48,7 @@ export async function getPageMeta(defaults: MetaDefaults): Promise<Metadata> {
     openGraph: {
       title: dbMeta?.ogTitle || title,
       description: dbMeta?.ogDescription || description,
-      type: "website",
+      type: defaults.openGraphType ?? "website",
       locale: "ru_RU",
       siteName: SITE_NAME,
       url: `${baseUrl}${defaults.path}`,

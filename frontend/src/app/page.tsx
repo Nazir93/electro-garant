@@ -1,7 +1,7 @@
 import { SITE_NAME, CITY, getDefaultSiteGeoDescription } from "@/lib/constants";
 import { getPageMeta } from "@/lib/get-page-meta";
 import { getServicesList } from "@/lib/get-services";
-import { getProjectsList } from "@/lib/get-projects";
+import { getHomePortfolioProjects } from "@/lib/get-projects";
 import { BannerSection } from "@/components/sections/banner";
 import { NavBar } from "@/components/layout/header";
 import { ViewAllServices } from "@/components/layout/view-all-services";
@@ -25,7 +25,7 @@ export async function generateMetadata() {
 export default async function HomePage() {
   const [services, projects] = await Promise.all([
     getServicesList(),
-    getProjectsList(),
+    getHomePortfolioProjects(),
   ]);
 
   return (

@@ -27,7 +27,14 @@ function blogBannerSlides(post: BlogPost) {
   return editorialSlidesFromImagesAndVideo(imageUrls, videoArr);
 }
 
-export function BlogPostContent({ post }: { post: BlogPost }) {
+export function BlogPostContent({
+  post,
+  pageH1,
+}: {
+  post: BlogPost;
+  /** H1 из SEO (PageMeta) или заголовок статьи */
+  pageH1: string;
+}) {
   const bannerSlides = useMemo(() => blogBannerSlides(post), [post]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -70,7 +77,7 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
         backHref="/blog"
         backLabel="Все статьи"
         meta={meta}
-        title={post.title}
+        title={pageH1}
         mediaAfterTitle={
           bannerSlides.length > 0 ? (
             <EditorialBanner

@@ -21,6 +21,7 @@ interface ProjectItem {
   coverImage: string;
   published: boolean;
   order: number;
+  featuredOnHome?: boolean;
   images: { id: string }[];
   _count: { hotspots: number };
 }
@@ -150,6 +151,11 @@ export default function AdminProjectsPage() {
               <div className="p-4">
                 <h3 className="font-semibold text-sm text-white truncate">{p.title}</h3>
                 <div className="flex gap-2 mt-1.5 flex-wrap">
+                  {p.featuredOnHome && (
+                    <span className="px-2 py-0.5 rounded-md bg-[#C9A84C]/20 text-[11px] text-[#C9A84C]">
+                      На главной
+                    </span>
+                  )}
                   <span className="px-2 py-0.5 rounded-md bg-white/[0.06] text-[11px] text-white/40">
                     {CATEGORY_LABELS[p.category] || p.category}
                   </span>
