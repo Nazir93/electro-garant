@@ -2,11 +2,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { PORTFOLIO_CASES } from "@/lib/portfolio-data";
 import type { ProjectListItem } from "@/lib/get-projects";
 import { isGifUrl } from "@/components/editorial/editorial-banner";
+
+/** Растровое изображение по URL (в т.ч. PNG в поле «видео» — не в тег video) */
+function isRasterImageUrl(url: string): boolean {
+  return /\.(png|jpe?g|webp|gif|avif|bmp)(\?.*)?$/i.test(url);
+}
 
 function FillLink({ href, label }: { href: string; label: string }) {
   const [hovered, setHovered] = useState(false);
@@ -95,18 +99,18 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
         className="w-full grid grid-cols-[1fr_auto] md:grid-cols-[2fr_3fr_auto] items-center py-3.5 sm:py-4 lg:pr-20 text-left group cursor-pointer min-h-[48px]"
       >
         <span
-          className="font-heading text-xs sm:text-sm md:text-base tracking-[0.05em] transition-colors duration-200 group-hover:text-[var(--accent)] pr-3"
+          className="font-heading text-[10px] sm:text-xs md:text-sm tracking-[0.05em] transition-colors duration-200 group-hover:text-[var(--accent)] pr-3 leading-tight"
           style={{ color: "var(--text)" }}
         >
           {project.title.toUpperCase()}
         </span>
         <span
-          className="hidden md:block text-sm tracking-[0.08em]"
+          className="hidden md:block text-xs md:text-sm tracking-[0.08em]"
           style={{ color: "var(--text-muted)" }}
         >
           {project.type}
         </span>
-        <span className="text-xs sm:text-sm text-right tabular-nums" style={{ color: "var(--text-muted)" }}>
+        <span className="text-[10px] sm:text-xs text-right tabular-nums" style={{ color: "var(--text-muted)" }}>
           ({project.year})
         </span>
       </button>
@@ -134,14 +138,14 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
             </div>
 
             <div
-              className="aspect-[4/3] md:aspect-[16/10] flex items-center justify-center rounded-lg overflow-hidden relative"
-              style={{ backgroundColor: "var(--bg-secondary)" }}
+              className="aspect-[4/3] md:aspect-[16/10] flex items-center justify-center rounded-lg overflow-hidden relative bg-[var(--bg-secondary)]"
             >
-              {project.videoUrl && isGifUrl(project.videoUrl) ? (
+              {project.videoUrl && (isGifUrl(project.videoUrl) || isRasterImageUrl(project.videoUrl)) ? (
                 <img
-                  src={visible && isOpen ? project.videoUrl : undefined}
+                  src={visible ? project.videoUrl : undefined}
                   alt={project.title}
                   className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
                 />
               ) : project.videoUrl ? (
                 <video
@@ -154,13 +158,12 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : project.coverImage ? (
-                <Image
-                  src={project.coverImage}
+                <img
+                  src={visible ? project.coverImage : undefined}
                   alt={project.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  unoptimized={project.coverImage.startsWith("/uploads/")}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
