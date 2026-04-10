@@ -102,12 +102,26 @@ export default function AdminSeoPage() {
 
 function MetaTab() {
   const [pages, setPages] = useState<PageMetaItem[]>([]);
+  const [portfolioCases, setPortfolioCases] = useState<{ slug: string; title: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, Partial<PageMetaItem>>>({});
+
+  useEffect(() => {
+    fetch("/api/admin/projects")
+      .then(async (r) => {
+        const data = await r.json();
+        if (r.ok && Array.isArray(data)) {
+          setPortfolioCases(
+            data.map((p: { slug: string; title: string }) => ({ slug: p.slug, title: p.title || p.slug }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setLoadError(null);
@@ -209,11 +223,18 @@ function MetaTab() {
         Задайте уникальные мета-теги для каждой страницы. Незаполненные поля используют значения по умолчанию из кода.
       </p>
       <p className="text-xs text-white/20 mb-4">
-        Статьи блога и карточки портфолио: title/description задаются в разделах «Новости» и «Портфолио». Здесь — оболочки разделов и статические URL. Для произвольного пути (например{" "}
-        <code className="text-white/40">/portfolio/moy-proekt</code>) сохраните мета в БД — на сайте уже используется таблица PageMeta по пути.
+        Блог: title/description — в разделе «Новости». Кейсы: блоки ниже (путь{" "}
+        <code className="text-white/40">/portfolio/slug</code>
+        ), плюс в «Портфолио» задаются название и HTML-описание — из них по умолчанию собираются сниппет и ключевые слова на странице кейса. Полное переопределение title/description/H1/OG — здесь, в PageMeta.
       </p>
 
-      {KNOWN_PAGES.map(({ path, label }) => (
+      {[
+        ...KNOWN_PAGES.map(({ path, label }) => ({ path, label })),
+        ...portfolioCases.map((c) => ({
+          path: `/portfolio/${c.slug}`,
+          label: `Кейс: ${c.title}`,
+        })),
+      ].map(({ path, label }) => (
         <div
           key={path}
           className="rounded-xl bg-white/[0.03] border border-white/[0.08] overflow-hidden"

@@ -64,6 +64,7 @@ export async function getProjectsList(): Promise<ProjectListItem[]> {
         coverImage: true,
         videoUrl: true,
         description: true,
+        seoDescription: true,
         industry: true,
         projectType: true,
         year: true,
@@ -71,20 +72,28 @@ export async function getProjectsList(): Promise<ProjectListItem[]> {
     });
 
     if (dbProjects.length > 0) {
-      return dbProjects.map((p) => ({
-        id: p.id,
-        slug: p.slug,
-        title: p.title,
-        tag: categoryToLabel(p.category),
-        industry: p.industry || categoryToLabel(p.category).toUpperCase(),
-        type: p.projectType || serviceTypeToLabel(p.service),
-        year: p.year || "",
-        area: p.area ? `${p.area} м²` : "",
-        coverImage: p.coverImage,
-        videoUrl: p.videoUrl || null,
-        shortDescription: stripHtml(p.description).substring(0, 200),
-        service: p.service,
-      }));
+      return dbProjects.map((p) => {
+        const seo = p.seoDescription?.trim();
+        const shortDescription = seo
+          ? seo.length > 200
+            ? `${seo.slice(0, 200)}…`
+            : seo
+          : stripHtml(p.description).substring(0, 200);
+        return {
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          tag: categoryToLabel(p.category),
+          industry: p.industry || categoryToLabel(p.category).toUpperCase(),
+          type: p.projectType || serviceTypeToLabel(p.service),
+          year: p.year || "",
+          area: p.area ? `${p.area} м²` : "",
+          coverImage: p.coverImage,
+          videoUrl: p.videoUrl || null,
+          shortDescription,
+          service: p.service,
+        };
+      });
     }
   } catch {
     // DB unavailable
@@ -119,6 +128,13 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioCase | nu
 
       const galleryUrls = dbProject.images.map((im) => im.url);
 
+      const seo = dbProject.seoDescription?.trim() ?? "";
+      const shortDescription = seo
+        ? seo.length > 200
+          ? `${seo.slice(0, 200)}…`
+          : seo
+        : stripHtml(dbProject.description).substring(0, 200);
+
       return {
         id: dbProject.id,
         slug: dbProject.slug,
@@ -129,7 +145,8 @@ export async function getProjectBySlug(slug: string): Promise<PortfolioCase | nu
         year: dbProject.year || new Date(dbProject.createdAt).getFullYear().toString(),
         area: dbProject.area ? `${dbProject.area} м²` : "",
         location: dbProject.location || "",
-        shortDescription: stripHtml(dbProject.description).substring(0, 200),
+        seoDescription: seo || null,
+        shortDescription,
         heroDescription: dbProject.description,
         features,
         goals: dbProject.goals || "",

@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
         service: body.service || "ELECTRICAL",
         area: body.area ? parseInt(body.area) : null,
         description: body.description || "",
+        seoDescription: body.seoDescription?.trim() || null,
         coverImage,
         videoUrls,
         videoUrl,

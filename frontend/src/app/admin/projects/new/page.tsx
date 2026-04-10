@@ -31,6 +31,7 @@ export default function NewProjectPage() {
     service: "ELECTRICAL",
     area: "",
     description: "",
+    seoDescription: "",
     videoUrls: [] as string[],
     location: "",
     year: new Date().getFullYear().toString(),
@@ -177,6 +178,22 @@ export default function NewProjectPage() {
             onChange={(v) => set("description", v)}
             placeholder="Подробное описание проекта..."
             minHeight="150px"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-white/40 mb-1">
+            Сниппет для поиска (meta description)
+          </label>
+          <p className="text-[11px] text-white/25 mb-2 leading-relaxed">
+            Короткий текст без HTML. Если пусто — сниппет соберётся из начала полного описания.
+          </p>
+          <textarea
+            value={form.seoDescription}
+            onChange={(e) => set("seoDescription", e.target.value)}
+            rows={3}
+            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors resize-y min-h-[80px]"
+            placeholder="Электромонтаж ресторана в Сочи: щиты, слаботочка, акустика."
           />
         </div>
 

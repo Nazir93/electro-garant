@@ -55,12 +55,31 @@ function ServiceCard({
   const cardRef = useRef<HTMLAnchorElement>(null);
   const [loadVideo, setLoadVideo] = useState(false);
 
-  useEffect(() => {
+  /** Сразу после layout: если карточка уже в зоне (как IO с rootMargin 200px), не ждём следующего кадра — видео стартует раньше. */
+  useLayoutEffect(() => {
     if (!videoUrl || loadVideo) return;
     const el = cardRef.current;
     if (!el) return;
+
+    const margin = 200;
+    const inExpandedViewport = () => {
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      return r.bottom >= -margin && r.top <= vh + margin;
+    };
+
+    if (inExpandedViewport()) {
+      setLoadVideo(true);
+      return;
+    }
+
     const io = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setLoadVideo(true); io.disconnect(); } },
+      ([e]) => {
+        if (e.isIntersecting) {
+          setLoadVideo(true);
+          io.disconnect();
+        }
+      },
       { rootMargin: "200px 0px", threshold: 0 },
     );
     io.observe(el);
@@ -86,7 +105,7 @@ function ServiceCard({
           loop
           muted
           playsInline
-          preload="none"
+          preload={loadVideo ? (imagePriority ? "auto" : "metadata") : "none"}
           aria-hidden="true"
           className="absolute inset-0 z-0 h-full w-full object-cover"
         />

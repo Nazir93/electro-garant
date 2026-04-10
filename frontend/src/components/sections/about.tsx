@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback, useSyncExternalStore } from "react";
+import { useRef, useState, useEffect, useLayoutEffect, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useModal } from "@/lib/modal-context";
@@ -277,14 +277,28 @@ export function AboutSection() {
     setActiveIndex(idx);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
+
+    const marginFrac = 0.4;
+    const inExpandedViewport = () => {
+      const r = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const m = vh * marginFrac;
+      return r.bottom >= -m && r.top <= vh + m;
+    };
+
+    if (inExpandedViewport()) {
+      setVideoReady(true);
+      return;
+    }
+
     const io = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) setVideoReady(true);
       },
-      { rootMargin: "40% 0px", threshold: 0 }
+      { rootMargin: "40% 0px", threshold: 0 },
     );
     io.observe(section);
     return () => io.disconnect();

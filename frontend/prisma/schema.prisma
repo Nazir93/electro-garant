@@ -39,6 +39,8 @@ model Project {
   service        ServiceType
   area           Int?
   description    String         @db.Text
+  /// Текст для meta description и карточки портфолио; если пусто — начало HTML-описания
+  seoDescription String?        @db.Text
   coverImage     String
   /// Один ролик (совместимость; при заполнении videoUrls дублируется первый элемент)
   videoUrl       String?

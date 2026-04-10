@@ -73,7 +73,16 @@ function NavLink({ href, label, direction }: { href: string; label: string; dire
   );
 }
 
-export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase; allSlugs?: string[] }) {
+export function CaseContent({
+  project,
+  allSlugs = [],
+  pageH1,
+}: {
+  project: PortfolioCase;
+  allSlugs?: string[];
+  /** Совпадает с полем H1 в SEO (PageMeta), иначе — название проекта из БД */
+  pageH1: string;
+}) {
   const currentIndex = allSlugs.indexOf(project.slug);
   const prevSlug = currentIndex > 0 ? allSlugs[currentIndex - 1] : null;
   const nextSlug = currentIndex < allSlugs.length - 1 ? allSlugs[currentIndex + 1] : null;
@@ -124,7 +133,7 @@ export function CaseContent({ project, allSlugs = [] }: { project: PortfolioCase
         backHref="/portfolio"
         backLabel="Вернуться к проектам"
         meta={metaPills}
-        title={project.title}
+        title={pageH1}
         mediaAfterTitle={
           bannerSlides.length > 0 ? (
             <EditorialBanner

@@ -33,6 +33,8 @@ export interface PortfolioCase {
   year: string;
   area: string;
   location: string;
+  /** Явный сниппет для поиска и соцсетей; если задан — в приоритете над обрезкой описания */
+  seoDescription?: string | null;
   shortDescription: string;
   heroDescription: string;
   features: string[];

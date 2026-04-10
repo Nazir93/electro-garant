@@ -53,6 +53,7 @@ export async function PUT(
         ...(body.service !== undefined && { service: body.service }),
         ...(body.area !== undefined && { area: body.area ? parseInt(body.area) : null }),
         ...(body.description !== undefined && { description: body.description }),
+        ...(body.seoDescription !== undefined && { seoDescription: body.seoDescription || null }),
         ...(body.coverImage !== undefined && { coverImage: body.coverImage }),
         ...(videoPatch && { videoUrls: videoPatch.videoUrls, videoUrl: videoPatch.videoUrl }),
         ...(body.location !== undefined && { location: body.location || null }),

@@ -78,6 +78,8 @@ export default async function RootLayout({
         <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
         <meta name="format-detection" content="telephone=no" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        {/* Постер блока «О нас» на главной — раньше картинка, меньше «пустого» видео при скролле */}
+        <link rel="preload" href="/panel-assembly-poster.jpg" as="image" />
         <JsonLd />
       </head>
       <body className="font-body antialiased theme-bg theme-text transition-colors duration-500">

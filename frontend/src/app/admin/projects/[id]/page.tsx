@@ -44,6 +44,7 @@ export default function EditProjectPage() {
     service: "ELECTRICAL",
     area: "",
     description: "",
+    seoDescription: "",
     coverImage: "",
     videoUrls: [] as string[],
     location: "",
@@ -66,6 +67,7 @@ export default function EditProjectPage() {
           service: data.service || "ELECTRICAL",
           area: data.area?.toString() || "",
           description: data.description || "",
+          seoDescription: data.seoDescription || "",
           coverImage: data.coverImage || "",
           videoUrls: mergeProjectVideoUrls(data.videoUrls, data.videoUrl),
           location: data.location || "",
@@ -231,6 +233,23 @@ export default function EditProjectPage() {
             onChange={(v) => set("description", v)}
             placeholder="Подробное описание проекта..."
             minHeight="150px"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-white/40 mb-1">
+            Сниппет для поиска (meta description)
+          </label>
+          <p className="text-[11px] text-white/25 mb-2 leading-relaxed">
+            Короткий текст без HTML для выдачи и соцсетей. Если пусто — в сниппет попадёт начало полного описания выше.
+            Полное переопределение по URL — в разделе SEO → «Кейс».
+          </p>
+          <textarea
+            value={form.seoDescription}
+            onChange={(e) => set("seoDescription", e.target.value)}
+            rows={3}
+            className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C9A84C]/40 transition-colors resize-y min-h-[80px]"
+            placeholder="Например: Электромонтаж ресторана 320 м² в Сочи: щиты ABB, слаботочка, акустика по зонам."
           />
         </div>
 
