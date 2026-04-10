@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
@@ -56,6 +56,43 @@ export function ImageLightbox({
   const kindLabel = slide.type === "video" ? "видео" : "фото";
 
   return createPortal(
+    <ImageLightboxBody
+      slide={slide}
+      index={index}
+      n={n}
+      alt={alt}
+      kindLabel={kindLabel}
+      go={go}
+      onClose={onClose}
+    />,
+    document.body
+  );
+}
+
+function ImageLightboxBody({
+  slide,
+  index,
+  n,
+  alt,
+  kindLabel,
+  go,
+  onClose,
+}: {
+  slide: EditorialSlide;
+  index: number;
+  n: number;
+  alt: string;
+  kindLabel: string;
+  go: (dir: -1 | 1) => void;
+  onClose: () => void;
+}) {
+  const [mediaReady, setMediaReady] = useState(false);
+
+  useEffect(() => {
+    setMediaReady(false);
+  }, [slide.url, slide.type, index]);
+
+  return (
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8"
       style={{ backgroundColor: "rgba(0,0,0,0.92)" }}
@@ -108,15 +145,27 @@ export function ImageLightbox({
         className="relative z-[205] w-full max-w-[min(96vw,1400px)] h-[min(85vh,90vw)] pointer-events-none"
         onClick={(e) => e.stopPropagation()}
       >
+        {!mediaReady && (
+          <div className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none">
+            <div
+              className="h-10 w-10 rounded-full border-2 border-white/25 border-t-white animate-spin"
+              role="status"
+              aria-label="Загрузка"
+            />
+          </div>
+        )}
         {slide.type === "image" ? (
           <Image
             src={slide.url}
             alt={`${alt} — ${kindLabel} ${index + 1}`}
             fill
-            className="object-contain pointer-events-auto"
+            className={`object-contain pointer-events-auto transition-opacity duration-300 ${
+              mediaReady ? "opacity-100" : "opacity-0"
+            }`}
             sizes="100vw"
             priority
             unoptimized={slide.url.startsWith("/uploads/")}
+            onLoadingComplete={() => setMediaReady(true)}
           />
         ) : (
           <video
@@ -124,8 +173,13 @@ export function ImageLightbox({
             src={slide.url}
             controls
             playsInline
-            preload="metadata"
-            className="absolute inset-0 w-full h-full object-contain pointer-events-auto bg-black"
+            preload="auto"
+            onLoadedData={() => setMediaReady(true)}
+            onCanPlay={() => setMediaReady(true)}
+            className={`absolute inset-0 w-full h-full object-contain pointer-events-auto transition-opacity duration-300 ${
+              mediaReady ? "opacity-100" : "opacity-0"
+            }`}
+            style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
             aria-label={`${alt} — ${kindLabel} ${index + 1}`}
           />
         )}
@@ -136,7 +190,6 @@ export function ImageLightbox({
           {index + 1} / {n}
         </div>
       )}
-    </div>,
-    document.body
+    </div>
   );
 }

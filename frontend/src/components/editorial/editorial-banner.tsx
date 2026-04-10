@@ -68,11 +68,16 @@ export function EditorialBanner({
   onOpenGallery,
 }: EditorialBannerProps) {
   const [index, setIndex] = useState(0);
+  const [slideReady, setSlideReady] = useState(false);
   const slidesKey = slides.map((s) => `${s.type}:${s.url}`).join("|");
 
   useEffect(() => {
     setIndex(0);
   }, [slidesKey]);
+
+  useEffect(() => {
+    setSlideReady(false);
+  }, [index, slidesKey]);
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -117,17 +122,36 @@ export function EditorialBanner({
 
   return (
     <div className={`relative w-full ${fullBleed ? "mb-0" : "mb-10"} ${className}`}>
-      <div className={`relative w-full aspect-[16/9] ${frameRounded} overflow-hidden bg-black ${frameBorder}`}>
+      <div
+        className={`relative w-full aspect-[16/9] ${frameRounded} overflow-hidden ${frameBorder}`}
+        style={{ backgroundColor: "var(--bg-secondary)" }}
+      >
+        {!slideReady && (
+          <div
+            className="absolute inset-0 z-[30] flex items-center justify-center"
+            style={{ backgroundColor: "var(--bg-secondary)" }}
+            aria-busy="true"
+            aria-label="Загрузка медиа"
+          >
+            <div
+              className="h-9 w-9 rounded-full border-2 border-[var(--border)] border-t-[var(--accent)] animate-spin"
+              role="presentation"
+            />
+          </div>
+        )}
         {current.type === "image" ? (
           <>
             <Image
               src={current.url}
               alt={slides.length > 1 ? `${alt} — ${index + 1}` : alt}
               fill
-              className="object-cover"
+              className={`object-cover transition-opacity duration-500 ease-out ${
+                slideReady ? "opacity-100" : "opacity-0"
+              }`}
               sizes={fullBleed ? "100vw" : "(max-width: 768px) 100vw, 720px"}
               priority
               unoptimized={current.url.startsWith("/uploads/")}
+              onLoadingComplete={() => setSlideReady(true)}
             />
             {onOpenGallery ? (
               <button
@@ -141,11 +165,16 @@ export function EditorialBanner({
         ) : (
           <>
             <video
+              key={current.url}
               src={current.url}
               controls
               playsInline
-              preload="metadata"
-              className="absolute inset-0 w-full h-full object-cover"
+              preload="auto"
+              onLoadedData={() => setSlideReady(true)}
+              onCanPlay={() => setSlideReady(true)}
+              className={`absolute inset-0 z-[2] w-full h-full object-cover transition-opacity duration-500 ease-out ${
+                slideReady ? "opacity-100" : "opacity-0"
+              }`}
               aria-label={slides.length > 1 ? `${alt} — видео ${index + 1}` : `${alt} — видео`}
             />
             {onOpenGallery ? (

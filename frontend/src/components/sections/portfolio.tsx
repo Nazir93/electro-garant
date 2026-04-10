@@ -61,6 +61,7 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
   const [height, setHeight] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [mediaLoaded, setMediaLoaded] = useState(false);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -82,6 +83,24 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) setMediaLoaded(false);
+  }, [isOpen]);
+
+  const active = visible && isOpen;
+  const isRasterOrGif = Boolean(
+    project.videoUrl && (isGifUrl(project.videoUrl) || isRasterImageUrl(project.videoUrl))
+  );
+  const hasPreviewUnderlay = Boolean(
+    (isRasterOrGif && project.coverImage) ||
+      (project.videoUrl && !isRasterOrGif && project.coverImage)
+  );
+  const showLoadingOverlay =
+    active &&
+    !mediaLoaded &&
+    !hasPreviewUnderlay &&
+    Boolean(isRasterOrGif || project.videoUrl || project.coverImage);
+
   return (
     <div
       ref={rowRef}
@@ -96,21 +115,24 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
       {/* Row */}
       <button
         onClick={onToggle}
-        className="w-full grid grid-cols-[1fr_auto] md:grid-cols-[2fr_3fr_auto] items-center py-3.5 sm:py-4 lg:pr-20 text-left group cursor-pointer min-h-[48px]"
+        className="w-full grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)_auto] items-start gap-x-2 sm:gap-x-3 md:gap-x-4 py-3.5 sm:py-4 lg:pr-20 text-left group cursor-pointer min-h-[48px]"
       >
         <span
-          className="font-heading text-[10px] sm:text-xs md:text-sm tracking-[0.05em] transition-colors duration-200 group-hover:text-[var(--accent)] pr-3 leading-tight"
+          className="font-heading text-[10px] sm:text-xs md:text-sm tracking-[0.05em] transition-colors duration-200 group-hover:text-[var(--accent)] min-w-0 pr-1 md:pr-2 leading-snug text-balance"
           style={{ color: "var(--text)" }}
         >
           {project.title.toUpperCase()}
         </span>
         <span
-          className="hidden md:block text-xs md:text-sm tracking-[0.08em]"
+          className="hidden md:block min-w-0 text-xs md:text-sm tracking-[0.08em] leading-snug text-balance"
           style={{ color: "var(--text-muted)" }}
         >
           {project.type}
         </span>
-        <span className="text-[10px] sm:text-xs text-right tabular-nums" style={{ color: "var(--text-muted)" }}>
+        <span
+          className="shrink-0 text-[10px] sm:text-xs text-right tabular-nums leading-snug pt-0.5 md:pt-0.5"
+          style={{ color: "var(--text-muted)" }}
+        >
           ({project.year})
         </span>
       </button>
@@ -140,29 +162,64 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
             <div
               className="aspect-[4/3] md:aspect-[16/10] flex items-center justify-center rounded-lg overflow-hidden relative bg-[var(--bg-secondary)]"
             >
-              {project.videoUrl && (isGifUrl(project.videoUrl) || isRasterImageUrl(project.videoUrl)) ? (
-                <img
-                  src={visible ? project.videoUrl : undefined}
-                  alt={project.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
-                />
+              {showLoadingOverlay ? (
+                <div
+                  className="absolute inset-0 z-[1] flex items-center justify-center"
+                  style={{ backgroundColor: "var(--bg-secondary)" }}
+                  aria-hidden
+                >
+                  <div
+                    className="h-9 w-9 rounded-full border-2 border-[var(--border)] border-t-[var(--accent)] animate-spin"
+                    role="status"
+                    aria-label="Загрузка"
+                  />
+                </div>
+              ) : null}
+              {isRasterOrGif ? (
+                <>
+                  {project.coverImage ? (
+                    <img
+                      src={active ? project.coverImage : undefined}
+                      alt=""
+                      className={`absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-300 ${
+                        mediaLoaded ? "opacity-0" : "opacity-100"
+                      }`}
+                      aria-hidden
+                    />
+                  ) : null}
+                  <img
+                    src={active ? project.videoUrl! : undefined}
+                    alt={project.title}
+                    onLoad={() => setMediaLoaded(true)}
+                    className={`absolute inset-0 z-[2] h-full w-full object-cover transition-opacity duration-300 ${
+                      mediaLoaded ? "opacity-100" : "opacity-0"
+                    }`}
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority={isOpen ? "high" : "low"}
+                  />
+                </>
               ) : project.videoUrl ? (
                 <video
-                  src={visible && isOpen ? project.videoUrl : undefined}
+                  poster={project.coverImage ?? undefined}
+                  src={active ? project.videoUrl : undefined}
                   autoPlay
                   loop
                   muted
                   playsInline
-                  preload="none"
-                  className="absolute inset-0 w-full h-full object-cover"
+                  preload="metadata"
+                  onLoadedData={() => setMediaLoaded(true)}
+                  className="absolute inset-0 z-[2] h-full w-full object-cover"
                 />
               ) : project.coverImage ? (
                 <img
-                  src={visible ? project.coverImage : undefined}
+                  src={active ? project.coverImage : undefined}
                   alt={project.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
+                  onLoad={() => setMediaLoaded(true)}
+                  className={`absolute inset-0 z-[2] h-full w-full object-cover transition-opacity duration-300 ${
+                    mediaLoaded ? "opacity-100" : "opacity-0"
+                  }`}
+                  loading="eager"
                   decoding="async"
                 />
               ) : (
