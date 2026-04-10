@@ -162,71 +162,76 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
             <div
               className="aspect-[4/3] md:aspect-[16/10] flex items-center justify-center rounded-lg overflow-hidden relative bg-[var(--bg-secondary)]"
             >
-              {showLoadingOverlay ? (
-                <div
-                  className="absolute inset-0 z-[1] flex items-center justify-center"
-                  style={{ backgroundColor: "var(--bg-secondary)" }}
-                  aria-hidden
-                >
-                  <div
-                    className="h-9 w-9 rounded-full border-2 border-[var(--border)] border-t-[var(--accent)] animate-spin"
-                    role="status"
-                    aria-label="Загрузка"
-                  />
-                </div>
-              ) : null}
-              {isRasterOrGif ? (
+              {/* Не рендерить img/video при закрытой панели: src={undefined} даёт иконку «битого» изображения при схлопывании */}
+              {active ? (
                 <>
-                  {project.coverImage ? (
-                    <img
-                      src={active ? project.coverImage : undefined}
-                      alt=""
-                      className={`absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-300 ${
-                        mediaLoaded ? "opacity-0" : "opacity-100"
-                      }`}
+                  {showLoadingOverlay ? (
+                    <div
+                      className="absolute inset-0 z-[1] flex items-center justify-center"
+                      style={{ backgroundColor: "var(--bg-secondary)" }}
                       aria-hidden
-                    />
+                    >
+                      <div
+                        className="h-9 w-9 rounded-full border-2 border-[var(--border)] border-t-[var(--accent)] animate-spin"
+                        role="status"
+                        aria-label="Загрузка"
+                      />
+                    </div>
                   ) : null}
-                  <img
-                    src={active ? project.videoUrl! : undefined}
-                    alt={project.title}
-                    onLoad={() => setMediaLoaded(true)}
-                    className={`absolute inset-0 z-[2] h-full w-full object-cover transition-opacity duration-300 ${
-                      mediaLoaded ? "opacity-100" : "opacity-0"
-                    }`}
-                    loading="eager"
-                    decoding="async"
-                    fetchPriority={isOpen ? "high" : "low"}
-                  />
+                  {isRasterOrGif ? (
+                    <>
+                      {project.coverImage ? (
+                        <img
+                          src={project.coverImage}
+                          alt=""
+                          className={`absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-300 ${
+                            mediaLoaded ? "opacity-0" : "opacity-100"
+                          }`}
+                          aria-hidden
+                        />
+                      ) : null}
+                      <img
+                        src={project.videoUrl!}
+                        alt={project.title}
+                        onLoad={() => setMediaLoaded(true)}
+                        className={`absolute inset-0 z-[2] h-full w-full object-cover transition-opacity duration-300 ${
+                          mediaLoaded ? "opacity-100" : "opacity-0"
+                        }`}
+                        loading="eager"
+                        decoding="async"
+                        fetchPriority={isOpen ? "high" : "low"}
+                      />
+                    </>
+                  ) : project.videoUrl ? (
+                    <video
+                      poster={project.coverImage ?? undefined}
+                      src={project.videoUrl}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                      onLoadedData={() => setMediaLoaded(true)}
+                      className="absolute inset-0 z-[2] h-full w-full object-cover"
+                    />
+                  ) : project.coverImage ? (
+                    <img
+                      src={project.coverImage}
+                      alt={project.title}
+                      onLoad={() => setMediaLoaded(true)}
+                      className={`absolute inset-0 z-[2] h-full w-full object-cover transition-opacity duration-300 ${
+                        mediaLoaded ? "opacity-100" : "opacity-0"
+                      }`}
+                      loading="eager"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
+                      Фото / Видео проекта
+                    </span>
+                  )}
                 </>
-              ) : project.videoUrl ? (
-                <video
-                  poster={project.coverImage ?? undefined}
-                  src={active ? project.videoUrl : undefined}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  onLoadedData={() => setMediaLoaded(true)}
-                  className="absolute inset-0 z-[2] h-full w-full object-cover"
-                />
-              ) : project.coverImage ? (
-                <img
-                  src={active ? project.coverImage : undefined}
-                  alt={project.title}
-                  onLoad={() => setMediaLoaded(true)}
-                  className={`absolute inset-0 z-[2] h-full w-full object-cover transition-opacity duration-300 ${
-                    mediaLoaded ? "opacity-100" : "opacity-0"
-                  }`}
-                  loading="eager"
-                  decoding="async"
-                />
-              ) : (
-                <span className="text-xs uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
-                  Фото / Видео проекта
-                </span>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
