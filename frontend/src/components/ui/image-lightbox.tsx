@@ -92,6 +92,11 @@ function ImageLightboxBody({
     setMediaReady(false);
   }, [slide.url, slide.type, index]);
 
+  useEffect(() => {
+    const id = window.setTimeout(() => setMediaReady(true), 12000);
+    return () => clearTimeout(id);
+  }, [slide.url, slide.type, index]);
+
   return (
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8"
@@ -166,6 +171,7 @@ function ImageLightboxBody({
             priority
             unoptimized={slide.url.startsWith("/uploads/")}
             onLoadingComplete={() => setMediaReady(true)}
+            onLoad={() => setMediaReady(true)}
           />
         ) : (
           <video
@@ -174,6 +180,7 @@ function ImageLightboxBody({
             controls
             playsInline
             preload="auto"
+            onLoadedMetadata={() => setMediaReady(true)}
             onLoadedData={() => setMediaReady(true)}
             onCanPlay={() => setMediaReady(true)}
             className={`absolute inset-0 w-full h-full object-contain pointer-events-auto transition-opacity duration-300 ${

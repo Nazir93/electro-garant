@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { PORTFOLIO_CASES } from "@/lib/portfolio-data";
@@ -69,6 +69,17 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
     }
   }, [isOpen]);
 
+  useLayoutEffect(() => {
+    const el = rowRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const vh = typeof window !== "undefined" ? window.innerHeight : 0;
+    const vw = typeof window !== "undefined" ? window.innerWidth : 0;
+    if (rect.bottom > 0 && rect.top < vh && rect.right > 0 && rect.left < vw) {
+      setVisible(true);
+    }
+  }, []);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -77,7 +88,7 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0, rootMargin: "120px 0px 160px 0px" }
     );
     if (rowRef.current) observer.observe(rowRef.current);
     return () => observer.disconnect();
@@ -88,6 +99,28 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
   }, [isOpen]);
 
   const active = visible && isOpen;
+
+  /** Safari/WebKit: кэшированное фото может не вызвать onLoad при первом показе */
+  useLayoutEffect(() => {
+    if (!active || !contentRef.current) return;
+    const root = contentRef.current;
+    const videos = root.querySelectorAll("video");
+    for (let i = 0; i < videos.length; i++) {
+      const el = videos[i];
+      if (el instanceof HTMLVideoElement && el.readyState >= 2) {
+        setMediaLoaded(true);
+        return;
+      }
+    }
+    const imgs = root.querySelectorAll("img");
+    for (let i = 0; i < imgs.length; i++) {
+      const el = imgs[i];
+      if (el instanceof HTMLImageElement && el.complete && el.naturalWidth > 0) {
+        setMediaLoaded(true);
+        return;
+      }
+    }
+  }, [active, project.slug, project.videoUrl, project.coverImage]);
   const isRasterOrGif = Boolean(
     project.videoUrl && (isGifUrl(project.videoUrl) || isRasterImageUrl(project.videoUrl))
   );
@@ -210,8 +243,10 @@ function PortfolioRow({ project, index, isOpen, onToggle }: { project: Portfolio
                       loop
                       muted
                       playsInline
-                      preload="metadata"
+                      preload="auto"
+                      onLoadedMetadata={() => setMediaLoaded(true)}
                       onLoadedData={() => setMediaLoaded(true)}
+                      onCanPlay={() => setMediaLoaded(true)}
                       className="absolute inset-0 z-[2] h-full w-full object-cover"
                     />
                   ) : project.coverImage ? (

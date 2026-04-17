@@ -79,6 +79,12 @@ export function EditorialBanner({
     setSlideReady(false);
   }, [index, slidesKey]);
 
+  /** WebKit часто не вызывает onLoadingComplete при первом заходе; таймаут убирает вечный спиннер */
+  useEffect(() => {
+    const id = window.setTimeout(() => setSlideReady(true), 12000);
+    return () => clearTimeout(id);
+  }, [index, slidesKey]);
+
   const go = useCallback(
     (dir: -1 | 1) => {
       if (slides.length <= 1) return;
@@ -152,6 +158,7 @@ export function EditorialBanner({
               priority
               unoptimized={current.url.startsWith("/uploads/")}
               onLoadingComplete={() => setSlideReady(true)}
+              onLoad={() => setSlideReady(true)}
             />
             {onOpenGallery ? (
               <button
@@ -170,6 +177,7 @@ export function EditorialBanner({
               controls
               playsInline
               preload="auto"
+              onLoadedMetadata={() => setSlideReady(true)}
               onLoadedData={() => setSlideReady(true)}
               onCanPlay={() => setSlideReady(true)}
               className={`absolute inset-0 z-[2] w-full h-full object-cover transition-opacity duration-500 ease-out ${
