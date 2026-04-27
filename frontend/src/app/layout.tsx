@@ -71,7 +71,7 @@ export default async function RootLayout({
 }) {
   const contactConfig = await loadContactConfig();
   return (
-    <html lang="ru" className={montserrat.variable} data-theme="dark">
+    <html lang="ru" className={montserrat.variable} data-theme="light">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
         <meta name="theme-color" content="#0A0A0A" media="(prefers-color-scheme: dark)" />
