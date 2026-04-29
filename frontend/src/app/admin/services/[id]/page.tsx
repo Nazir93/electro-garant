@@ -7,7 +7,11 @@ import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import type { ServiceType } from "@prisma/client";
 import { AdminMediaUpload } from "@/components/admin/admin-media-upload";
 import { getDefaultServiceLandingDocument } from "@/lib/service-landing-defaults";
-import { parseServiceLandingDocument, type ServiceLandingDocument } from "@/lib/service-landing-schema";
+import {
+  parseServiceLandingDocument,
+  serviceLandingDocumentSchema,
+  type ServiceLandingDocument,
+} from "@/lib/service-landing-schema";
 import { mergeServiceTitleIntoLandingJson } from "@/lib/merge-service-title-into-landing";
 import { ServiceLandingTextForm } from "@/components/admin/service-landing-text-form";
 
@@ -41,6 +45,8 @@ export default function AdminEditServicePage() {
   const [published, setPublished] = useState(true);
   const [order, setOrder] = useState(0);
   const [landingDoc, setLandingDoc] = useState<ServiceLandingDocument | null>(null);
+  const [importJsonText, setImportJsonText] = useState("");
+  const [importJsonError, setImportJsonError] = useState("");
   const [seoH1, setSeoH1] = useState<string | null>(null);
 
   const effectivePageH1 = (seoH1 && seoH1.trim()) || title.trim() || "—";
@@ -262,6 +268,57 @@ export default function AdminEditServicePage() {
               </button>
             </div>
           </div>
+
+          <details className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-xs text-white/50">
+            <summary className="cursor-pointer text-white/65 hover:text-white/90 select-none font-medium">
+              Нет кнопки «Подставить шаблон»? Импорт JSON лендинга
+            </summary>
+            <p className="mt-2 leading-relaxed">
+              Вставьте JSON целиком (файлы в репозитории:{" "}
+              <code className="text-white/45">docs/seo/landing-json/*.json</code>
+              — сгенерировать локально:{" "}
+              <code className="text-white/45">npx tsx scripts/export-service-landings.ts</code>
+              ). Затем нажмите «Применить» и сохраните услугу.
+            </p>
+            <textarea
+              value={importJsonText}
+              onChange={(e) => {
+                setImportJsonText(e.target.value);
+                setImportJsonError("");
+              }}
+              rows={6}
+              placeholder='{"sections":[...]}'
+              className="mt-2 w-full px-3 py-2 rounded-lg bg-black/30 border border-white/[0.08] text-[11px] font-mono text-white/80 resize-y focus:outline-none focus:border-[#C9A84C]/35"
+            />
+            {importJsonError ? (
+              <p className="mt-2 text-red-400/95 text-[11px] whitespace-pre-wrap">{importJsonError}</p>
+            ) : null}
+            <button
+              type="button"
+              className="mt-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#C9A84C]/35 text-[#C9A84C] hover:bg-[#C9A84C]/10 transition-colors"
+              onClick={() => {
+                setImportJsonError("");
+                let parsed: unknown;
+                try {
+                  parsed = JSON.parse(importJsonText.trim());
+                } catch {
+                  setImportJsonError("Не удалось разобрать JSON. Проверьте запятые и кавычки.");
+                  return;
+                }
+                const r = serviceLandingDocumentSchema.safeParse(parsed);
+                if (!r.success) {
+                  setImportJsonError(
+                    r.error.issues.map((e) => `${e.path.join(".") || "root"}: ${e.message}`).join("\n")
+                  );
+                  return;
+                }
+                setLandingDoc(r.data);
+                setImportJsonText("");
+              }}
+            >
+              Применить JSON к форме
+            </button>
+          </details>
           {landingDoc ? (
             <ServiceLandingTextForm document={landingDoc} onChange={setLandingDoc} />
           ) : (

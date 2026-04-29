@@ -16,7 +16,7 @@ export function getHeroGeoSubtitle(): string {
 
 /** Доп. фраза для meta description на главной и в layout. */
 export function getDefaultSiteGeoDescription(): string {
-  return `Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир. Офис в ${CITY}, проекты в ${SERVICE_REGIONS}. 280+ объектов. Гарантия 5 лет. Допуск СРО.`;
+  return `Проектирование, поставка и монтаж электрики для ресторанов, офисов и квартир. Офис в ${CITY}, проекты в ${SERVICE_REGIONS}. 280+ объектов. Гарантия 2 года. Допуск СРО.`;
 }
 
 type SchemaPlace = { "@type": "City" | "AdministrativeArea"; name: string };
@@ -107,7 +107,7 @@ export const SERVICES = [
     slug: "/services/acoustics",
     title: "Коммерческая акустика",
     shortDescription:
-      "Мультизональный звук для ресторанов, ритейла и офисов: проект, монтаж, Bose и JBL. Гарантия 5 лет.",
+      "Мультизональный звук для ресторанов, ритейла и офисов: проект, монтаж, Bose и JBL. Гарантия 2 года.",
     icon: "speaker" as const,
     coverImage: null as string | null,
     videoUrl: null as string | null,
@@ -117,7 +117,7 @@ export const SERVICES = [
     slug: "/services/electrical",
     title: "Электромонтажные работы",
     shortDescription:
-      "Электромонтаж под ключ: проект, щиты, силовые линии, освещение, пусконаладка. СРО, гарантия 5 лет.",
+      "Электромонтаж под ключ: проект, щиты, силовые линии, освещение, пусконаладка. СРО, гарантия 2 года.",
     icon: "zap" as const,
     coverImage: null as string | null,
     videoUrl: null as string | null,
@@ -137,7 +137,7 @@ export const SERVICES = [
     slug: "/services/smart-home",
     title: "Умный дом",
     shortDescription:
-      "Умный дом под ключ: KNX, Z-Wave, свет, климат и мультимедиа. Проект и гарантия 5 лет.",
+      "Умный дом под ключ: KNX, Z-Wave, свет, климат и мультимедиа. Проект и гарантия 2 года.",
     icon: "home" as const,
     coverImage: null as string | null,
     videoUrl: null as string | null,

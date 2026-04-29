@@ -4,4 +4,4 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /spasibo
 
-Sitemap: https://garantmontazh.ru/sitemap.xml
+Sitemap: https://gmont.ru/sitemap.xml

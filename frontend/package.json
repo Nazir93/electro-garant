@@ -14,6 +14,7 @@
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
     "db:studio": "dotenv -e .env.local -- prisma studio",
     "db:verify": "dotenv -e .env.local -- node scripts/verify-db.cjs",
+    "seo:export-landings": "npx tsx scripts/export-service-landings.ts",
     "docker:db": "docker compose -f ../docker-compose.yml up -d postgres",
     "db:tunnel": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/db-tunnel.ps1",
     "postinstall": "prisma generate --schema=prisma/schema.prisma",
