@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef } from "react";
 import { Download, ChevronDown, Search, X, Trash2, Send, Zap } from "lucide-react";
-import { SITE_NAME } from "@/lib/constants";
+import { PRICE_LIST_FILENAME, PRICE_LIST_HREF, SITE_NAME } from "@/lib/constants";
 import { useContactConfig } from "@/lib/contact-config-context";
 import { useModal } from "@/lib/modal-context";
 import { buildEstimateLines, downloadEstimateCsv } from "@/lib/price-estimate-export";
@@ -791,8 +791,8 @@ export function PricePageContent() {
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
               <a
-                href="/price-list.pdf"
-                download
+                href={PRICE_LIST_HREF}
+                download={PRICE_LIST_FILENAME}
                 className="flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-heading text-sm sm:text-base transition-all duration-300 hover:scale-[1.02] min-h-[48px]"
                 style={{ backgroundColor: "var(--text)", color: "var(--bg)" }}
               >

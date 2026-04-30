@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { Calculator, Download, Building2, LayoutGrid, Plug2, MapPinned } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import { PRICE_LIST_FILENAME, PRICE_LIST_HREF } from "@/lib/constants";
 
 /** Нижняя бегущая строка — не дублирует цифры из FixedStatsBar и не список услуг как в шапке */
 const PRICE_TICKER_ITEMS = [
@@ -228,8 +229,8 @@ export function PriceBannerSection() {
           </Link>
 
           <a
-            href="/price-list.pdf"
-            download
+            href={PRICE_LIST_HREF}
+            download={PRICE_LIST_FILENAME}
             className="group flex min-h-[48px] items-center justify-center gap-2.5 rounded-full border px-7 py-3.5 transition-colors duration-300 sm:px-9 sm:py-4"
             style={{
               borderColor: "var(--border)",

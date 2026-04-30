@@ -43,6 +43,12 @@ export function buildSchemaAreaServed(): SchemaPlace[] {
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://gmont.ru";
 
+/** PDF прайса в `public/` — единый файл для всех кнопок «Скачать прайс». */
+export const PRICE_LIST_FILENAME = "Прайс ГМ 25-26(для пересылки).pdf";
+
+/** Закодированный путь (кириллица и скобки в имени файла). */
+export const PRICE_LIST_HREF = `/${encodeURIComponent(PRICE_LIST_FILENAME)}`;
+
 export const PHONE = "8 (928) 455-45-59";
 export const PHONE_RAW = "89284554559";
 export const PHONE2 = "8 (900) 233-66-39";

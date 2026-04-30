@@ -3,7 +3,7 @@
 import { Calculator, Download, Sparkles } from "lucide-react";
 import { FunnelLinkRow, FunnelPanelButton } from "@/components/ui/funnel-ui";
 import { BackNavLink } from "@/components/ui/back-nav";
-import { SITE_NAME } from "@/lib/constants";
+import { PRICE_LIST_FILENAME, PRICE_LIST_HREF, SITE_NAME } from "@/lib/constants";
 import { useModal } from "@/lib/modal-context";
 
 export function OfferCalculateContent() {
@@ -51,7 +51,7 @@ export function OfferCalculateContent() {
           <FunnelPanelButton onClick={() => openModalToEstimate()} compact icon={<Sparkles size={20} strokeWidth={2} />}>
             Ориентировочный расчёт
           </FunnelPanelButton>
-          <FunnelLinkRow href="/price-list.pdf" download compact icon={<Download size={20} strokeWidth={2} />}>
+          <FunnelLinkRow href={PRICE_LIST_HREF} download={PRICE_LIST_FILENAME} compact icon={<Download size={20} strokeWidth={2} />}>
             Скачать прайс
           </FunnelLinkRow>
         </div>
