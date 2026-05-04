@@ -4,16 +4,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  ArrowRight,
-  Clock,
-  Pizza,
-  CheckCircle2,
-} from "lucide-react";
+import { Clock, CheckCircle2, Percent } from "lucide-react";
 import { SITE_NAME } from "@/lib/constants";
+import { OFFER_FIVE_MIN_DISCOUNT_LINE } from "@/lib/offer-promo";
 import { FunnelFillButton, FunnelInputField } from "@/components/ui/funnel-ui";
 import { BackNavLink } from "@/components/ui/back-nav";
-import { SpinningPizzaAsset } from "@/components/ui/spinning-pizza";
+import { OfferTimerVisual } from "@/components/ui/offer-timer-visual";
 
 const contactFormSchema = z.object({
   phone: z
@@ -26,16 +22,8 @@ const contactFormSchema = z.object({
 });
 type ContactForm = z.infer<typeof contactFormSchema>;
 
-const pizzaCommentSchema = z.object({
-  comment: z.string().min(2, "Напишите пожелание").max(500),
-});
-type PizzaComment = z.infer<typeof pizzaCommentSchema>;
-
 export function OfferFormPageContent() {
-  const [stage, setStage] = useState<"form" | "timer" | "pizza">("form");
-  const [leadId, setLeadId] = useState<string | null>(null);
-  const [contactName, setContactName] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
+  const [stage, setStage] = useState<"form" | "timer" | "done">("form");
   const [timerSec, setTimerSec] = useState(300);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -46,7 +34,7 @@ export function OfferFormPageContent() {
       setTimerSec((s) => {
         if (s <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
-          setStage("pizza");
+          setStage("done");
           return 0;
         }
         return s - 1;
@@ -65,12 +53,11 @@ export function OfferFormPageContent() {
     const titles: Record<typeof stage, string> = {
       form: `Форма обратной связи — ${SITE_NAME}`,
       timer: `Заявка принята — ${SITE_NAME}`,
-      pizza: `Пицца в подарок — ${SITE_NAME}`,
+      done: `Скидка 15% — ${SITE_NAME}`,
     };
     document.title = titles[stage];
   }, [stage]);
 
-  /** Один экран: сверху слева «Назад» на /offer; справа — крестик «на главную» из offer/layout */
   return (
     <div
       className="relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden box-border pl-4 pr-[3.25rem] pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] md:pl-6 md:pr-16"
@@ -92,26 +79,14 @@ export function OfferFormPageContent() {
       />
 
       <div className="relative z-10 mx-auto flex w-full max-w-2xl flex-1 min-h-0 flex-col justify-center">
-        {stage === "form" && (
-          <FormSection
-            onSubmitted={(id, name, phone) => {
-              setLeadId(id);
-              setContactName(name);
-              setContactPhone(phone);
-              startTimer();
-            }}
-          />
-        )}
+        {stage === "form" && <FormSection onSubmitted={startTimer} />}
         {stage === "timer" && <TimerSection seconds={timerSec} />}
-        {stage === "pizza" && (
-          <PizzaSection leadId={leadId} contactName={contactName} contactPhone={contactPhone} />
-        )}
+        {stage === "done" && <DoneSection />}
       </div>
     </div>
   );
 }
 
-/** Одна строка без рамок — как акценты в форме ориентировочного расчёта */
 function TrustLine() {
   return (
     <p
@@ -123,11 +98,7 @@ function TrustLine() {
   );
 }
 
-function FormSection({
-  onSubmitted,
-}: {
-  onSubmitted: (id: string, name: string, phone: string) => void;
-}) {
+function FormSection({ onSubmitted }: { onSubmitted: () => void }) {
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
@@ -154,7 +125,7 @@ function FormSection({
         setFormError(json.error || "Не удалось отправить заявку");
         return;
       }
-      onSubmitted(json.leadId ?? "", data.name, data.phone);
+      onSubmitted();
     } catch {
       setFormError("Ошибка сети. Проверьте подключение.");
     }
@@ -168,7 +139,7 @@ function FormSection({
         ФОРМА ОБРАТНОЙ СВЯЗИ
       </h2>
       <p className="text-sm mb-8 text-center sm:text-left" style={{ color: "var(--text-muted)" }}>
-        Оставьте телефон и имя — перезвоним за 5 минут.
+        Оставьте телефон и имя — перезвоним за 5 минут. {OFFER_FIVE_MIN_DISCOUNT_LINE}
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
@@ -222,7 +193,7 @@ function TimerSection({ seconds }: { seconds: number }) {
   return (
     <div className="flex min-h-0 w-full flex-col items-stretch justify-center gap-4 py-2 md:flex-row md:items-center md:gap-6">
       <div className="flex shrink-0 justify-center md:w-[140px]">
-        <SpinningPizzaAsset size="md" />
+        <OfferTimerVisual size="md" />
       </div>
 
       <div className="min-w-0 flex-1 text-center md:text-left">
@@ -263,128 +234,35 @@ function TimerSection({ seconds }: { seconds: number }) {
             Ожидание
           </span>
           <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide" style={{ color: "var(--text-subtle)" }}>
-            <Pizza size={16} strokeWidth={2} style={{ color: "var(--accent)" }} />
-            Бонус
+            <Percent size={16} strokeWidth={2} style={{ color: "var(--accent)" }} />
+            Скидка 15%
           </span>
         </div>
 
         <p className="mt-3 text-[11px] leading-snug sm:text-xs" style={{ color: "var(--text-muted)" }}>
-          Не дозвонимся за 5 минут — {SITE_NAME} пришлёт пиццу на выбор. Дальше откроется форма пожеланий на этом же экране.
+          {OFFER_FIVE_MIN_DISCOUNT_LINE}
         </p>
       </div>
     </div>
   );
 }
 
-function PizzaSection({
-  leadId,
-  contactName,
-  contactPhone,
-}: {
-  leadId: string | null;
-  contactName: string;
-  contactPhone: string;
-}) {
-  const [sent, setSent] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<PizzaComment>({ resolver: zodResolver(pizzaCommentSchema) });
-
-  const onSubmit = async (data: PizzaComment) => {
-    setSubmitError(null);
-    const res = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: contactName.trim() || "Оффер",
-        phone: contactPhone,
-        service: "Пицца: пожелание",
-        source: "offer-pizza",
-        calcData: {
-          kind: "offer-pizza",
-          comment: data.comment,
-          previousLeadId: leadId ?? undefined,
-        },
-      }),
-    });
-    const json = (await res.json()) as { error?: string };
-    if (!res.ok) {
-      setSubmitError(json.error || "Не удалось отправить. Попробуйте ещё раз.");
-      return;
-    }
-    setSent(true);
-  };
-
+function DoneSection() {
   return (
-    <div className="grid min-h-0 w-full max-h-[min(78dvh,640px)] flex-1 grid-cols-1 gap-3 md:grid-cols-2 md:items-stretch md:gap-4">
-      <div
-        className="relative flex min-h-[160px] flex-col justify-center overflow-hidden rounded-2xl border p-4 md:min-h-0"
-        style={{
-          borderColor: "var(--border)",
-          backgroundColor: "var(--card-bg)",
-          backgroundImage: "radial-gradient(ellipse 90% 70% at 50% 30%, rgba(201,168,76,0.08), transparent 55%)",
-        }}
-      >
-        <div className="relative z-10 flex flex-col items-center gap-3 text-center md:py-2">
-          <SpinningPizzaAsset size="lg" />
-          <div>
-            <h2 className="font-heading text-base sm:text-lg" style={{ color: "var(--accent)" }}>
-              Пицца в подарок!
-            </h2>
-            <p className="mt-1 text-[11px] leading-snug sm:text-xs" style={{ color: "var(--text-muted)" }}>
-              {SITE_NAME} — на ваш выбор. Форма пожеланий рядом.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className="flex flex-col justify-center rounded-2xl border p-4 sm:p-5"
-        style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border)" }}
-      >
-        <p className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
-          <Pizza size={16} strokeWidth={2} style={{ color: "var(--accent)" }} />
-          Пожелание
+    <div className="flex min-h-0 w-full flex-col items-center justify-center gap-6 py-4 text-center md:text-left md:items-start">
+      <OfferTimerVisual size="lg" />
+      <div>
+        <h2 className="font-heading text-xl sm:text-2xl mb-2" style={{ color: "var(--accent)" }}>
+          Время ожидания истекло
+        </h2>
+        <p className="text-sm leading-relaxed mb-2" style={{ color: "var(--text)" }}>
+          {OFFER_FIVE_MIN_DISCOUNT_LINE}
         </p>
-        {sent ? (
-          <div className="flex flex-col items-center gap-4 py-3 text-center">
-            <SpinningPizzaAsset size="lg" />
-            <CheckCircle2 size={32} strokeWidth={2} style={{ color: "var(--accent)" }} />
-            <p className="text-sm font-heading leading-snug" style={{ color: "var(--text)" }}>
-              Отправлено! Ждите звонок и пиццу.
-            </p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-            <textarea
-              rows={3}
-              placeholder="Какую пиццу любите? Маргарита, пепперони..."
-              className="w-full resize-none rounded-xl px-3 py-2.5 text-sm outline-none"
-              style={{
-                backgroundColor: "var(--bg-secondary)",
-                border: "1px solid var(--border)",
-                color: "var(--text)",
-              }}
-              {...register("comment")}
-            />
-            {errors.comment && <p className="text-xs text-red-400">{errors.comment.message}</p>}
-            {submitError && <p className="text-xs text-red-400">{submitError}</p>}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-heading text-xs uppercase tracking-[0.1em] transition-opacity disabled:opacity-50"
-              style={{ backgroundColor: "var(--accent)", color: "#0A0A0A" }}
-            >
-              <Pizza size={16} strokeWidth={2} />
-              {isSubmitting ? "Отправка..." : "Отправить пожелание"}
-              <ArrowRight size={16} strokeWidth={2} />
-            </button>
-          </form>
-        )}
+        <p className="text-xs leading-snug" style={{ color: "var(--text-muted)" }}>
+          Менеджер свяжется с вами в ближайшее время и подтвердит условия.
+        </p>
       </div>
+      <BackNavLink href="/offer">← Назад к офферу</BackNavLink>
     </div>
   );
 }

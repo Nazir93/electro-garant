@@ -6,8 +6,6 @@ export const LEAD_SOURCE_OPTIONS: { value: string; label: string; hint?: string 
   { value: "price-smeta", label: "Смета с калькулятора прайса", hint: "Страница /price, отправка набранной сметы" },
   { value: "calculator", label: "Ориентировочный расчёт", hint: "Модалка: калькулятор стоимости" },
   { value: "offer-page", label: "Оффер: обратная связь", hint: "/offer/form" },
-  { value: "offer-pizza", label: "Оффер: пицца / комментарий", hint: "Бонус после таймера" },
-  { value: "calculator-pizza", label: "Расчёт: пицца / комментарий", hint: "Бонус после ориентировочного расчёта" },
   { value: "partner-partner", label: "Партнёры: подряд", hint: "/partners/partner" },
   { value: "partner-supplier", label: "Партнёры: поставщик", hint: "/partners/supplier" },
 ];
@@ -15,6 +13,8 @@ export const LEAD_SOURCE_OPTIONS: { value: string; label: string; hint?: string 
 const LEGACY_SOURCE_LABELS: Record<string, string> = {
   "inspection-request": "Выезд инженера (старое)",
   "project-form": "Описание проекта (старое)",
+  "offer-pizza": "Оффер: комментарий после таймера (архив)",
+  "calculator-pizza": "Расчёт: комментарий после таймера (архив)",
 };
 
 export function getLeadSourceLabel(source: string | null | undefined): string {

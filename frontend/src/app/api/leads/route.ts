@@ -4,23 +4,6 @@ import { prisma } from "@/lib/db";
 import { v4 as uuidv4 } from "uuid";
 import { sendTelegramNotification, formatLeadMessage } from "@/lib/telegram";
 
-/** Второй шаг оффера: комментарий к пицце без капчи, если previousLeadId — реальная заявка */
-async function verifyOfferPizzaPreviousLead(calcData: unknown): Promise<boolean> {
-  let obj: unknown = calcData;
-  if (typeof calcData === "string") {
-    try {
-      obj = JSON.parse(calcData);
-    } catch {
-      return false;
-    }
-  }
-  if (!obj || typeof obj !== "object") return false;
-  const prev = (obj as { kind?: string; previousLeadId?: string }).previousLeadId;
-  if (!prev || typeof prev !== "string") return false;
-  const row = await prisma.lead.findUnique({ where: { id: prev }, select: { id: true } });
-  return Boolean(row);
-}
-
 const RATE_LIMIT_MAP = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_MAX = 15;
 const RATE_LIMIT_WINDOW = 10 * 60 * 1000;
@@ -79,9 +62,6 @@ export async function POST(request: NextRequest) {
     }
 
     const smartCaptchaSecret = process.env.YANDEX_SMARTCAPTCHA_SERVER_KEY?.trim();
-    const pizzaFollowupOk =
-      (body?.source === "offer-pizza" || body?.source === "calculator-pizza") &&
-      (await verifyOfferPizzaPreviousLead(body.calcData));
 
     if (smartCaptchaSecret && parsed.data.recaptchaToken) {
       try {
@@ -108,7 +88,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-    } else if (smartCaptchaSecret && !parsed.data.recaptchaToken && !pizzaFollowupOk) {
+    } else if (smartCaptchaSecret && !parsed.data.recaptchaToken) {
       return NextResponse.json(
         { error: "Проверка не пройдена. Обновите страницу и попробуйте снова." },
         { status: 400 }

@@ -232,7 +232,9 @@ export function formatLeadMessage(lead: {
   ) {
     const p = rawCalc as { comment: string; previousLeadId?: string; kind?: string };
     const label =
-      p.kind === "calculator-pizza" ? "Пожелание по пицце (ориентировочный расчёт)" : "Пожелание по пицце (оффер)";
+      p.kind === "calculator-pizza"
+        ? "Доп. комментарий после расчёта (архив)"
+        : "Доп. комментарий после оффера (архив)";
     lines.push(``, `<b>${label}</b>`);
     lines.push(escapeHtml(p.comment.slice(0, 2000)));
     if (p.previousLeadId) {

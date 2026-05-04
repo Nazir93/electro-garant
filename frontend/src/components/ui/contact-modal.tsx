@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X, ArrowRight, Paperclip, Loader2, CheckCircle, FileText, Eye, Calculator, Send, Pizza, Clock } from "lucide-react";
-import { SpinningPizzaAsset } from "@/components/ui/spinning-pizza";
+import { X, ArrowRight, Paperclip, Loader2, CheckCircle, FileText, Eye, Calculator, Send, Clock, Percent } from "lucide-react";
+import { OfferTimerVisual } from "@/components/ui/offer-timer-visual";
+import { OFFER_FIVE_MIN_DISCOUNT_LINE } from "@/lib/offer-promo";
 import { useModal } from "@/lib/modal-context";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -33,8 +34,7 @@ type WizardStep =
   | "form-calculator"
   | "form-price-estimate"
   | "success"
-  | "timer"
-  | "pizza";
+  | "timer";
 
 /* ───── Schemas ───── */
 
@@ -1102,17 +1102,45 @@ function SuccessScreen({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ───── Timer + Pizza (после отправки «Ориентировочного расчёта») ───── */
+/* ───── Таймер оффера (после «Ориентировочного расчёта»): скидка 15%, без второго шага ───── */
 
-function ModalTimerSection({ seconds }: { seconds: number }) {
+function ModalTimerSection({ seconds, onClose }: { seconds: number; onClose: () => void }) {
   const min = Math.floor(seconds / 60);
   const sec = seconds % 60;
+  const finished = seconds <= 0;
+
+  if (finished) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+        <div className="flex max-w-lg flex-col items-center gap-6 text-center">
+          <OfferTimerVisual size="lg" />
+          <h2 className="font-heading text-xl sm:text-2xl" style={{ color: "var(--accent)" }}>
+            Время ожидания истекло
+          </h2>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
+            {OFFER_FIVE_MIN_DISCOUNT_LINE}
+          </p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            Менеджер свяжется с вами в ближайшее время и подтвердит условия.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-xs uppercase tracking-[0.15em] underline underline-offset-4 transition-colors"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Закрыть
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="flex flex-col items-center gap-4 py-2 md:flex-row md:items-center md:gap-6 max-w-2xl">
         <div className="flex shrink-0 justify-center md:w-[140px]">
-          <SpinningPizzaAsset size="md" />
+          <OfferTimerVisual size="md" />
         </div>
 
         <div className="min-w-0 flex-1 text-center md:text-left">
@@ -1153,146 +1181,14 @@ function ModalTimerSection({ seconds }: { seconds: number }) {
               Ожидание
             </span>
             <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide" style={{ color: "var(--text-subtle)" }}>
-              <Pizza size={16} strokeWidth={2} style={{ color: "var(--accent)" }} />
-              Бонус
+              <Percent size={16} strokeWidth={2} style={{ color: "var(--accent)" }} />
+              Скидка 15%
             </span>
           </div>
 
           <p className="mt-3 text-[11px] leading-snug sm:text-xs" style={{ color: "var(--text-muted)" }}>
-            Не дозвонимся за 5 минут — {SITE_NAME} пришлёт пиццу на выбор. Дальше откроется форма пожеланий на этом же экране.
+            {OFFER_FIVE_MIN_DISCOUNT_LINE}
           </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const pizzaCommentSchema = z.object({
-  comment: z.string().min(2, "Напишите пожелание").max(500),
-});
-
-function ModalPizzaSection({
-  leadId,
-  contactName,
-  contactPhone,
-  onClose,
-}: {
-  leadId: string | null;
-  contactName: string;
-  contactPhone: string;
-  onClose: () => void;
-}) {
-  const [sent, setSent] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<{ comment: string }>({ resolver: zodResolver(pizzaCommentSchema) });
-
-  const onSubmit = async (data: { comment: string }) => {
-    setSubmitError(null);
-    try {
-      const res = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: contactName.trim() || "Клиент",
-          phone: contactPhone,
-          service: "Пицца: пожелание",
-          source: "calculator-pizza",
-          calcData: {
-            kind: "calculator-pizza",
-            comment: data.comment,
-            previousLeadId: leadId ?? undefined,
-          },
-        }),
-      });
-      const json = (await res.json()) as { error?: string };
-      if (!res.ok) {
-        setSubmitError(json.error || "Не удалось отправить. Попробуйте ещё раз.");
-        return;
-      }
-      setSent(true);
-    } catch {
-      setSubmitError("Ошибка сети. Попробуйте ещё раз.");
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="grid w-full max-w-2xl grid-cols-1 gap-3 md:grid-cols-2 md:items-stretch md:gap-4">
-        <div
-          className="relative flex min-h-[160px] flex-col justify-center overflow-hidden rounded-2xl border p-4 md:min-h-0"
-          style={{
-            borderColor: "var(--border)",
-            backgroundColor: "var(--card-bg)",
-            backgroundImage: "radial-gradient(ellipse 90% 70% at 50% 30%, rgba(201,168,76,0.08), transparent 55%)",
-          }}
-        >
-          <div className="relative z-10 flex flex-col items-center gap-3 text-center md:py-2">
-            <SpinningPizzaAsset size="lg" />
-            <div>
-              <h2 className="font-heading text-base sm:text-lg" style={{ color: "var(--accent)" }}>
-                Пицца в подарок!
-              </h2>
-              <p className="mt-1 text-[11px] leading-snug sm:text-xs" style={{ color: "var(--text-muted)" }}>
-                {SITE_NAME} — на ваш выбор. Форма пожеланий рядом.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="flex flex-col justify-center rounded-2xl border p-4 sm:p-5"
-          style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border)" }}
-        >
-          <p className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
-            <Pizza size={16} strokeWidth={2} style={{ color: "var(--accent)" }} />
-            Пожелание
-          </p>
-          {sent ? (
-            <div className="flex flex-col items-center gap-4 py-3 text-center">
-              <SpinningPizzaAsset size="lg" />
-              <CheckCircle size={32} strokeWidth={2} style={{ color: "var(--accent)" }} />
-              <p className="text-sm font-heading leading-snug" style={{ color: "var(--text)" }}>
-                Отправлено! Ждите звонок и пиццу.
-              </p>
-              <button
-                onClick={onClose}
-                className="mt-2 text-xs uppercase tracking-[0.15em] underline underline-offset-4 transition-colors"
-                style={{ color: "var(--text-muted)" }}
-              >
-                Закрыть
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-              <textarea
-                rows={3}
-                placeholder="Какую пиццу любите? Маргарита, пепперони..."
-                className="w-full resize-none rounded-xl px-3 py-2.5 text-sm outline-none"
-                style={{
-                  backgroundColor: "var(--bg-secondary)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text)",
-                }}
-                {...register("comment")}
-              />
-              {errors.comment && <p className="text-xs text-red-400">{errors.comment.message}</p>}
-              {submitError && <p className="text-xs text-red-400">{submitError}</p>}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-heading text-xs uppercase tracking-[0.1em] transition-opacity disabled:opacity-50"
-                style={{ backgroundColor: "var(--accent)", color: "#0A0A0A" }}
-              >
-                <Pizza size={16} strokeWidth={2} />
-                {isSubmitting ? "Отправка..." : "Отправить пожелание"}
-                <ArrowRight size={16} strokeWidth={2} />
-              </button>
-            </form>
-          )}
         </div>
       </div>
     </div>
@@ -1309,20 +1205,16 @@ export function ContactModal() {
   const router = useRouter();
   const getSmartCaptchaToken = useSmartCaptchaToken();
 
-  const [pizzaLeadId, setPizzaLeadId] = useState<string | null>(null);
-  const [pizzaName, setPizzaName] = useState("");
-  const [pizzaPhone, setPizzaPhone] = useState("");
   const [timerSec, setTimerSec] = useState(300);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startPizzaTimer = useCallback(() => {
+  const startOfferTimer = useCallback(() => {
     setTimerSec(300);
     setStep("timer");
     timerRef.current = setInterval(() => {
       setTimerSec((s) => {
         if (s <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
-          setStep("pizza");
           return 0;
         }
         return s - 1;
@@ -1427,11 +1319,8 @@ export function ContactModal() {
       {step === "form-calculator" && (
         <CalculatorForm
           onBack={directEstimateEntry ? handleClose : () => setStep("q2")}
-          onSuccess={(id, name, phone) => {
-            setPizzaLeadId(id);
-            setPizzaName(name);
-            setPizzaPhone(phone);
-            startPizzaTimer();
+          onSuccess={() => {
+            startOfferTimer();
           }}
           getRecaptchaToken={getSmartCaptchaToken}
         />
@@ -1443,15 +1332,7 @@ export function ContactModal() {
           getRecaptchaToken={getSmartCaptchaToken}
         />
       )}
-      {step === "timer" && <ModalTimerSection seconds={timerSec} />}
-      {step === "pizza" && (
-        <ModalPizzaSection
-          leadId={pizzaLeadId}
-          contactName={pizzaName}
-          contactPhone={pizzaPhone}
-          onClose={handleClose}
-        />
-      )}
+      {step === "timer" && <ModalTimerSection seconds={timerSec} onClose={handleClose} />}
       {step === "success" && <SuccessScreen onClose={handleClose} />}
     </div>
   );
