@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/sidebar";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLogin = pathname === "/admin/login";
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   if (isLogin) {
     return <>{children}</>;
@@ -19,10 +20,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <aside className="fixed top-0 left-0 h-full z-[70] w-[240px] flex-shrink-0 bg-[#111111] border-r border-white/[0.08]" />
         }
       >
-        <AdminSidebar />
+        <AdminSidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
       </Suspense>
-      <div className="lg:pl-[240px] transition-all duration-300">
-        <main className="min-h-screen p-4 sm:p-6 lg:p-8 pt-14 lg:pt-8">{children}</main>
+      <div
+        className={`transition-[padding] duration-300 ease-in-out ${
+          sidebarCollapsed ? "lg:pl-[68px]" : "lg:pl-[240px]"
+        }`}
+      >
+        <main className="min-h-screen w-full max-w-none p-4 sm:p-6 lg:p-8 pt-14 lg:pt-8">{children}</main>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ import {
   FolderOpen,
   Calculator,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { useSearchParams } from "next/navigation";
 import { LEAD_SOURCE_OPTIONS } from "@/lib/lead-sources";
 import { useAdminNewLeadsNotify } from "@/hooks/use-admin-new-leads-notify";
@@ -40,10 +40,15 @@ const NAV_ITEMS = [
   { href: "/admin/settings", label: "Настройки", icon: Settings },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({
+  collapsed,
+  setCollapsed,
+}: {
+  collapsed: boolean;
+  setCollapsed: Dispatch<SetStateAction<boolean>>;
+}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { highlight: leadsHighlight, badgeCount: leadsBadge } = useAdminNewLeadsNotify();
 
@@ -84,7 +89,11 @@ export function AdminSidebar() {
             </Link>
           )}
           <button
-            onClick={() => { setCollapsed(!collapsed); setMobileOpen(false); }}
+            type="button"
+            onClick={() => {
+              setCollapsed((c) => !c);
+              setMobileOpen(false);
+            }}
             className="p-1.5 rounded-md text-white/40 hover:text-white hover:bg-white/5 transition-colors"
           >
             <ChevronLeft size={16} className={`transition-transform ${collapsed ? "rotate-180" : ""}`} />
