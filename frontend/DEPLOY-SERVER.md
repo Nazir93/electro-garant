@@ -97,6 +97,19 @@ npx prisma generate && npx prisma migrate deploy && npm run build && pm2 restart
 
 Полный список опций см. в [`.env.example`](.env.example).
 
+### Прайс калькулятора (`/price`)
+
+После первого деплоя с миграцией `price_calculator` таблицы пустые: в админке будет текст «В базе нет позиций…». Один раз залейте данные с VPS (в каталоге `frontend` должен быть **`.env`** с тем же `DATABASE_URL`, что использует приложение):
+
+```bash
+cd /var/www/electro-garant/frontend
+npm run db:seed-price:prod
+```
+
+Локально на ПК по-прежнему: `npm run db:seed-price` (читает `.env.local`). Если на сервере нет скрипта `db:seed-price:prod`, выполните вручную: `npx dotenv -e .env -- npx tsx scripts/seed-price-calculator.ts`.
+
+Повторный сид **перезаписывает** все строки калькулятора; правки только из админки после этого пропадут — при обновлении прайса из JSON делайте сид осознанно.
+
 ## Telegram (уведомления о новых заявках)
 
 Заявки с сайта сохраняются в БД и дублируются сообщением в Telegram через `POST /api/leads` → [`src/lib/telegram.ts`](src/lib/telegram.ts).

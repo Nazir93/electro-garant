@@ -17,6 +17,7 @@
     "db:studio": "dotenv -e .env.local -- prisma studio",
     "db:verify": "dotenv -e .env.local -- node scripts/verify-db.cjs",
     "db:seed-price": "dotenv -e .env.local -- npx tsx scripts/seed-price-calculator.ts",
+    "db:seed-price:prod": "dotenv -e .env -- npx tsx scripts/seed-price-calculator.ts",
     "seo:export-landings": "npx tsx scripts/export-service-landings.ts",
     "docker:db": "docker compose -f ../docker-compose.yml up -d postgres",
     "db:tunnel": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/db-tunnel.ps1",
