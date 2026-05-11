@@ -199,19 +199,12 @@ export default function AdminPriceCalculatorPage() {
     <div className="space-y-8 max-w-6xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Прайс калькулятора сметы</h1>
-        <p className="text-sm text-white/40 mt-1">
-          Цены и названия совпадают с PDF для посетителей на странице /price. После правок обновите страницу сайта.
-        </p>
       </div>
 
       <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5 space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">PDF для кнопки «Скачать прайс»</h2>
-            <p className="text-xs text-white/40 mt-1 max-w-xl">
-              Файл сохраняется как <code className="text-[#C9A84C]">/price-list.pdf</code> — стабильная ссылка на сайте.
-              Имя при скачивании можно задать ниже (кириллица и скобки допустимы).
-            </p>
           </div>
           <input
             ref={fileInputRef}
@@ -227,14 +220,11 @@ export default function AdminPriceCalculatorPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C9A84C] hover:bg-[#B8933F] disabled:opacity-50 text-black text-sm font-semibold"
           >
             <FileUp size={18} />
-            {uploadingPdf ? "Загрузка…" : "Загрузить PDF"}
+            {uploadingPdf ? "Загрузка…" : "Выбрать файл"}
           </button>
         </div>
         {priceList && (
           <div className="text-xs text-white/45 space-y-1 font-mono">
-            <p>
-              URL: <span className="text-white/70">{priceList.href}</span>
-            </p>
             <p>
               Файл на сервере:{" "}
               {priceList.fileExists ? (

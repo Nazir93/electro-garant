@@ -75,24 +75,26 @@ NEXTAUTH_URL=https://gmont.ru
 
 ## После обновления кода из Git
 
-**Деплой на VPS (текущая схема):** один заход по SSH, каталог приложения `/var/www/electro-garant`, процесс PM2 `electro-next`. Prisma — всегда перед сборкой (клиент и миграции БД).
+**Деплой на VPS:** каталог `/var/www/electro-garant`, процесс PM2 **`electro-next`** (не путать с `electro-nextcd` при копировании).
 
-```bash
-cd /var/www/electro-garant && git pull origin main && cd frontend && npx prisma generate && npx prisma migrate deploy && npm run build && pm2 restart electro-next
-```
-
-Если менялись зависимости (`package.json` / `package-lock.json`), перед Prisma выполните `npm ci`:
+**Основная команда** (так стабильнее: `npm ci` совмещает зависимости с `package-lock.json`):
 
 ```bash
 cd /var/www/electro-garant && git pull origin main && cd frontend && npm ci && npx prisma generate && npx prisma migrate deploy && npm run build && pm2 restart electro-next
 ```
 
-Если у вас на сервере исторически использовали `prisma db push` вместо `migrate deploy` — замените соответствующий шаг на свой вариант.
-
-Если код на сервере уже актуален и вы в каталоге `frontend`:
+Если **`package-lock.json` не менялся** и нужно чуть быстрее — можно без `npm ci` (на свой риск рассинхрона lock):
 
 ```bash
-npx prisma generate && npx prisma migrate deploy && npm run build && pm2 restart electro-next
+cd /var/www/electro-garant && git pull origin main && cd frontend && npx prisma generate && npx prisma migrate deploy && npm run build && pm2 restart electro-next
+```
+
+Если у вас на сервере исторически использовали `prisma db push` вместо `migrate deploy` — замените соответствующий шаг на свой вариант.
+
+Если код уже подтянут и вы в каталоге `frontend`:
+
+```bash
+npm ci && npx prisma generate && npx prisma migrate deploy && npm run build && pm2 restart electro-next
 ```
 
 Полный список опций см. в [`.env.example`](.env.example).
