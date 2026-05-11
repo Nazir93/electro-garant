@@ -278,3 +278,32 @@ model ThankYouToken {
   @@index([token])
   @@index([expiresAt])
 }
+
+/// Раздел калькулятора сметы (/price)
+model PriceCalculatorSection {
+  id        String                  @id @default(cuid())
+  slug      String                  @unique
+  title     String
+  sortOrder Int                     @default(0)
+  items     PriceCalculatorItem[]
+
+  @@index([sortOrder])
+}
+
+/// Позиция прайса калькулятора (соответствует строкам PDF; правки из админки)
+model PriceCalculatorItem {
+  id        String                 @id @default(cuid())
+  sectionId String
+  section   PriceCalculatorSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sortOrder Int                    @default(0)
+  /// Номер строки в PDF (может повторяться у разных позиций)
+  pdfLine   Int?
+  name      String                 @db.Text
+  unit      String                 @default("")
+  price     Decimal?               @db.Decimal(12, 2)
+  isHeading Boolean                @default(false)
+  /// Для автозаполнения сметы по профилю объекта (если задано)
+  fillKey   String?                @unique
+
+  @@index([sectionId, sortOrder])
+}

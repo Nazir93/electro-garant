@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { Calculator, Download, Building2, LayoutGrid, Plug2, MapPinned } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
-import { PRICE_LIST_FILENAME, PRICE_LIST_HREF } from "@/lib/constants";
+import { useContactConfig } from "@/lib/contact-config-context";
 
 /** Нижняя бегущая строка — не дублирует цифры из FixedStatsBar и не список услуг как в шапке */
 const PRICE_TICKER_ITEMS = [
@@ -52,6 +52,7 @@ export function PriceBannerSection() {
   const [visible, setVisible] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const { isDark } = useTheme();
+  const contact = useContactConfig();
 
   const accentRGB = "201,168,76";
 
@@ -229,8 +230,8 @@ export function PriceBannerSection() {
           </Link>
 
           <a
-            href={PRICE_LIST_HREF}
-            download={PRICE_LIST_FILENAME}
+            href={contact.priceListHref}
+            download={contact.priceListDownloadName}
             className="group flex min-h-[48px] items-center justify-center gap-2.5 rounded-full border px-7 py-3.5 transition-colors duration-300 sm:px-9 sm:py-4"
             style={{
               borderColor: "var(--border)",

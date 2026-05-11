@@ -1,9 +1,9 @@
-import { PRICE_SECTIONS } from "@/app/price/price-data";
+import type { PriceCalculatorSectionDTO } from "@/lib/price-calculator-types";
 
 const VAT_RATE = 0.22;
 
 export type EstimateLine = {
-  id: number;
+  id: string;
   sectionTitle: string;
   name: string;
   unit: string;
@@ -20,14 +20,15 @@ export type PriceEstimatePayload = {
 };
 
 export function buildEstimateLines(
-  quantities: Record<number, number>,
-  withVat: boolean
+  quantities: Record<string, number>,
+  withVat: boolean,
+  sections: PriceCalculatorSectionDTO[]
 ): EstimateLine[] {
   const lines: EstimateLine[] = [];
-  for (const section of PRICE_SECTIONS) {
+  for (const section of sections) {
     for (const item of section.items) {
       const qty = quantities[item.id] || 0;
-      if (qty <= 0 || item.price == null) continue;
+      if (qty <= 0 || item.price == null || item.isHeading) continue;
       const pricePerUnit = withVat ? Math.round(item.price * (1 + VAT_RATE)) : item.price;
       lines.push({
         id: item.id,

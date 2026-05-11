@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { Download, ChevronDown, Search, X, Trash2, Send, Zap } from "lucide-react";
-import { PRICE_LIST_FILENAME, PRICE_LIST_HREF, SITE_NAME } from "@/lib/constants";
+import { SITE_NAME } from "@/lib/constants";
 import { useContactConfig } from "@/lib/contact-config-context";
 import { useModal } from "@/lib/modal-context";
 import { buildEstimateLines, downloadEstimateCsv } from "@/lib/price-estimate-export";
-import { PRICE_SECTIONS, AUTO_FILL_PROFILES, type PriceSection, type PriceItem, type AutoFillProfile } from "./price-data";
+import { AUTO_FILL_PROFILES, type AutoFillProfile } from "./price-data";
+import type { PriceCalculatorItemDTO, PriceCalculatorSectionDTO } from "@/lib/price-calculator-types";
 import { FunnelSelect } from "@/components/ui/funnel-ui";
 
 const PROFILE_SELECT_OPTIONS = [
@@ -14,7 +15,15 @@ const PROFILE_SELECT_OPTIONS = [
   ...AUTO_FILL_PROFILES.map((p) => ({ value: p.label, label: p.label })),
 ];
 
-type Quantities = Record<number, number>;
+type Quantities = Record<string, number>;
+
+function resolveItemIdByFillKey(sections: PriceCalculatorSectionDTO[], fillKey: string): string | undefined {
+  for (const s of sections) {
+    const it = s.items.find((i) => i.fillKey === fillKey);
+    if (it) return it.id;
+  }
+  return undefined;
+}
 
 const VAT_RATE = 0.22;
 
@@ -74,11 +83,25 @@ function ItemRow({
   onSetQty,
   withVat,
 }: {
-  item: PriceItem;
+  item: PriceCalculatorItemDTO;
   qty: number;
   onSetQty: (v: number) => void;
   withVat: boolean;
 }) {
+  if (item.isHeading) {
+    return (
+      <div
+        className="py-2.5 sm:py-3 border-b last:border-b-0"
+        style={{ borderColor: "var(--border)", backgroundColor: "rgba(201,168,76,0.06)" }}
+      >
+        <span className="text-[11px] sm:text-xs font-heading uppercase tracking-wide" style={{ color: "var(--accent)" }}>
+          {item.pdfLine != null ? `${item.pdfLine}. ` : ""}
+          {item.name}
+        </span>
+      </div>
+    );
+  }
+
   const displayPrice = item.price
     ? withVat
       ? Math.round(item.price * (1 + VAT_RATE))
@@ -88,12 +111,18 @@ function ItemRow({
 
   return (
     <div
-      className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_70px_110px_140px_110px] gap-2 sm:gap-3 py-3 sm:py-3.5 border-b last:border-b-0 items-center transition-colors duration-200"
+      className="grid grid-cols-[1fr_auto] sm:grid-cols-[44px_1fr_70px_110px_140px_110px] gap-2 sm:gap-3 py-3 sm:py-3.5 border-b last:border-b-0 items-center transition-colors duration-200"
       style={{
         borderColor: "var(--border)",
         backgroundColor: qty > 0 ? "rgba(201,168,76,0.04)" : "transparent",
       }}
     >
+      <span
+        className="hidden sm:block text-[10px] tabular-nums text-center"
+        style={{ color: "var(--text-subtle)" }}
+      >
+        {item.pdfLine != null ? item.pdfLine : "—"}
+      </span>
       {/* Name */}
       <div className="min-w-0">
         <span
@@ -106,6 +135,7 @@ function ItemRow({
           className="sm:hidden text-[10px] mt-0.5 block"
           style={{ color: "var(--text-subtle)" }}
         >
+          {item.pdfLine != null ? `№${item.pdfLine} · ` : ""}
           {item.unit}
           {displayPrice ? ` · ${formatPrice(displayPrice)} ₽` : " · по договорённости"}
         </span>
@@ -158,24 +188,26 @@ function SectionAccordion({
   withVat,
   filteredItems,
 }: {
-  section: PriceSection;
+  section: PriceCalculatorSectionDTO;
   index: number;
   isOpen: boolean;
   onToggle: () => void;
   quantities: Quantities;
-  onSetQty: (id: number, v: number) => void;
+  onSetQty: (id: string, v: number) => void;
   withVat: boolean;
-  filteredItems: PriceItem[];
+  filteredItems: PriceCalculatorItemDTO[];
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const sectionTotal = filteredItems.reduce((sum, item) => {
+    if (item.isHeading) return sum;
     const qty = quantities[item.id] || 0;
     if (!item.price || qty === 0) return sum;
     const p = withVat ? Math.round(item.price * (1 + VAT_RATE)) : item.price;
     return sum + p * qty;
   }, 0);
 
-  const selectedCount = filteredItems.filter((i) => (quantities[i.id] || 0) > 0).length;
+  const pricedRows = filteredItems.filter((i) => !i.isHeading);
+  const selectedCount = pricedRows.filter((i) => (quantities[i.id] || 0) > 0).length;
 
   return (
     <div
@@ -195,7 +227,7 @@ function SectionAccordion({
               {section.title}
             </span>
             <span className="text-[10px] sm:text-xs block mt-0.5" style={{ color: "var(--text-subtle)" }}>
-              {filteredItems.length} позиций
+              {pricedRows.length} позиций
               {selectedCount > 0 && (
                 <span style={{ color: "var(--accent)" }}> · {selectedCount} выбрано</span>
               )}
@@ -241,9 +273,10 @@ function SectionAccordion({
         <div ref={contentRef} className="px-4 sm:px-6 pb-4 sm:pb-6">
           {/* Table header (desktop) */}
           <div
-            className="hidden sm:grid grid-cols-[1fr_70px_110px_140px_110px] gap-3 pb-2.5 mb-1 border-b text-[10px] uppercase tracking-[0.15em]"
+            className="hidden sm:grid grid-cols-[44px_1fr_70px_110px_140px_110px] gap-3 pb-2.5 mb-1 border-b text-[10px] uppercase tracking-[0.15em]"
             style={{ borderColor: "var(--border)", color: "var(--text-subtle)" }}
           >
+            <span className="text-center">№</span>
             <span>Наименование</span>
             <span className="text-center">Ед.</span>
             <span className="text-right">Цена</span>
@@ -268,16 +301,24 @@ function SectionAccordion({
 
 /* ─── Auto-fill: расчёт количеств по профилю объекта и площади ─── */
 
-function autoFillQuantities(profile: AutoFillProfile, area: number): Quantities {
+function autoFillQuantities(
+  profile: AutoFillProfile,
+  area: number,
+  sections: PriceCalculatorSectionDTO[]
+): Quantities {
   const q: Quantities = {};
   const totalCable = area * profile.cablePerSqm;
 
-  for (const { id, share } of profile.cableDistribution) {
+  for (const { fillKey, share } of profile.cableDistribution) {
+    const id = resolveItemIdByFillKey(sections, fillKey);
+    if (!id) continue;
     const v = Math.round(totalCable * share);
     if (v > 0) q[id] = v;
   }
 
-  for (const { id, perSqm } of profile.extras) {
+  for (const { fillKey, perSqm } of profile.extras) {
+    const id = resolveItemIdByFillKey(sections, fillKey);
+    if (!id) continue;
     const v = Math.max(1, Math.round(area * perSqm));
     if (v > 0) q[id] = v;
   }
@@ -285,18 +326,23 @@ function autoFillQuantities(profile: AutoFillProfile, area: number): Quantities 
   return q;
 }
 
-function sectionsWithQuantities(quantities: Quantities): Set<string> {
-  const ids = new Set(Object.keys(quantities).map(Number));
-  const sections = new Set<string>();
-  for (const s of PRICE_SECTIONS) {
-    if (s.items.some((i) => ids.has(i.id))) sections.add(s.id);
+function sectionsWithQuantities(
+  quantities: Quantities,
+  priceSections: PriceCalculatorSectionDTO[]
+): Set<string> {
+  const ids = new Set(Object.keys(quantities));
+  const out = new Set<string>();
+  for (const s of priceSections) {
+    if (s.items.some((i) => ids.has(i.id))) out.add(s.slug);
   }
-  return sections;
+  return out;
 }
 
 /* ─── Main page ─── */
 export function PricePageContent() {
   const contact = useContactConfig();
+  const [priceSections, setPriceSections] = useState<PriceCalculatorSectionDTO[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [quantities, setQuantities] = useState<Quantities>({});
   const [withVat, setWithVat] = useState(false);
@@ -307,18 +353,36 @@ export function PricePageContent() {
   const [areaInput, setAreaInput] = useState("");
   const [autoFilled, setAutoFilled] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/price-calculator")
+      .then((r) => {
+        if (!r.ok) return r.json().then((j) => Promise.reject(new Error(j.error || r.statusText)));
+        return r.json();
+      })
+      .then((data: { sections: PriceCalculatorSectionDTO[] }) => {
+        if (!cancelled && data.sections) setPriceSections(data.sections);
+      })
+      .catch((e: Error) => {
+        if (!cancelled) setLoadError(e.message || "Не удалось загрузить прайс");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleAutoFill = useCallback(() => {
     const profile = AUTO_FILL_PROFILES.find((p) => p.label === selectedProfile);
     const area = parseFloat(areaInput);
-    if (!profile || !area || area <= 0) return;
-    const q = autoFillQuantities(profile, area);
+    if (!profile || !area || area <= 0 || !priceSections) return;
+    const q = autoFillQuantities(profile, area, priceSections);
     setQuantities(q);
-    setOpenSections(sectionsWithQuantities(q));
+    setOpenSections(sectionsWithQuantities(q, priceSections));
     setAutoFilled(true);
     setSearch("");
-  }, [selectedProfile, areaInput]);
+  }, [selectedProfile, areaInput, priceSections]);
 
-  const setQty = useCallback((id: number, v: number) => {
+  const setQty = useCallback((id: string, v: number) => {
     setQuantities((prev) => {
       const next = { ...prev };
       if (v <= 0) delete next[id];
@@ -337,8 +401,9 @@ export function PricePageContent() {
   }, []);
 
   const expandAll = useCallback(() => {
-    setOpenSections(new Set(PRICE_SECTIONS.map((s) => s.id)));
-  }, []);
+    if (!priceSections) return;
+    setOpenSections(new Set(priceSections.map((s) => s.slug)));
+  }, [priceSections]);
 
   const collapseAll = useCallback(() => {
     setOpenSections(new Set());
@@ -352,12 +417,15 @@ export function PricePageContent() {
   const searchLower = search.toLowerCase().trim();
 
   const filteredSections = useMemo(() => {
-    if (!searchLower) return PRICE_SECTIONS.map((s) => ({ section: s, items: s.items }));
-    return PRICE_SECTIONS.map((s) => ({
-      section: s,
-      items: s.items.filter((i) => i.name.toLowerCase().includes(searchLower)),
-    })).filter((s) => s.items.length > 0);
-  }, [searchLower]);
+    if (!priceSections) return [];
+    if (!searchLower) return priceSections.map((s) => ({ section: s, items: s.items }));
+    return priceSections
+      .map((s) => ({
+        section: s,
+        items: s.items.filter((i) => i.name.toLowerCase().includes(searchLower)),
+      }))
+      .filter((s) => s.items.length > 0);
+  }, [searchLower, priceSections]);
 
   const totalItems = useMemo(
     () => Object.keys(quantities).length,
@@ -365,9 +433,11 @@ export function PricePageContent() {
   );
 
   const totalSum = useMemo(() => {
+    if (!priceSections) return 0;
     let sum = 0;
-    for (const section of PRICE_SECTIONS) {
+    for (const section of priceSections) {
       for (const item of section.items) {
+        if (item.isHeading) continue;
         const qty = quantities[item.id] || 0;
         if (!item.price || qty === 0) continue;
         const p = withVat ? Math.round(item.price * (1 + VAT_RATE)) : item.price;
@@ -375,18 +445,24 @@ export function PricePageContent() {
       }
     }
     return sum;
-  }, [quantities, withVat]);
+  }, [quantities, withVat, priceSections]);
 
-  const totalItemsCount = PRICE_SECTIONS.reduce((n, s) => n + s.items.length, 0);
+  const totalItemsCount = useMemo(
+    () =>
+      priceSections?.reduce((n, s) => n + s.items.filter((i) => !i.isHeading).length, 0) ?? 0,
+    [priceSections]
+  );
 
   const handleDownloadCsv = useCallback(() => {
-    const lines = buildEstimateLines(quantities, withVat);
+    if (!priceSections) return;
+    const lines = buildEstimateLines(quantities, withVat, priceSections);
     if (lines.length === 0) return;
     downloadEstimateCsv(lines, { withVat, siteName: SITE_NAME, total: totalSum });
-  }, [quantities, withVat, totalSum]);
+  }, [quantities, withVat, totalSum, priceSections]);
 
   const handleSendEstimate = useCallback(() => {
-    const lines = buildEstimateLines(quantities, withVat);
+    if (!priceSections) return;
+    const lines = buildEstimateLines(quantities, withVat, priceSections);
     if (lines.length === 0) return;
     openModalWithPriceEstimate({
       lines,
@@ -394,7 +470,33 @@ export function PricePageContent() {
       withVat,
       positionCount: lines.length,
     });
-  }, [quantities, withVat, totalSum, openModalWithPriceEstimate]);
+  }, [quantities, withVat, totalSum, openModalWithPriceEstimate, priceSections]);
+
+  if (loadError) {
+    return (
+      <div className="container mx-auto py-24 px-4 text-center">
+        <p className="text-lg font-heading mb-2" style={{ color: "var(--text)" }}>
+          Не удалось загрузить прайс
+        </p>
+        <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
+          {loadError}
+        </p>
+        <p className="text-xs" style={{ color: "var(--text-subtle)" }}>
+          Выполните миграцию БД и команду загрузки прайса на сервере (см. README в репозитории).
+        </p>
+      </div>
+    );
+  }
+
+  if (!priceSections) {
+    return (
+      <div className="container mx-auto py-24 px-4 text-center">
+        <p className="text-sm animate-pulse" style={{ color: "var(--text-muted)" }}>
+          Загрузка прайса…
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
@@ -497,7 +599,7 @@ export function PricePageContent() {
           {/* Stats */}
           <div className="flex flex-wrap gap-4 sm:gap-6 mt-6 sm:mt-8">
             {[
-              { label: "Разделов", value: PRICE_SECTIONS.length },
+              { label: "Разделов", value: priceSections.length },
               { label: "Видов работ", value: totalItemsCount },
             ].map((stat) => (
               <div key={stat.label} className="flex items-baseline gap-2">
@@ -673,8 +775,8 @@ export function PricePageContent() {
                   key={section.id}
                   section={section}
                   index={i}
-                  isOpen={openSections.has(section.id)}
-                  onToggle={() => toggle(section.id)}
+                  isOpen={openSections.has(section.slug)}
+                  onToggle={() => toggle(section.slug)}
                   quantities={quantities}
                   onSetQty={setQty}
                   withVat={withVat}
@@ -791,8 +893,8 @@ export function PricePageContent() {
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
               <a
-                href={PRICE_LIST_HREF}
-                download={PRICE_LIST_FILENAME}
+                href={contact.priceListHref}
+                download={contact.priceListDownloadName}
                 className="flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-heading text-sm sm:text-base transition-all duration-300 hover:scale-[1.02] min-h-[48px]"
                 style={{ backgroundColor: "var(--text)", color: "var(--bg)" }}
               >

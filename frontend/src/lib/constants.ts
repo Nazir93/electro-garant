@@ -43,11 +43,19 @@ export function buildSchemaAreaServed(): SchemaPlace[] {
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://gmont.ru";
 
-/** PDF прайса в `public/` — единый файл для всех кнопок «Скачать прайс». */
-export const PRICE_LIST_FILENAME = "Прайс ГМ 25-26(для пересылки).pdf";
+/**
+ * Файл в `public/` после загрузки из админки (латиница — стабильный URL без encodeURIComponent).
+ * Имя при скачивании задаётся отдельно в SiteSettings `price_list_download_name` и в ContactConfig.
+ */
+export const PRICE_LIST_PUBLIC_FILE = "price-list.pdf";
 
-/** Закодированный путь (кириллица и скобки в имени файла). */
-export const PRICE_LIST_HREF = `/${encodeURIComponent(PRICE_LIST_FILENAME)}`;
+export const PRICE_LIST_HREF = `/${PRICE_LIST_PUBLIC_FILE}`;
+
+/** Имя файла по умолчанию для атрибута download, если в БД не задано своё. */
+export const PRICE_LIST_DOWNLOAD_NAME_DEFAULT = "Прайс ГМ 25-26(для пересылки).pdf";
+
+/** @deprecated Используйте PRICE_LIST_DOWNLOAD_NAME_DEFAULT или contact.priceListDownloadName */
+export const PRICE_LIST_FILENAME = PRICE_LIST_DOWNLOAD_NAME_DEFAULT;
 
 export const PHONE = "8 (928) 455-45-59";
 export const PHONE_RAW = "89284554559";

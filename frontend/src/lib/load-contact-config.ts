@@ -11,6 +11,7 @@ const KEYS = [
   "working_hours",
   "social_telegram",
   "social_max",
+  "price_list_download_name",
 ] as const;
 
 /** Подмешивает значения из siteSettings поверх дефолтов из constants. */
@@ -30,6 +31,9 @@ export async function loadContactConfig(): Promise<ContactConfig> {
     if (m.working_hours?.trim()) d.workingHours = m.working_hours.trim();
     if (m.social_telegram?.trim()) d.social.telegram = m.social_telegram.trim();
     if (m.social_max?.trim()) d.social.max = m.social_max.trim();
+    if (m.price_list_download_name?.trim()) {
+      d.priceListDownloadName = m.price_list_download_name.trim();
+    }
   } catch {
     /* БД недоступна — дефолты */
   }

@@ -1,26 +1,13 @@
-export interface PriceItem {
-  id: number;
-  name: string;
-  unit: string;
-  price: number | null;
-}
-
-export interface PriceSection {
-  id: string;
-  title: string;
-  items: PriceItem[];
-}
-
-/* ─── Автозаполнение сметы по типу объекта и площади ─── */
+/**
+ * Автозаполнение сметы по типу объекта: ссылки на позиции прайса по стабильному fillKey
+ * (ключ задаётся при сидировании БД и совпадает с полем fillKey у позиции).
+ */
 
 export interface AutoFillProfile {
   label: string;
-  /** Расход кабеля (все марки) на 1 м² площади */
   cablePerSqm: number;
-  /** Распределение общего расхода по позициям прайса (id → доля, сумма = 1) */
-  cableDistribution: { id: number; share: number }[];
-  /** Сопутствующие позиции: id → штук (или метров) на 1 м² */
-  extras: { id: number; perSqm: number }[];
+  cableDistribution: { fillKey: string; share: number }[];
+  extras: { fillKey: string; perSqm: number }[];
 }
 
 export const AUTO_FILL_PROFILES: AutoFillProfile[] = [
@@ -28,624 +15,209 @@ export const AUTO_FILL_PROFILES: AutoFillProfile[] = [
     label: "Квартира / Апартаменты",
     cablePerSqm: 3.5,
     cableDistribution: [
-      { id: 1, share: 0.50 },   // кабель 3×2,5 мм²
-      { id: 2, share: 0.18 },   // кабель 3×6 мм²
-      { id: 27, share: 0.15 },  // UTP / SAT / телефон
-      { id: 4, share: 0.07 },   // кабель 5×6 мм² (плита, духовка)
-      { id: 15, share: 0.05 },  // акустический
-      { id: 16, share: 0.05 },  // декоративный
+      { fillKey: "cable_3x2_5", share: 0.5 },
+      { fillKey: "cable_3x6", share: 0.18 },
+      { fillKey: "utp_sat_tel", share: 0.15 },
+      { fillKey: "cable_5x6", share: 0.07 },
+      { fillKey: "cable_acoustic", share: 0.05 },
+      { fillKey: "cable_decor", share: 0.05 },
     ],
     extras: [
-      { id: 53, perSqm: 3.0 },   // гофра ПВХ до 25 мм — ≈ длина кабеля × 0.85
-      { id: 51, perSqm: 3.0 },   // затяжка кабеля в гофру с протяжкой
-      { id: 78, perSqm: 1.8 },   // штробление в кирпиче (~50% от кабеля)
-      { id: 80, perSqm: 1.8 },   // штукатурка штроб
-      { id: 102, perSqm: 0.55 }, // подрозетник (кирпич/бетон)
-      { id: 97, perSqm: 0.55 },  // лунка в кирпиче
-      { id: 156, perSqm: 0.45 }, // розетка внутренняя (~1 на 2,2 м²)
-      { id: 165, perSqm: 0.12 }, // выключатель 1-кл (~1 на 8 м²)
-      { id: 195, perSqm: 0.30 }, // точечный светильник (~1 на 3,3 м²)
-      { id: 191, perSqm: 0.30 }, // отверстие под точечный светильник
-      { id: 103, perSqm: 0.15 }, // распаячная коробка (~1 на 7 м²)
-      { id: 104, perSqm: 0.45 }, // расключение WAGO (≈ кол-во розеток)
-      { id: 138, perSqm: 0.55 }, // модульная автоматика (≈ подрозетники)
-      { id: 135, perSqm: 0.55 }, // ввод кабеля в щит
-      { id: 84, perSqm: 0.08 },  // сквозное сверление в кирпиче
-      { id: 145, perSqm: 0.55 }, // наконечники НШВИ
+      { fillKey: "pipe_pvh_16_25", perSqm: 3.0 },
+      { fillKey: "pull_corrugated_with", perSqm: 3.0 },
+      { fillKey: "chase_brick", perSqm: 1.8 },
+      { fillKey: "plaster_chase", perSqm: 1.8 },
+      { fillKey: "socket_box_in_wall", perSqm: 0.55 },
+      { fillKey: "hole_drill_brick_75", perSqm: 0.55 },
+      { fillKey: "socket_inner_zk", perSqm: 0.45 },
+      { fillKey: "switch_1_inner", perSqm: 0.12 },
+      { fillKey: "spot_light_ceiling", perSqm: 0.3 },
+      { fillKey: "hole_spot_fixture", perSqm: 0.3 },
+      { fillKey: "junction_box_install", perSqm: 0.15 },
+      { fillKey: "junction_wago_group", perSqm: 0.45 },
+      { fillKey: "din_automation_module", perSqm: 0.55 },
+      { fillKey: "panel_cable_entry", perSqm: 0.55 },
+      { fillKey: "drill_through_brick", perSqm: 0.08 },
+      { fillKey: "lug_nshvi", perSqm: 0.55 },
     ],
   },
   {
     label: "Частный дом",
     cablePerSqm: 4.0,
     cableDistribution: [
-      { id: 1, share: 0.42 },
-      { id: 2, share: 0.18 },
-      { id: 27, share: 0.15 },
-      { id: 4, share: 0.10 },
-      { id: 5, share: 0.05 },   // 5×10 мм²
-      { id: 15, share: 0.05 },
-      { id: 16, share: 0.05 },
+      { fillKey: "cable_3x2_5", share: 0.42 },
+      { fillKey: "cable_3x6", share: 0.18 },
+      { fillKey: "utp_sat_tel", share: 0.15 },
+      { fillKey: "cable_5x6", share: 0.1 },
+      { fillKey: "cable_5x10", share: 0.05 },
+      { fillKey: "cable_acoustic", share: 0.05 },
+      { fillKey: "cable_decor", share: 0.05 },
     ],
     extras: [
-      { id: 53, perSqm: 3.4 },
-      { id: 51, perSqm: 3.4 },
-      { id: 78, perSqm: 2.0 },
-      { id: 80, perSqm: 2.0 },
-      { id: 102, perSqm: 0.55 },
-      { id: 97, perSqm: 0.55 },
-      { id: 156, perSqm: 0.45 },
-      { id: 165, perSqm: 0.12 },
-      { id: 195, perSqm: 0.28 },
-      { id: 191, perSqm: 0.28 },
-      { id: 103, perSqm: 0.15 },
-      { id: 104, perSqm: 0.50 },
-      { id: 138, perSqm: 0.60 },
-      { id: 135, perSqm: 0.60 },
-      { id: 84, perSqm: 0.10 },
-      { id: 145, perSqm: 0.60 },
+      { fillKey: "pipe_pvh_16_25", perSqm: 3.4 },
+      { fillKey: "pull_corrugated_with", perSqm: 3.4 },
+      { fillKey: "chase_brick", perSqm: 2.0 },
+      { fillKey: "plaster_chase", perSqm: 2.0 },
+      { fillKey: "socket_box_in_wall", perSqm: 0.55 },
+      { fillKey: "hole_drill_brick_75", perSqm: 0.55 },
+      { fillKey: "socket_inner_zk", perSqm: 0.45 },
+      { fillKey: "switch_1_inner", perSqm: 0.12 },
+      { fillKey: "spot_light_ceiling", perSqm: 0.28 },
+      { fillKey: "hole_spot_fixture", perSqm: 0.28 },
+      { fillKey: "junction_box_install", perSqm: 0.15 },
+      { fillKey: "junction_wago_group", perSqm: 0.5 },
+      { fillKey: "din_automation_module", perSqm: 0.6 },
+      { fillKey: "panel_cable_entry", perSqm: 0.6 },
+      { fillKey: "drill_through_brick", perSqm: 0.1 },
+      { fillKey: "lug_nshvi", perSqm: 0.6 },
     ],
   },
   {
     label: "Офис / Административное здание",
     cablePerSqm: 6.5,
     cableDistribution: [
-      { id: 1, share: 0.35 },
-      { id: 2, share: 0.12 },
-      { id: 27, share: 0.30 },  // UTP — много в офисе
-      { id: 4, share: 0.08 },
-      { id: 3, share: 0.05 },   // 3×10 мм²
-      { id: 5, share: 0.05 },
-      { id: 15, share: 0.05 },
+      { fillKey: "cable_3x2_5", share: 0.35 },
+      { fillKey: "cable_3x6", share: 0.12 },
+      { fillKey: "utp_sat_tel", share: 0.3 },
+      { fillKey: "cable_5x6", share: 0.08 },
+      { fillKey: "cable_3x10", share: 0.05 },
+      { fillKey: "cable_5x10", share: 0.05 },
+      { fillKey: "cable_acoustic", share: 0.05 },
     ],
     extras: [
-      { id: 60, perSqm: 1.2 },   // кабель-канал до 25×16
-      { id: 61, perSqm: 0.6 },   // кабель-канал до 60×40
-      { id: 65, perSqm: 0.25 },  // лоток до 100 мм
-      { id: 156, perSqm: 0.55 }, // розетка (~1 на 1.8 м²)
-      { id: 165, perSqm: 0.10 },
-      { id: 193, perSqm: 0.20 }, // светильник ARS (Армстронг)
-      { id: 103, perSqm: 0.12 },
-      { id: 104, perSqm: 0.55 },
-      { id: 138, perSqm: 0.65 },
-      { id: 135, perSqm: 0.65 },
-      { id: 32, perSqm: 0.30 },  // обжимка RJ45
-      { id: 145, perSqm: 0.65 },
-      { id: 84, perSqm: 0.06 },
+      { fillKey: "cable_channel_25x16", perSqm: 1.2 },
+      { fillKey: "cable_channel_60x40", perSqm: 0.6 },
+      { fillKey: "tray_metal_100", perSqm: 0.25 },
+      { fillKey: "socket_inner_zk", perSqm: 0.55 },
+      { fillKey: "switch_1_inner", perSqm: 0.1 },
+      { fillKey: "light_ars_armstrong", perSqm: 0.2 },
+      { fillKey: "junction_box_install", perSqm: 0.12 },
+      { fillKey: "junction_wago_group", perSqm: 0.55 },
+      { fillKey: "din_automation_module", perSqm: 0.65 },
+      { fillKey: "panel_cable_entry", perSqm: 0.65 },
+      { fillKey: "rj45_crimp", perSqm: 0.3 },
+      { fillKey: "lug_nshvi", perSqm: 0.65 },
+      { fillKey: "drill_through_brick", perSqm: 0.06 },
     ],
   },
   {
     label: "Ресторан / Кафе / Общепит",
     cablePerSqm: 8.0,
     cableDistribution: [
-      { id: 1, share: 0.30 },
-      { id: 2, share: 0.18 },
-      { id: 4, share: 0.15 },
-      { id: 27, share: 0.12 },
-      { id: 5, share: 0.10 },
-      { id: 6, share: 0.05 },   // 5×16 мм² (мощное кухонное оборудование)
-      { id: 15, share: 0.05 },
-      { id: 16, share: 0.05 },
+      { fillKey: "cable_3x2_5", share: 0.3 },
+      { fillKey: "cable_3x6", share: 0.18 },
+      { fillKey: "cable_5x6", share: 0.15 },
+      { fillKey: "utp_sat_tel", share: 0.12 },
+      { fillKey: "cable_5x10", share: 0.1 },
+      { fillKey: "cable_5x16", share: 0.05 },
+      { fillKey: "cable_acoustic", share: 0.05 },
+      { fillKey: "cable_decor", share: 0.05 },
     ],
     extras: [
-      { id: 53, perSqm: 4.5 },
-      { id: 51, perSqm: 4.5 },
-      { id: 65, perSqm: 0.30 },
-      { id: 66, perSqm: 0.15 },  // лоток 200–400 мм
-      { id: 156, perSqm: 0.50 },
-      { id: 160, perSqm: 0.04 }, // силовой разъём накладной
-      { id: 165, perSqm: 0.10 },
-      { id: 195, perSqm: 0.25 },
-      { id: 191, perSqm: 0.25 },
-      { id: 103, perSqm: 0.14 },
-      { id: 104, perSqm: 0.50 },
-      { id: 138, perSqm: 0.60 },
-      { id: 135, perSqm: 0.60 },
-      { id: 85, perSqm: 0.06 },  // сверление в бетоне
-      { id: 145, perSqm: 0.60 },
+      { fillKey: "pipe_pvh_16_25", perSqm: 4.5 },
+      { fillKey: "pull_corrugated_with", perSqm: 4.5 },
+      { fillKey: "tray_metal_200_400", perSqm: 0.3 },
+      { fillKey: "tray_metal_500_600", perSqm: 0.15 },
+      { fillKey: "socket_inner_zk", perSqm: 0.5 },
+      { fillKey: "connector_1ph_flush", perSqm: 0.04 },
+      { fillKey: "switch_1_inner", perSqm: 0.1 },
+      { fillKey: "spot_light_ceiling", perSqm: 0.25 },
+      { fillKey: "hole_spot_fixture", perSqm: 0.25 },
+      { fillKey: "junction_box_install", perSqm: 0.14 },
+      { fillKey: "junction_wago_group", perSqm: 0.5 },
+      { fillKey: "din_automation_module", perSqm: 0.6 },
+      { fillKey: "panel_cable_entry", perSqm: 0.6 },
+      { fillKey: "drill_through_concrete", perSqm: 0.06 },
+      { fillKey: "lug_nshvi", perSqm: 0.6 },
     ],
   },
   {
     label: "Торговый центр / Магазин",
     cablePerSqm: 8.0,
     cableDistribution: [
-      { id: 1, share: 0.28 },
-      { id: 2, share: 0.15 },
-      { id: 27, share: 0.20 },
-      { id: 4, share: 0.12 },
-      { id: 5, share: 0.10 },
-      { id: 6, share: 0.05 },
-      { id: 3, share: 0.05 },
-      { id: 15, share: 0.05 },
+      { fillKey: "cable_3x2_5", share: 0.28 },
+      { fillKey: "cable_3x6", share: 0.15 },
+      { fillKey: "utp_sat_tel", share: 0.2 },
+      { fillKey: "cable_5x6", share: 0.12 },
+      { fillKey: "cable_5x10", share: 0.1 },
+      { fillKey: "cable_5x16", share: 0.05 },
+      { fillKey: "cable_3x10", share: 0.05 },
+      { fillKey: "cable_acoustic", share: 0.05 },
     ],
     extras: [
-      { id: 65, perSqm: 0.40 },
-      { id: 66, perSqm: 0.20 },
-      { id: 72, perSqm: 0.20 },  // консоли для лотка
-      { id: 155, perSqm: 0.35 }, // розетка наружная
-      { id: 156, perSqm: 0.20 },
-      { id: 165, perSqm: 0.08 },
-      { id: 193, perSqm: 0.18 },
-      { id: 103, perSqm: 0.10 },
-      { id: 104, perSqm: 0.45 },
-      { id: 138, perSqm: 0.55 },
-      { id: 135, perSqm: 0.55 },
-      { id: 85, perSqm: 0.05 },
-      { id: 145, perSqm: 0.55 },
+      { fillKey: "tray_metal_200_400", perSqm: 0.4 },
+      { fillKey: "tray_metal_500_600", perSqm: 0.2 },
+      { fillKey: "tray_console", perSqm: 0.2 },
+      { fillKey: "socket_outer_zk", perSqm: 0.35 },
+      { fillKey: "socket_inner_zk", perSqm: 0.2 },
+      { fillKey: "switch_1_inner", perSqm: 0.08 },
+      { fillKey: "light_ars_armstrong", perSqm: 0.18 },
+      { fillKey: "junction_box_install", perSqm: 0.1 },
+      { fillKey: "junction_wago_group", perSqm: 0.45 },
+      { fillKey: "din_automation_module", perSqm: 0.55 },
+      { fillKey: "panel_cable_entry", perSqm: 0.55 },
+      { fillKey: "drill_through_concrete", perSqm: 0.05 },
+      { fillKey: "lug_nshvi", perSqm: 0.55 },
     ],
   },
   {
     label: "Производство / Склад / Цех",
     cablePerSqm: 4.5,
     cableDistribution: [
-      { id: 1, share: 0.15 },
-      { id: 2, share: 0.15 },
-      { id: 4, share: 0.15 },
-      { id: 5, share: 0.15 },
-      { id: 6, share: 0.10 },
-      { id: 7, share: 0.10 },   // 5×35 мм²
-      { id: 27, share: 0.10 },
-      { id: 3, share: 0.10 },
+      { fillKey: "cable_3x2_5", share: 0.15 },
+      { fillKey: "cable_3x6", share: 0.15 },
+      { fillKey: "cable_5x6", share: 0.15 },
+      { fillKey: "cable_5x10", share: 0.15 },
+      { fillKey: "cable_5x16", share: 0.1 },
+      { fillKey: "cable_5x35", share: 0.1 },
+      { fillKey: "utp_sat_tel", share: 0.1 },
+      { fillKey: "cable_3x10", share: 0.1 },
     ],
     extras: [
-      { id: 66, perSqm: 0.30 },  // лоток 200–400 мм
-      { id: 67, perSqm: 0.10 },  // лоток 500–600 мм
-      { id: 72, perSqm: 0.20 },
-      { id: 155, perSqm: 0.15 }, // розетка наружная
-      { id: 161, perSqm: 0.03 }, // силовой 3-фаз навесной
-      { id: 167, perSqm: 0.05 }, // выключатель наружный
-      { id: 194, perSqm: 0.08 }, // светильник потолочный
-      { id: 103, perSqm: 0.08 },
-      { id: 138, perSqm: 0.40 },
-      { id: 135, perSqm: 0.40 },
-      { id: 86, perSqm: 0.04 },  // сверление в металле
-      { id: 145, perSqm: 0.40 },
+      { fillKey: "tray_metal_200_400", perSqm: 0.3 },
+      { fillKey: "tray_metal_500_600", perSqm: 0.1 },
+      { fillKey: "tray_console", perSqm: 0.2 },
+      { fillKey: "socket_outer_zk", perSqm: 0.15 },
+      { fillKey: "connector_3ph_surface", perSqm: 0.03 },
+      { fillKey: "switch_1_outer", perSqm: 0.05 },
+      { fillKey: "light_ceiling", perSqm: 0.08 },
+      { fillKey: "junction_box_install", perSqm: 0.08 },
+      { fillKey: "din_automation_module", perSqm: 0.4 },
+      { fillKey: "panel_cable_entry", perSqm: 0.4 },
+      { fillKey: "drill_metal", perSqm: 0.04 },
+      { fillKey: "lug_nshvi", perSqm: 0.4 },
     ],
   },
   {
     label: "Гостиница",
     cablePerSqm: 5.5,
     cableDistribution: [
-      { id: 1, share: 0.40 },
-      { id: 2, share: 0.15 },
-      { id: 27, share: 0.20 },
-      { id: 4, share: 0.08 },
-      { id: 15, share: 0.07 },
-      { id: 16, share: 0.05 },
-      { id: 3, share: 0.05 },
+      { fillKey: "cable_3x2_5", share: 0.4 },
+      { fillKey: "cable_3x6", share: 0.15 },
+      { fillKey: "utp_sat_tel", share: 0.2 },
+      { fillKey: "cable_5x6", share: 0.08 },
+      { fillKey: "cable_acoustic", share: 0.07 },
+      { fillKey: "cable_decor", share: 0.05 },
+      { fillKey: "cable_3x10", share: 0.05 },
     ],
     extras: [
-      { id: 53, perSqm: 4.5 },
-      { id: 51, perSqm: 4.5 },
-      { id: 78, perSqm: 2.5 },
-      { id: 80, perSqm: 2.5 },
-      { id: 102, perSqm: 0.60 },
-      { id: 97, perSqm: 0.60 },
-      { id: 156, perSqm: 0.50 },
-      { id: 165, perSqm: 0.15 },
-      { id: 166, perSqm: 0.06 }, // проходной выключатель
-      { id: 195, perSqm: 0.30 },
-      { id: 191, perSqm: 0.30 },
-      { id: 192, perSqm: 0.10 }, // бра
-      { id: 103, perSqm: 0.14 },
-      { id: 104, perSqm: 0.55 },
-      { id: 138, perSqm: 0.65 },
-      { id: 135, perSqm: 0.65 },
-      { id: 145, perSqm: 0.65 },
-    ],
-  },
-];
-
-export const PRICE_SECTIONS: PriceSection[] = [
-  {
-    id: "cable",
-    title: "Монтаж кабеля",
-
-    items: [
-      { id: 1, name: "Монтаж кабеля до 3-х жил, сечением до 2,5 мм²", unit: "м", price: 108 },
-      { id: 2, name: "Монтаж кабеля до 3-х жил, сечением до 6 мм²", unit: "м", price: 150 },
-      { id: 3, name: "Монтаж кабеля до 3-х жил, сечением до 10 мм²", unit: "м", price: 220 },
-      { id: 4, name: "Монтаж кабеля до 5-ти жил, сечением до 6 мм²", unit: "м", price: 150 },
-      { id: 5, name: "Монтаж кабеля до 5-ти жил, сечением до 10 мм²", unit: "м", price: 250 },
-      { id: 6, name: "Монтаж кабеля до 5-ти жил, сечением до 16 мм²", unit: "м", price: 380 },
-      { id: 7, name: "Монтаж кабеля до 5-ти жил, сечением до 35 мм²", unit: "м", price: 500 },
-      { id: 8, name: "Монтаж кабеля до 5-ти жил, сечением до 50 мм²", unit: "м", price: 410 },
-      { id: 9, name: "Монтаж кабеля до 5-ти жил, сечением до 95 мм²", unit: "м", price: 520 },
-      { id: 10, name: "Монтаж кабеля до 5-ти жил, сечением до 120 мм²", unit: "м", price: 1050 },
-      { id: 11, name: "Монтаж кабеля до 5-ти жил, сечением до 150 мм²", unit: "м", price: 1300 },
-      { id: 12, name: "Монтаж кабеля до 5-ти жил, сечением до 185 мм²", unit: "м", price: 845 },
-      { id: 13, name: "Монтаж кабеля до 5-ти жил, сечением до 240 мм²", unit: "м", price: 2500 },
-      { id: 14, name: "Трассировка кабелей в кабельном лотке", unit: "шт/п.м", price: 150 },
-      { id: 15, name: "Монтаж акустического кабеля", unit: "м", price: 168 },
-      { id: 16, name: "Монтаж декоративного кабеля", unit: "м", price: 168 },
-    ],
-  },
-  {
-    id: "wire",
-    title: "Монтаж провода",
-    items: [
-      { id: 17, name: "Монтаж провода 1 жильного сечением до 4 мм²", unit: "м", price: 108 },
-      { id: 18, name: "Монтаж провода 1 жильного сечением до 16 мм²", unit: "м", price: 108 },
-      { id: 19, name: "Монтаж провода 1 жильного сечением до 25 мм²", unit: "м", price: 150 },
-      { id: 20, name: "Монтаж провода 1 жильного сечением до 35 мм²", unit: "м", price: 200 },
-      { id: 21, name: "Монтаж провода 1 жильного сечением до 50 мм²", unit: "м", price: 235 },
-      { id: 22, name: "Монтаж провода 1 жильного сечением до 95 мм²", unit: "м", price: 325 },
-      { id: 23, name: "Монтаж провода 1 жильного сечением до 120 мм²", unit: "м", price: 450 },
-      { id: 24, name: "Монтаж провода 1 жильного сечением до 150 мм²", unit: "м", price: 500 },
-      { id: 25, name: "Монтаж провода 1 жильного сечением до 185 мм²", unit: "м", price: 585 },
-      { id: 26, name: "Монтаж провода 1 жильного сечением до 240 мм²", unit: "м", price: 720 },
-    ],
-  },
-  {
-    id: "low-voltage",
-    title: "Слаботочные системы",
-
-    items: [
-      { id: 27, name: "Монтаж кабеля UTP (инт.) / SAT (тв) / TWT-TEL4 (тел.)", unit: "м", price: 108 },
-      { id: 28, name: "Монтаж оптоволоконного кабеля до 12 волокон", unit: "м", price: 250 },
-      { id: 29, name: "Монтаж и расшивка патч-панели, маркировка", unit: "порт", price: 280 },
-      { id: 30, name: "Монтаж блока розеток в шкаф", unit: "шт", price: 500 },
-      { id: 31, name: "Монтаж полки в шкаф", unit: "шт", price: 500 },
-      { id: 32, name: "Обжимка разъёма RJ45", unit: "шт", price: 280 },
-      { id: 33, name: "Монтаж и подключение регистратора", unit: "шт", price: 1000 },
-      { id: 34, name: "Монтаж и подключение коммутатора", unit: "шт", price: 1000 },
-      { id: 35, name: "Монтаж маршрутизатора", unit: "шт", price: 1000 },
-      { id: 36, name: "Монтаж кабельного органайзера", unit: "шт", price: 500 },
-      { id: 37, name: "Монтаж патч-корда", unit: "шт", price: 200 },
-      { id: 38, name: "Монтаж и настройка видеокамеры", unit: "шт", price: 3500 },
-      { id: 39, name: "Монтаж Wi-Fi точки доступа", unit: "шт", price: 3500 },
-      { id: 40, name: "Настройка обзора видеокамер (юстировка)", unit: "шт", price: 600 },
-      { id: 41, name: "Монтаж и подключение жёсткого диска", unit: "шт", price: 1000 },
-      { id: 42, name: "Монтаж и сборка телекоммуникационного щита", unit: "шт", price: 6800 },
-      { id: 43, name: "Прозвонка кабельных трасс", unit: "группа", price: 250 },
-      { id: 44, name: "Подключение и настройка роутера", unit: "шт", price: 2500 },
-    ],
-  },
-  {
-    id: "skud",
-    title: "СКУД",
-
-    items: [
-      { id: 45, name: "Монтаж и подключение кнопки экстренного выхода", unit: "шт", price: 1350 },
-      { id: 46, name: "Монтаж и подключение магнитных замков навесных", unit: "шт", price: 4200 },
-      { id: 47, name: "Монтаж считывателя", unit: "шт", price: 1350 },
-      { id: 48, name: "Монтаж и подключение триподов", unit: "шт", price: 6800 },
-      { id: 49, name: "Монтаж и подключение сенсорной панели домофона", unit: "шт", price: 4800 },
-      { id: 50, name: "Монтаж и подключение вызывной панели", unit: "шт", price: 1600 },
-    ],
-  },
-  {
-    id: "pipe",
-    title: "Монтаж трубы и полосы",
-
-    items: [
-      { id: 51, name: "Затяжка кабеля в трубу гофрированную с протяжкой", unit: "м", price: 30 },
-      { id: 52, name: "Затяжка кабеля в трубу гофрированную без протяжки", unit: "м", price: 60 },
-      { id: 53, name: "Монтаж трубы гладкой ПВХ, ПНД до Ø16-25 мм", unit: "м", price: 160 },
-      { id: 54, name: "Монтаж трубы гладкой ПВХ, ПНД до Ø32-50 мм", unit: "м", price: 250 },
-      { id: 55, name: "Монтаж трубы гладкой ПВХ, ПНД до Ø63-110 мм", unit: "м", price: 260 },
-      { id: 56, name: "Затягивание в металлорукав до Ø32 мм", unit: "м", price: 60 },
-      { id: 57, name: "Монтаж полосы горячеоцинкованной стали", unit: "м", price: 420 },
-      { id: 58, name: "Монтаж металлической трубы до Ø32 мм", unit: "м", price: 720 },
-      { id: 59, name: "Покраска металлической трубы", unit: "п.м.", price: 300 },
-    ],
-  },
-  {
-    id: "cable-channel",
-    title: "Монтаж кабель-канала",
-
-    items: [
-      { id: 60, name: "Монтаж кабель-канала до 25×16", unit: "м", price: 400 },
-      { id: 61, name: "Монтаж кабель-канала до 60×40", unit: "м", price: 580 },
-      { id: 62, name: "Монтаж кабель-канала до 100×60", unit: "м", price: 700 },
-      { id: 63, name: "Стыковка кабель-канала 45°", unit: "шт", price: 400 },
-      { id: 64, name: "Монтаж коробок КМКУ", unit: "шт", price: 230 },
-    ],
-  },
-  {
-    id: "tray",
-    title: "Монтаж лотков",
-
-    items: [
-      { id: 65, name: "Монтаж лотка металлического шириной до 100 мм", unit: "м", price: 500 },
-      { id: 66, name: "Монтаж лотка металлического шириной от 200 до 400 мм", unit: "м", price: 650 },
-      { id: 67, name: "Монтаж лотка металлического шириной от 500 до 600 мм", unit: "м", price: 920 },
-      { id: 68, name: "Монтаж перегородок и крышек для лотка до 600 мм", unit: "м.п", price: 300 },
-      { id: 69, name: "Монтаж углов и тройников для лотка до 600 мм", unit: "шт", price: 650 },
-      { id: 70, name: "Монтаж конструкций из траверсы", unit: "м", price: 80 },
-      { id: 71, name: "Изготовление деталей лотка", unit: "шт", price: 650 },
-      { id: 72, name: "Монтаж консоли для лотка", unit: "шт", price: 250 },
-      { id: 73, name: "Монтаж отверстия под гермоввод (пластик)", unit: "шт", price: 200 },
-      { id: 74, name: "Монтаж отверстия под гермоввод (металл)", unit: "шт", price: 350 },
-      { id: 75, name: "Монтаж гермоввода", unit: "шт", price: 100 },
-      { id: 76, name: "Монтаж шпильки для разметки по полу", unit: "шт", price: 295 },
-    ],
-  },
-  {
-    id: "chasing",
-    title: "Штробление",
-
-    items: [
-      { id: 77, name: "Штробление в пеноблоке по стене, глубина 35 мм с выборкой", unit: "п.м.", price: 350 },
-      { id: 78, name: "Штробление в кирпиче по стене, глубина 35 мм с выборкой", unit: "п.м.", price: 400 },
-      { id: 79, name: "Штробление в бетоне по стене, глубина 35 мм с выборкой", unit: "п.м.", price: 650 },
-      { id: 80, name: "Штукатурка штроб (ширина до 100 мм, глубина до 40 мм)", unit: "п.м.", price: 400 },
-      { id: 81, name: "Штробление стяжки пола глубиной до 8 см", unit: "м.п.", price: 1200 },
-      { id: 82, name: "Штробление бетонной плиты пола с выборкой", unit: "м.п.", price: 2400 },
-    ],
-  },
-  {
-    id: "drilling",
-    title: "Сверление отверстий",
-
-    items: [
-      { id: 83, name: "Сквозное сверление в пеноблоке (до 32 мм, до 40 см)", unit: "шт", price: 350 },
-      { id: 84, name: "Сквозное сверление в кирпиче (до 32 мм, до 40 см)", unit: "шт", price: 450 },
-      { id: 85, name: "Сквозное сверление в бетоне (до 32 мм, до 40 см)", unit: "шт", price: 920 },
-      { id: 86, name: "Сквозное сверление в металле до 4 мм (до 32 мм)", unit: "шт", price: 350 },
-      { id: 87, name: "Вырезание отверстий угловой шлифовальной машиной", unit: "см", price: 20 },
-    ],
-  },
-  {
-    id: "sleeves",
-    title: "Монтаж гильз",
-
-    items: [
-      { id: 88, name: "Монтаж гильз из ПВХ (до 100 мм, до 400 мм)", unit: "шт", price: 260 },
-      { id: 89, name: "Монтаж гильз из металла (до 100 мм, до 400 мм)", unit: "шт", price: 650 },
-      { id: 90, name: "Покраска металлической гильзы", unit: "шт", price: 300 },
-      { id: 91, name: "Запенивание противопожарной пеной", unit: "шт", price: 300 },
-    ],
-  },
-  {
-    id: "holes",
-    title: "Высверливание лунок",
-
-    items: [
-      { id: 92, name: "Высверливание лунки в ДСП", unit: "шт", price: 209 },
-      { id: 93, name: "Высверливание лунки в керамогранитной плитке", unit: "шт", price: 1148 },
-      { id: 94, name: "Высверливание лунки под подрозетник Ø68 (дерево)", unit: "шт", price: 209 },
-      { id: 95, name: "Высверливание лунки в керамической плитке", unit: "шт", price: 350 },
-      { id: 96, name: "Высверливание лунки в гипсокартоне (до 75 мм)", unit: "шт", price: 190 },
-      { id: 97, name: "Высверливание лунки в кирпиче (до 75 мм)", unit: "шт", price: 250 },
-      { id: 98, name: "Высверливание лунки в бетоне (до 75 мм)", unit: "шт", price: 550 },
-      { id: 99, name: "Высверливание лунки в керамической плитке (до 75 мм)", unit: "шт", price: 190 },
-      { id: 100, name: "Высверливание лунки в керамогранитной плитке (до 75 мм)", unit: "шт", price: 850 },
-    ],
-  },
-  {
-    id: "socket-boxes",
-    title: "Установка подрозетников",
-
-    items: [
-      { id: 101, name: "Установка подрозетника в гипсокартоне", unit: "шт", price: 150 },
-      { id: 102, name: "Установка подрозетника в пеноблоке/кирпиче/бетоне", unit: "шт", price: 200 },
-      { id: 103, name: "Установка распаячной коробки накладной/внутренней", unit: "шт", price: 200 },
-      { id: 104, name: "Расключение распаячной коробки 1 кабель (WAGO)", unit: "группа", price: 160 },
-      { id: 105, name: "Распайка коробки 1 кабель (пресс-гильзы, термоусадка)", unit: "группа", price: 350 },
-    ],
-  },
-  {
-    id: "cable-joints",
-    title: "Монтаж кабельных муфт",
-
-    items: [
-      { id: 106, name: "Монтаж концевой муфты 4ПКТп(б)-1-150/240(Б)", unit: "шт", price: 9600 },
-      { id: 107, name: "Монтаж концевой муфты 4ПКТп(б)-1-25/50(Б)", unit: "шт", price: 5400 },
-      { id: 108, name: "Монтаж концевой муфты 4ПКТп(б)-1-70/120(Б)", unit: "шт", price: 6800 },
-    ],
-  },
-  {
-    id: "panel-box",
-    title: "Установка бокса (эл. щита)",
-
-    items: [
-      { id: 109, name: "Бокс накладной до 36 модулей", unit: "шт", price: 1500 },
-      { id: 110, name: "Бокс накладной до 54 модулей", unit: "шт", price: 2500 },
-      { id: 111, name: "Бокс накладной до 96 модулей", unit: "шт", price: 3500 },
-      { id: 112, name: "Бокс внутренний в гипсокартоне до 6 модулей", unit: "шт", price: 1600 },
-      { id: 113, name: "Бокс внутренний в гипсокартоне до 12 модулей", unit: "шт", price: 2000 },
-      { id: 114, name: "Бокс внутренний в гипсокартоне до 24 модулей", unit: "шт", price: 2700 },
-      { id: 115, name: "Бокс внутренний в гипсокартоне до 36 модулей", unit: "шт", price: 3100 },
-      { id: 116, name: "Бокс внутренний в гипсокартоне до 54 модулей", unit: "шт", price: 6100 },
-      { id: 117, name: "Бокс внутренний в кирпиче/пеноблоке до 6 модулей", unit: "шт", price: 2100 },
-      { id: 118, name: "Бокс внутренний в кирпиче/пеноблоке до 12 модулей", unit: "шт", price: 2700 },
-      { id: 119, name: "Бокс внутренний в кирпиче/пеноблоке до 24 модулей", unit: "шт", price: 3700 },
-      { id: 120, name: "Бокс внутренний в кирпиче/пеноблоке до 36 модулей", unit: "шт", price: 4100 },
-      { id: 121, name: "Бокс внутренний в кирпиче/пеноблоке до 54 модулей", unit: "шт", price: 5700 },
-      { id: 122, name: "Бокс внутренний в кирпиче/пеноблоке до 96 модулей", unit: "шт", price: 9700 },
-      { id: 123, name: "Бокс внутренний в бетоне до 6 модулей", unit: "шт", price: 3100 },
-      { id: 124, name: "Бокс внутренний в бетоне до 12 модулей", unit: "шт", price: 3800 },
-      { id: 125, name: "Бокс внутренний в бетоне до 24 модулей", unit: "шт", price: 5000 },
-      { id: 126, name: "Бокс внутренний в бетоне до 36 модулей", unit: "шт", price: 5800 },
-      { id: 127, name: "Бокс внутренний в бетоне до 54 модулей", unit: "шт", price: 8500 },
-      { id: 128, name: "Бокс внутренний в бетоне до 96 модулей", unit: "шт", price: 14500 },
-      { id: 129, name: "Бокс внутренний в бетоне свыше 96 модулей", unit: "шт", price: 15000 },
-      { id: 130, name: "Установка напольного электрического шкафа", unit: "шт", price: 6000 },
-    ],
-  },
-  {
-    id: "panel-assembly",
-    title: "Сборка щитового оборудования",
-
-    items: [
-      { id: 131, name: "Подключение стабилизатора", unit: "шт", price: 4200 },
-      { id: 132, name: "Монтаж стабилизатора навесного", unit: "шт", price: 1200 },
-      { id: 133, name: "Изготовление пластрона из текстолита", unit: "м²", price: 11200 },
-      { id: 134, name: "Изготовление и монтаж рамки-подставки под напольные шкафы", unit: "шт", price: 4500 },
-      { id: 135, name: "Ввод, разделка, маркировка кабеля в щите", unit: "шт", price: 200 },
-      { id: 136, name: "Ввод, разделка, маркировка бронированного кабеля в щите", unit: "шт", price: 400 },
-      { id: 137, name: "Подключение испытательной колодки", unit: "шт", price: 2500 },
-      { id: 138, name: "Подключение модульной автоматики и кросс-модулей", unit: "модуль", price: 600 },
-      { id: 139, name: "Изготовление и монтаж шины шинного моста L1 L2 L3 N", unit: "шт", price: 4500 },
-      { id: 140, name: "Изготовление и монтаж шины N PE из медной полосы", unit: "шт", price: 1000 },
-      { id: 141, name: "Подключение специфического оборудования", unit: "шт", price: 1200 },
-      { id: 142, name: "Монтаж DIN-рейки к монтажной панели", unit: "шт", price: 250 },
-      { id: 143, name: "Монтаж изолятора к монтажной панели", unit: "шт", price: 250 },
-      { id: 144, name: "Изготовление защитной панели из оргстекла 2 мм", unit: "шт", price: 1500 },
-      { id: 145, name: "Монтаж наконечников НШВИ", unit: "шт", price: 120 },
-      { id: 146, name: "Монтаж наконечников НШП, ТМЛ 6-16", unit: "шт", price: 250 },
-      { id: 147, name: "Монтаж наконечников НШП, ТМЛ 16-70", unit: "шт", price: 350 },
-      { id: 148, name: "Монтаж наконечников НШП, ТМЛ 70-180", unit: "шт", price: 450 },
-      { id: 149, name: "Монтаж муфты концевой", unit: "шт", price: 4500 },
-      { id: 150, name: "Монтаж муфты соединительной", unit: "шт", price: 7000 },
-      { id: 151, name: "Изготовление и монтаж поводка заземления", unit: "шт", price: 250 },
-    ],
-  },
-  {
-    id: "meters",
-    title: "Установка счётчиков",
-
-    items: [
-      { id: 152, name: "Установка счётчика электрического однофазного", unit: "шт", price: 2350 },
-      { id: 153, name: "Установка счётчика электрического трёхфазного", unit: "шт", price: 4000 },
-      { id: 154, name: "Установка трансформатора тока", unit: "шт", price: 1200 },
-    ],
-  },
-  {
-    id: "sockets",
-    title: "Установка розеток",
-
-    items: [
-      { id: 155, name: "Розетка наружная (220В, ТВ, интернет, аудио, телефонная)", unit: "шт", price: 450 },
-      { id: 156, name: "Розетка внутренняя (220В, ТВ, интернет, аудио, телефонная)", unit: "шт", price: 400 },
-      { id: 157, name: "Розетка внутренняя 3К", unit: "шт", price: 300 },
-      { id: 158, name: "Монтаж коробки КМКУ", unit: "шт", price: 200 },
-      { id: 159, name: "Разъём силовой 1-фазный навесной", unit: "шт", price: 450 },
-      { id: 160, name: "Разъём силовой 1-фазный накладной", unit: "шт", price: 550 },
-      { id: 161, name: "Разъём силовой 3-фазный навесной", unit: "шт", price: 550 },
-      { id: 162, name: "Разъём силовой 3-фазный накладной", unit: "шт", price: 650 },
-    ],
-  },
-  {
-    id: "switches",
-    title: "Установка выключателей",
-
-    items: [
-      { id: 163, name: "Монтаж и сопряжение радиовыключателя", unit: "шт", price: 450 },
-      { id: 164, name: "Монтаж и подключение радиореле", unit: "шт", price: 800 },
-      { id: 165, name: "Выключатель 1-клавишный внутренний", unit: "шт", price: 260 },
-      { id: 166, name: "Выключатель 1-клавишный внутренний проходной", unit: "шт", price: 300 },
-      { id: 167, name: "Выключатель 1-клавишный наружный", unit: "шт", price: 350 },
-      { id: 168, name: "Выключатель 1-клавишный наружный проходной", unit: "шт", price: 400 },
-      { id: 169, name: "Выключатель 2-клавишный внутренний проходной", unit: "шт", price: 520 },
-      { id: 170, name: "Выключатель 2-клавишный наружный", unit: "шт", price: 600 },
-      { id: 171, name: "Выключатель 2-клавишный наружный проходной", unit: "шт", price: 650 },
-      { id: 172, name: "Диммер (светорегулятор)", unit: "шт", price: 700 },
-      { id: 173, name: "Реостат для тёплого пола (терморегулятор)", unit: "шт", price: 1250 },
-    ],
-  },
-  {
-    id: "led-strip",
-    title: "Монтаж светодиодной ленты",
-
-    items: [
-      { id: 174, name: "Монтаж светодиодной ленты", unit: "м", price: 350 },
-      { id: 175, name: "Монтаж профиля для светодиодной ленты", unit: "м", price: 400 },
-      { id: 176, name: "Монтаж и подключение трансформатора", unit: "шт", price: 1200 },
-      { id: 177, name: "Монтаж гибкого неона", unit: "м", price: 780 },
-    ],
-  },
-  {
-    id: "end-devices",
-    title: "Монтаж оконечных устройств",
-
-    items: [
-      { id: 178, name: "Нептун: монтаж, подключение и настройка контроллера", unit: "шт", price: 7500 },
-      { id: 179, name: "Монтаж и подключение датчиков протечек", unit: "шт", price: 800 },
-      { id: 180, name: "Подключение привода запорного крана воды", unit: "шт", price: 1200 },
-      { id: 181, name: "Монтаж фотореле", unit: "шт", price: 890 },
-      { id: 182, name: "Монтаж и подключение сушилок для рук", unit: "шт", price: 1400 },
-      { id: 183, name: "Монтаж и подключение пульта тепловой завесы", unit: "шт", price: 1800 },
-      { id: 184, name: "Монтаж консоли для светильников", unit: "шт", price: 600 },
-      { id: 185, name: "Монтаж и подключение тепловой завесы", unit: "шт", price: 6800 },
-      { id: 186, name: "Монтаж зеркал с подсветкой", unit: "шт", price: 1800 },
-      { id: 187, name: "Монтаж патрона с лампой (времянка)", unit: "шт", price: 200 },
-      { id: 188, name: "Монтаж и подключение вентилятора вытяжки", unit: "шт", price: 1200 },
-      { id: 189, name: "Монтаж электрического полотенцесушителя скрытого монтажа", unit: "шт", price: 2600 },
-      { id: 190, name: "Монтаж электрического полотенцесушителя", unit: "шт", price: 1800 },
-      { id: 191, name: "Устройство отверстия для точечного светильника", unit: "шт", price: 450 },
-      { id: 192, name: "Светильник настенный (бра, спот)", unit: "шт", price: 650 },
-      { id: 193, name: "Светильник ARS (в потолок Армстронг)", unit: "шт", price: 1000 },
-      { id: 194, name: "Светильник потолочный", unit: "шт", price: 900 },
-      { id: 195, name: "Точечный светильник (натяжной / ГКЛ потолок)", unit: "шт", price: 550 },
-      { id: 196, name: "Монтаж и подключение шинопровода", unit: "м", price: 1120 },
-      { id: 197, name: "Люстра (до 5 ламп, простая)", unit: "шт", price: 1500 },
-      { id: 198, name: "Сборка люстры", unit: "шт", price: 1000 },
-    ],
-  },
-  {
-    id: "misc",
-    title: "Прочее",
-
-    items: [
-      { id: 199, name: "Диагностика и сервис", unit: "комплекс", price: null },
-      { id: 200, name: "Ремонтные работы", unit: "комплекс", price: null },
-      { id: 201, name: "Демонтажные работы", unit: "комплекс", price: null },
-      { id: 202, name: "Монтаж временного электроснабжения объекта", unit: "комплекс", price: null },
-    ],
-  },
-  {
-    id: "heated-floor",
-    title: "Монтаж тёплых полов",
-
-    items: [
-      { id: 203, name: "Монтаж электрического тёплого пола (греющие маты)", unit: "м²", price: 1100 },
-      { id: 204, name: "Укладка греющего кабеля на сетку/ленту", unit: "м", price: 210 },
-      { id: 205, name: "Укладка подложки", unit: "м²", price: 450 },
-      { id: 206, name: "Реостат для тёплого пола (терморегулятор)", unit: "шт", price: 1375 },
-    ],
-  },
-  {
-    id: "grounding",
-    title: "Заземление и молниезащита",
-
-    items: [
-      { id: 207, name: "Монтаж прутка 8 мм, горячеоцинкованная сталь", unit: "м", price: 250 },
-      { id: 208, name: "Монтаж универсального держателя с бетоном", unit: "шт", price: 150 },
-      { id: 209, name: "Монтаж полосы 40×5 мм, горячеоцинкованная сталь", unit: "м", price: 350 },
-      { id: 210, name: "Монтаж универсального соединителя для прутка 8-10 мм", unit: "шт", price: 150 },
-      { id: 211, name: "Монтаж универсального держателя", unit: "шт", price: 250 },
-      { id: 212, name: "Монтаж вертикального заземлителя муфтового D16", unit: "шт", price: 1550 },
-      { id: 213, name: "Монтаж соединителя полоса — полоса, 80×80 мм", unit: "шт", price: 300 },
-      { id: 214, name: "Монтаж соединителя пруток — полоса, 80×80 мм", unit: "шт", price: 250 },
-      { id: 215, name: "Монтаж держателя прутка на водостоке с болтом", unit: "шт", price: 250 },
-      { id: 216, name: "Сварочные работы", unit: "точка", price: 1200 },
-      { id: 217, name: "Монтаж колодца контрольно-измерительного", unit: "шт", price: 990 },
-    ],
-  },
-  {
-    id: "dmx",
-    title: "Свет DMX",
-
-    items: [
-      { id: 218, name: "Монтаж и подключение диммерного блока PDT", unit: "шт", price: 6500 },
-      { id: 219, name: "Монтаж и подключение центрального контроллера освещения", unit: "шт", price: 6500 },
-      { id: 220, name: "Монтаж и подключение ограничителя пускового тока", unit: "шт", price: 1200 },
-      { id: 221, name: "Монтаж и подключение реле на 8 каналов", unit: "шт", price: 6500 },
-      { id: 222, name: "Монтаж и подключение усилителя DMX", unit: "шт", price: 1200 },
-      { id: 223, name: "Монтаж и подключение декодера для светодиодных лент", unit: "шт", price: 1200 },
-      { id: 224, name: "Монтаж и подключение диммера одноканального на рейку", unit: "шт", price: 1200 },
-      { id: 225, name: "Монтаж и подключение клемм КПИ", unit: "шт", price: 360 },
-      { id: 226, name: "Монтаж сплиттера Arlight", unit: "шт", price: 1200 },
-      { id: 227, name: "Монтаж наконечников НШВИ, НКИ, НВИ", unit: "шт", price: 120 },
-      { id: 228, name: "Монтаж и подключение ШИМ-усилителя", unit: "шт", price: 1800 },
-      { id: 229, name: "Монтаж и подключение блока питания", unit: "шт", price: 1600 },
-    ],
-  },
-  {
-    id: "sound",
-    title: "Звук",
-
-    items: [
-      { id: 230, name: "Монтаж и подключение интернет-радио", unit: "шт", price: 2500 },
-      { id: 231, name: "Монтаж и подключение настенной акустики", unit: "шт", price: 2500 },
-      { id: 232, name: "Монтаж и подключение врезной акустики", unit: "шт", price: 3800 },
-      { id: 233, name: "Монтаж и подключение сабвуферов", unit: "шт", price: 4200 },
-      { id: 234, name: "Монтаж и подключение усилителя звука", unit: "шт", price: 4500 },
-      { id: 235, name: "Монтаж и подключение цифрового процессора", unit: "шт", price: 8600 },
-      { id: 236, name: "Пайка разъёмов XLR, Jack", unit: "шт", price: 450 },
-      { id: 237, name: "Подключение разъёмов СПИКОН", unit: "шт", price: 300 },
-      { id: 238, name: "Пайка разъёмов RCA", unit: "шт", price: 280 },
+      { fillKey: "pipe_pvh_16_25", perSqm: 4.5 },
+      { fillKey: "pull_corrugated_with", perSqm: 4.5 },
+      { fillKey: "chase_brick", perSqm: 2.5 },
+      { fillKey: "plaster_chase", perSqm: 2.5 },
+      { fillKey: "socket_box_in_wall", perSqm: 0.6 },
+      { fillKey: "hole_drill_brick_75", perSqm: 0.6 },
+      { fillKey: "socket_inner_zk", perSqm: 0.5 },
+      { fillKey: "switch_1_inner", perSqm: 0.15 },
+      { fillKey: "switch_2_inner_pass", perSqm: 0.06 },
+      { fillKey: "spot_light_ceiling", perSqm: 0.3 },
+      { fillKey: "hole_spot_fixture", perSqm: 0.3 },
+      { fillKey: "light_wall_bracket", perSqm: 0.1 },
+      { fillKey: "junction_box_install", perSqm: 0.14 },
+      { fillKey: "junction_wago_group", perSqm: 0.55 },
+      { fillKey: "din_automation_module", perSqm: 0.65 },
+      { fillKey: "panel_cable_entry", perSqm: 0.65 },
+      { fillKey: "lug_nshvi", perSqm: 0.65 },
     ],
   },
 ];

@@ -14,6 +14,7 @@ import {
   Menu,
   Globe,
   FolderOpen,
+  Calculator,
 } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -34,6 +35,7 @@ const NAV_ITEMS = [
   { href: "/admin/projects", label: "Кейсы портфолио", icon: FolderOpen },
   { href: "/admin/posts", label: "Новости", icon: FileText },
   { href: "/admin/services", label: "Услуги", icon: Briefcase },
+  { href: "/admin/price-calculator", label: "Прайс калькулятора", icon: Calculator },
   { href: "/admin/seo", label: "SEO", icon: Globe },
   { href: "/admin/settings", label: "Настройки", icon: Settings },
 ];
